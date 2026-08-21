@@ -1,0 +1,1643 @@
+[
+  {
+    "id": "M01",
+    "pillar": "matematicas",
+    "band": "6-8",
+    "difficulty": 1,
+    "stem": "¿Cuánto es 7 + 5?",
+    "options": [
+      "11",
+      "12",
+      "13",
+      "14"
+    ],
+    "correctIndex": 1,
+    "kind": "multiple_choice"
+  },
+  {
+    "id": "M02",
+    "pillar": "matematicas",
+    "band": "6-8",
+    "difficulty": 1,
+    "stem": "Si tienes 10 manzanas y te comes 4, ¿cuántas quedan?",
+    "options": [
+      "5",
+      "6",
+      "7",
+      "4"
+    ],
+    "correctIndex": 1,
+    "kind": "multiple_choice"
+  },
+  {
+    "id": "M03",
+    "pillar": "matematicas",
+    "band": "6-8",
+    "difficulty": 1,
+    "stem": "¿Qué número sigue? 2, 4, 6, 8, ___",
+    "options": [
+      "9",
+      "10",
+      "11",
+      "12"
+    ],
+    "correctIndex": 1,
+    "kind": "multiple_choice"
+  },
+  {
+    "id": "M04",
+    "pillar": "matematicas",
+    "band": "6-8",
+    "difficulty": 2,
+    "stem": "¿Qué número es mayor?",
+    "options": [
+      "15",
+      "9",
+      "12",
+      "14"
+    ],
+    "correctIndex": 0,
+    "kind": "multiple_choice"
+  },
+  {
+    "id": "M05",
+    "pillar": "matematicas",
+    "band": "6-8",
+    "difficulty": 2,
+    "stem": "Suma: 12 + 8",
+    "options": [
+      "18",
+      "19",
+      "20",
+      "21"
+    ],
+    "correctIndex": 2,
+    "kind": "multiple_choice"
+  },
+  {
+    "id": "M06",
+    "pillar": "matematicas",
+    "band": "6-8",
+    "difficulty": 2,
+    "stem": "¿Cuántos lados tiene un triángulo?",
+    "options": [
+      "2",
+      "3",
+      "4",
+      "5"
+    ],
+    "correctIndex": 1,
+    "kind": "multiple_choice"
+  },
+  {
+    "id": "M07",
+    "pillar": "matematicas",
+    "band": "6-8",
+    "difficulty": 3,
+    "stem": "Resta: 15 - 7",
+    "options": [
+      "7",
+      "8",
+      "9",
+      "6"
+    ],
+    "correctIndex": 1,
+    "kind": "multiple_choice"
+  },
+  {
+    "id": "M08",
+    "pillar": "matematicas",
+    "band": "9-12",
+    "difficulty": 2,
+    "stem": "¿Cuánto es 8 x 7?",
+    "options": [
+      "54",
+      "56",
+      "64",
+      "48"
+    ],
+    "correctIndex": 1,
+    "kind": "multiple_choice"
+  },
+  {
+    "id": "M09",
+    "pillar": "matematicas",
+    "band": "9-12",
+    "difficulty": 2,
+    "stem": "Divide: 45 / 9",
+    "options": [
+      "4",
+      "5",
+      "6",
+      "7"
+    ],
+    "correctIndex": 1,
+    "kind": "multiple_choice"
+  },
+  {
+    "id": "M10",
+    "pillar": "matematicas",
+    "band": "9-12",
+    "difficulty": 2,
+    "stem": "¿Cuánto es 1/2 + 1/2?",
+    "options": [
+      "1/4",
+      "1",
+      "2",
+      "0.5"
+    ],
+    "correctIndex": 1,
+    "kind": "multiple_choice"
+  },
+  {
+    "id": "M11",
+    "pillar": "matematicas",
+    "band": "9-12",
+    "difficulty": 3,
+    "stem": "Si compras 3 dulces a $4 cada uno con un billete de $20, ¿cuánto te sobra?",
+    "options": [
+      "$8",
+      "$6",
+      "$12",
+      "$10"
+    ],
+    "correctIndex": 0,
+    "kind": "multiple_choice"
+  },
+  {
+    "id": "M12",
+    "pillar": "matematicas",
+    "band": "9-12",
+    "difficulty": 3,
+    "stem": "Secuencia: 3, 9, 27, ___",
+    "options": [
+      "54",
+      "81",
+      "36",
+      "72"
+    ],
+    "correctIndex": 1,
+    "kind": "multiple_choice"
+  },
+  {
+    "id": "M13",
+    "pillar": "matematicas",
+    "band": "9-12",
+    "difficulty": 3,
+    "stem": "¿Cuál es el 50% de 120?",
+    "options": [
+      "50",
+      "60",
+      "70",
+      "80"
+    ],
+    "correctIndex": 1,
+    "kind": "multiple_choice"
+  },
+  {
+    "id": "M14",
+    "pillar": "matematicas",
+    "band": "9-12",
+    "difficulty": 4,
+    "stem": "Resuelve: (4 + 6) x 2",
+    "options": [
+      "16",
+      "20",
+      "24",
+      "12"
+    ],
+    "correctIndex": 1,
+    "kind": "multiple_choice"
+  },
+  {
+    "id": "M15",
+    "pillar": "matematicas",
+    "band": "13-16",
+    "difficulty": 3,
+    "stem": "Resuelve para x: 3x - 5 = 10",
+    "options": [
+      "x = 3",
+      "x = 4",
+      "x = 5",
+      "x = 15"
+    ],
+    "correctIndex": 2,
+    "kind": "multiple_choice"
+  },
+  {
+    "id": "M16",
+    "pillar": "matematicas",
+    "band": "13-16",
+    "difficulty": 3,
+    "stem": "¿Cuál es el 15% de 200?",
+    "options": [
+      "15",
+      "20",
+      "30",
+      "45"
+    ],
+    "correctIndex": 2,
+    "kind": "multiple_choice"
+  },
+  {
+    "id": "M17",
+    "pillar": "matematicas",
+    "band": "13-16",
+    "difficulty": 4,
+    "stem": "Si un auto viaja a 60 km/h, ¿cuánto tardará en recorrer 150 km?",
+    "options": [
+      "2 horas",
+      "2.5 horas",
+      "3 horas",
+      "1.5 horas"
+    ],
+    "correctIndex": 1,
+    "kind": "multiple_choice"
+  },
+  {
+    "id": "M18",
+    "pillar": "matematicas",
+    "band": "13-16",
+    "difficulty": 4,
+    "stem": "Simplifica la expresión: 2(x + 3) - x",
+    "options": [
+      "x + 6",
+      "2x + 3",
+      "x + 3",
+      "3x + 6"
+    ],
+    "correctIndex": 0,
+    "kind": "multiple_choice"
+  },
+  {
+    "id": "M19",
+    "pillar": "matematicas",
+    "band": "13-16",
+    "difficulty": 5,
+    "stem": "Si la proporción es 3:4 = 9:x, ¿cuál es el valor de x?",
+    "options": [
+      "10",
+      "12",
+      "16",
+      "8"
+    ],
+    "correctIndex": 1,
+    "kind": "multiple_choice"
+  },
+  {
+    "id": "M20",
+    "pillar": "matematicas",
+    "band": "13-16",
+    "difficulty": 5,
+    "stem": "¿Cuál es la raíz cuadrada de 144?",
+    "options": [
+      "12",
+      "14",
+      "16",
+      "10"
+    ],
+    "correctIndex": 0,
+    "kind": "multiple_choice"
+  },
+  {
+    "id": "C01",
+    "pillar": "creatividad",
+    "band": "6-8",
+    "difficulty": 1,
+    "stem": "¿Qué otro uso divertido le darías a una caja de cartón gigante?",
+    "options": [
+      "Romperla",
+      "Usarla de nave espacial",
+      "Tirarla a la basura",
+      "Comerla"
+    ],
+    "correctIndex": 1,
+    "kind": "multiple_choice"
+  },
+  {
+    "id": "C02",
+    "pillar": "creatividad",
+    "band": "6-8",
+    "difficulty": 1,
+    "stem": "El perro estaba aburrido así que decidió...",
+    "options": [
+      "Dormir todo el día",
+      "Aprender a tocar el piano",
+      "Morder un zapato",
+      "Ladrar"
+    ],
+    "correctIndex": 1,
+    "kind": "multiple_choice"
+  },
+  {
+    "id": "C03",
+    "pillar": "creatividad",
+    "band": "6-8",
+    "difficulty": 1,
+    "stem": "¿Qué animal se formaría si cruzas un león con un águila?",
+    "options": [
+      "Grifo",
+      "Gato",
+      "Pájaro",
+      "Perro"
+    ],
+    "correctIndex": 0,
+    "kind": "multiple_choice"
+  },
+  {
+    "id": "C04",
+    "pillar": "creatividad",
+    "band": "6-8",
+    "difficulty": 2,
+    "stem": "Completa el patrón visual imaginario: Sol, Luna, Sol, Luna, ___",
+    "options": [
+      "Estrella",
+      "Sol",
+      "Nube",
+      "Tierra"
+    ],
+    "correctIndex": 1,
+    "kind": "multiple_choice"
+  },
+  {
+    "id": "C05",
+    "pillar": "creatividad",
+    "band": "6-8",
+    "difficulty": 2,
+    "stem": "Si las nubes fueran de dulce, ¿de qué estarían hechas?",
+    "options": [
+      "Algodón de azúcar",
+      "Agua",
+      "Hielo",
+      "Tierra"
+    ],
+    "correctIndex": 0,
+    "kind": "multiple_choice"
+  },
+  {
+    "id": "C06",
+    "pillar": "creatividad",
+    "band": "6-8",
+    "difficulty": 2,
+    "stem": "En lugar de caminar, los humanos en el futuro podrían...",
+    "options": [
+      "Quedarse quietos",
+      "Usar zapatos pesados",
+      "Teletransportarse",
+      "Gatear"
+    ],
+    "correctIndex": 2,
+    "kind": "multiple_choice"
+  },
+  {
+    "id": "C07",
+    "pillar": "creatividad",
+    "band": "6-8",
+    "difficulty": 3,
+    "stem": "¿Qué podrías usar como paraguas si empieza a llover en el bosque?",
+    "options": [
+      "Una piedra",
+      "Una hoja gigante",
+      "Un palo",
+      "Arena"
+    ],
+    "correctIndex": 1,
+    "kind": "multiple_choice"
+  },
+  {
+    "id": "C08",
+    "pillar": "creatividad",
+    "band": "9-12",
+    "difficulty": 2,
+    "stem": "Asocia estos conceptos dispares: 'Reloj' y 'Plátano'. ¿Cuál es el mejor invento?",
+    "options": [
+      "Un plátano amarillo",
+      "Un reloj que mide el tiempo madurando una fruta",
+      "Un reloj redondo",
+      "Comer plátanos a tiempo"
+    ],
+    "correctIndex": 1,
+    "kind": "multiple_choice"
+  },
+  {
+    "id": "C09",
+    "pillar": "creatividad",
+    "band": "9-12",
+    "difficulty": 2,
+    "stem": "¿Cuál sería el mejor título para una imagen de un gato con traje de astronauta?",
+    "options": [
+      "El Gato Espacial",
+      "Gato Blanco",
+      "Un gato con casco",
+      "Gato en el piso"
+    ],
+    "correctIndex": 0,
+    "kind": "multiple_choice"
+  },
+  {
+    "id": "C10",
+    "pillar": "creatividad",
+    "band": "9-12",
+    "difficulty": 2,
+    "stem": "Si pudieras cambiar el color del cielo para que todos estuvieran más felices, ¿qué color elegirías y por qué?",
+    "options": [
+      "Gris, da sueño",
+      "Negro, no hay sol",
+      "Multicolor como un arcoíris",
+      "Blanco brillante"
+    ],
+    "correctIndex": 2,
+    "kind": "multiple_choice"
+  },
+  {
+    "id": "C11",
+    "pillar": "creatividad",
+    "band": "9-12",
+    "difficulty": 3,
+    "stem": "Imagina que el hielo no se derrite con el calor. ¿Para qué se usaría?",
+    "options": [
+      "Para beber",
+      "Para construir casas en el desierto",
+      "Para cocinar",
+      "Para hacer fuego"
+    ],
+    "correctIndex": 1,
+    "kind": "multiple_choice"
+  },
+  {
+    "id": "C12",
+    "pillar": "creatividad",
+    "band": "9-12",
+    "difficulty": 3,
+    "stem": "Elige la combinación más inusual para un sabor de helado:",
+    "options": [
+      "Vainilla y Chocolate",
+      "Fresa y Limón",
+      "Ajo y Menta",
+      "Mango y Piña"
+    ],
+    "correctIndex": 2,
+    "kind": "multiple_choice"
+  },
+  {
+    "id": "C13",
+    "pillar": "creatividad",
+    "band": "9-12",
+    "difficulty": 3,
+    "stem": "¿Qué pasaría si la gravedad funcionara al revés por 1 minuto?",
+    "options": [
+      "Caminaríamos más rápido",
+      "Todo caería hacia el cielo",
+      "Nada pasaría",
+      "Los objetos pesarían más"
+    ],
+    "correctIndex": 1,
+    "kind": "multiple_choice"
+  },
+  {
+    "id": "C14",
+    "pillar": "creatividad",
+    "band": "9-12",
+    "difficulty": 4,
+    "stem": "Completa la historia: 'Abrió la puerta de su cuarto y dentro encontró...'",
+    "options": [
+      "Su cama de siempre",
+      "Un bosque mágico en miniatura",
+      "Su ropa sucia",
+      "Un libro aburrido"
+    ],
+    "correctIndex": 1,
+    "kind": "multiple_choice"
+  },
+  {
+    "id": "C15",
+    "pillar": "creatividad",
+    "band": "13-16",
+    "difficulty": 3,
+    "stem": "Pensamiento Lateral: Un hombre entra a un bar y pide un vaso de agua. El cantinero saca un arma y le apunta. El hombre dice 'Gracias' y se va. ¿Por qué?",
+    "options": [
+      "Tenía hipo",
+      "Era un asalto",
+      "Estaba bromeando",
+      "Quería morir"
+    ],
+    "correctIndex": 0,
+    "kind": "multiple_choice"
+  },
+  {
+    "id": "C16",
+    "pillar": "creatividad",
+    "band": "13-16",
+    "difficulty": 3,
+    "stem": "¿Cuál es un uso alternativo e innovador para un clip de papel?",
+    "options": [
+      "Unir hojas",
+      "Desbloquear un mecanismo SIM del celular",
+      "Sostener una foto",
+      "Escribir en papel"
+    ],
+    "correctIndex": 1,
+    "kind": "multiple_choice"
+  },
+  {
+    "id": "C17",
+    "pillar": "creatividad",
+    "band": "13-16",
+    "difficulty": 4,
+    "stem": "Rediseña el paraguas. ¿Cuál es la mejor idea para el futuro?",
+    "options": [
+      "Hacerlo de metal",
+      "Un dron que proyecte un campo de aire sobre ti",
+      "Un paraguas más grande",
+      "Dejar de usar paraguas"
+    ],
+    "correctIndex": 1,
+    "kind": "multiple_choice"
+  },
+  {
+    "id": "C18",
+    "pillar": "creatividad",
+    "band": "13-16",
+    "difficulty": 4,
+    "stem": "Encuentra la solución creativa: Estás en una sala con dos puertas. Una lleva a un león hambriento (sin comer 3 años), otra a la salida. ¿Cuál abres?",
+    "options": [
+      "La del león, porque está muerto después de 3 años",
+      "Ninguna, me quedo",
+      "Rompo la pared",
+      "Abro ambas a la vez"
+    ],
+    "correctIndex": 0,
+    "kind": "multiple_choice"
+  },
+  {
+    "id": "C19",
+    "pillar": "creatividad",
+    "band": "13-16",
+    "difficulty": 5,
+    "stem": "¿Cómo medirías el volumen de una habitación sin herramientas convencionales?",
+    "options": [
+      "Con una regla",
+      "Calculando cuántas pelotas de tenis caben en ella",
+      "Preguntando a un arquitecto",
+      "Con pasos largos"
+    ],
+    "correctIndex": 1,
+    "kind": "multiple_choice"
+  },
+  {
+    "id": "C20",
+    "pillar": "creatividad",
+    "band": "13-16",
+    "difficulty": 5,
+    "stem": "Imagina una sociedad sin dinero físico ni digital. ¿Cuál sería la mejor moneda de cambio?",
+    "options": [
+      "Oro",
+      "Tiempo y favores",
+      "Piedras preciosas",
+      "Papeles impresos"
+    ],
+    "correctIndex": 1,
+    "kind": "multiple_choice"
+  },
+  {
+    "id": "ME01",
+    "pillar": "memoria",
+    "band": "6-8",
+    "difficulty": 1,
+    "stem": "¿Qué color estaba en medio?",
+    "options": [
+      "Rojo",
+      "Azul",
+      "Verde",
+      "Amarillo"
+    ],
+    "correctIndex": 1,
+    "kind": "sequence_recall",
+    "instruction": "Memoriza estos colores por 3 segundos: Rojo, Azul, Verde.",
+    "sequence": [
+      "Rojo",
+      "Azul",
+      "Verde"
+    ],
+    "studyMs": 3600
+  },
+  {
+    "id": "ME02",
+    "pillar": "memoria",
+    "band": "6-8",
+    "difficulty": 1,
+    "stem": "¿Qué animal fue el último?",
+    "options": [
+      "Gato",
+      "Perro",
+      "Pájaro",
+      "Pez"
+    ],
+    "correctIndex": 2,
+    "kind": "sequence_recall",
+    "instruction": "Lee esto: Gato, Perro, Pájaro.",
+    "sequence": [
+      "Gato",
+      "Perro",
+      "Pájaro"
+    ],
+    "studyMs": 3600
+  },
+  {
+    "id": "ME03",
+    "pillar": "memoria",
+    "band": "6-8",
+    "difficulty": 1,
+    "stem": "¿Qué número faltó entre el 1 y el 9 en la lista?",
+    "options": [
+      "3",
+      "5",
+      "7",
+      "4"
+    ],
+    "correctIndex": 1,
+    "kind": "sequence_recall",
+    "instruction": "Mira estos números: 1, 5, 9.",
+    "sequence": [
+      "1",
+      "5",
+      "9"
+    ],
+    "studyMs": 3600
+  },
+  {
+    "id": "ME04",
+    "pillar": "memoria",
+    "band": "6-8",
+    "difficulty": 2,
+    "stem": "¿Cuál fruta NO estaba en la lista?",
+    "options": [
+      "Plátano",
+      "Fresa",
+      "Manzana",
+      "Uva"
+    ],
+    "correctIndex": 1,
+    "kind": "sequence_recall",
+    "instruction": "Memoriza: Manzana, Plátano, Uva.",
+    "sequence": [
+      "Manzana",
+      "Plátano",
+      "Uva"
+    ],
+    "studyMs": 3600
+  },
+  {
+    "id": "ME05",
+    "pillar": "memoria",
+    "band": "6-8",
+    "difficulty": 2,
+    "stem": "¿Qué vocales faltan?",
+    "options": [
+      "E, I",
+      "A, E",
+      "I, O",
+      "E, O"
+    ],
+    "correctIndex": 0,
+    "kind": "sequence_recall",
+    "instruction": "Las vocales mostradas son: A, O, U.",
+    "sequence": [
+      "A",
+      "O",
+      "U"
+    ],
+    "studyMs": 3600
+  },
+  {
+    "id": "ME06",
+    "pillar": "memoria",
+    "band": "6-8",
+    "difficulty": 2,
+    "stem": "¿De qué color son los zapatos de Juan?",
+    "options": [
+      "Rojos",
+      "Verdes",
+      "Azules",
+      "Negros"
+    ],
+    "correctIndex": 2,
+    "kind": "sequence_recall",
+    "instruction": "Juan tiene una camisa roja y zapatos azules.",
+    "sequence": [],
+    "studyMs": 3000
+  },
+  {
+    "id": "ME07",
+    "pillar": "memoria",
+    "band": "6-8",
+    "difficulty": 3,
+    "stem": "¿Qué figura estaba al principio?",
+    "options": [
+      "Triángulo",
+      "Cuadrado",
+      "Círculo",
+      "Rectángulo"
+    ],
+    "correctIndex": 2,
+    "kind": "sequence_recall",
+    "instruction": "Figuras: Círculo, Cuadrado, Triángulo.",
+    "sequence": [
+      "Círculo",
+      "Cuadrado",
+      "Triángulo"
+    ],
+    "studyMs": 3600
+  },
+  {
+    "id": "ME08",
+    "pillar": "memoria",
+    "band": "9-12",
+    "difficulty": 2,
+    "stem": "¿Cuál era el tercer número del código?",
+    "options": [
+      "8",
+      "4",
+      "2",
+      "9"
+    ],
+    "correctIndex": 2,
+    "kind": "sequence_recall",
+    "instruction": "Memoriza el código: 4-8-2-9",
+    "sequence": [
+      "4",
+      "8",
+      "2",
+      "9"
+    ],
+    "studyMs": 4800
+  },
+  {
+    "id": "ME09",
+    "pillar": "memoria",
+    "band": "9-12",
+    "difficulty": 2,
+    "stem": "¿Cuál era el medio de transporte acuático de la lista?",
+    "options": [
+      "Avión",
+      "Barco",
+      "Submarino",
+      "Coche"
+    ],
+    "correctIndex": 1,
+    "kind": "sequence_recall",
+    "instruction": "Palabras: Avión, Barco, Tren, Coche, Bicicleta.",
+    "sequence": [
+      "Avión",
+      "Barco",
+      "Tren",
+      "Coche",
+      "Bicicleta"
+    ],
+    "studyMs": 6000
+  },
+  {
+    "id": "ME10",
+    "pillar": "memoria",
+    "band": "9-12",
+    "difficulty": 2,
+    "stem": "¿Qué símbolo estaba antes del porcentaje (%)?",
+    "options": [
+      "@",
+      "#",
+      "$",
+      "&"
+    ],
+    "correctIndex": 2,
+    "kind": "sequence_recall",
+    "instruction": "Símbolos: @, #, $, %",
+    "sequence": [
+      "@",
+      "#",
+      "$",
+      "%"
+    ],
+    "studyMs": 4800
+  },
+  {
+    "id": "ME11",
+    "pillar": "memoria",
+    "band": "9-12",
+    "difficulty": 3,
+    "stem": "¿De qué país era la capital Roma en la lista?",
+    "options": [
+      "Francia",
+      "Italia",
+      "Japón",
+      "España"
+    ],
+    "correctIndex": 1,
+    "kind": "sequence_recall",
+    "instruction": "Memoriza: París (Francia), Roma (Italia), Tokio (Japón).",
+    "sequence": [
+      "París (Francia)",
+      "Roma (Italia)",
+      "Tokio (Japón)"
+    ],
+    "studyMs": 3600
+  },
+  {
+    "id": "ME12",
+    "pillar": "memoria",
+    "band": "9-12",
+    "difficulty": 3,
+    "stem": "¿Cuál era el segundo color?",
+    "options": [
+      "Amarillo",
+      "Cian",
+      "Magenta",
+      "Negro"
+    ],
+    "correctIndex": 2,
+    "kind": "sequence_recall",
+    "instruction": "Colores: Cian, Magenta, Amarillo, Negro.",
+    "sequence": [
+      "Cian",
+      "Magenta",
+      "Amarillo",
+      "Negro"
+    ],
+    "studyMs": 4800
+  },
+  {
+    "id": "ME13",
+    "pillar": "memoria",
+    "band": "9-12",
+    "difficulty": 3,
+    "stem": "¿Qué planeta estaba entre Venus y Marte?",
+    "options": [
+      "Mercurio",
+      "Júpiter",
+      "Tierra",
+      "Saturno"
+    ],
+    "correctIndex": 2,
+    "kind": "sequence_recall",
+    "instruction": "El sistema solar: Mercurio, Venus, Tierra, Marte.",
+    "sequence": [
+      "Mercurio",
+      "Venus",
+      "Tierra",
+      "Marte"
+    ],
+    "studyMs": 4800
+  },
+  {
+    "id": "ME14",
+    "pillar": "memoria",
+    "band": "9-12",
+    "difficulty": 4,
+    "stem": "¿Qué número sigue en el patrón de la memoria?",
+    "options": [
+      "70",
+      "75",
+      "90",
+      "80"
+    ],
+    "correctIndex": 1,
+    "kind": "sequence_recall",
+    "instruction": "Números: 15, 30, 45, 60.",
+    "sequence": [
+      "15",
+      "30",
+      "45",
+      "60"
+    ],
+    "studyMs": 4800
+  },
+  {
+    "id": "ME15",
+    "pillar": "memoria",
+    "band": "13-16",
+    "difficulty": 3,
+    "stem": "¿Cuál sería el siguiente elemento lógico en la secuencia que debías memorizar?",
+    "options": [
+      "E8",
+      "D9",
+      "E9",
+      "F9"
+    ],
+    "correctIndex": 2,
+    "kind": "sequence_recall",
+    "instruction": "Secuencia compleja: A1, B3, C5, D7.",
+    "sequence": [
+      "A1",
+      "B3",
+      "C5",
+      "D7"
+    ],
+    "studyMs": 4800
+  },
+  {
+    "id": "ME16",
+    "pillar": "memoria",
+    "band": "13-16",
+    "difficulty": 3,
+    "stem": "¿Cuál es la suma de los tres valores memorizados?",
+    "options": [
+      "28",
+      "29",
+      "27",
+      "30"
+    ],
+    "correctIndex": 1,
+    "kind": "sequence_recall",
+    "instruction": "Memoriza: C=12, H=1, O=16.",
+    "sequence": [
+      "C=12",
+      "H=1",
+      "O=16"
+    ],
+    "studyMs": 3600
+  },
+  {
+    "id": "ME17",
+    "pillar": "memoria",
+    "band": "13-16",
+    "difficulty": 4,
+    "stem": "¿En qué año se tomó la Bastilla según el texto?",
+    "options": [
+      "1799",
+      "1879",
+      "1789",
+      "1769"
+    ],
+    "correctIndex": 2,
+    "kind": "sequence_recall",
+    "instruction": "Texto breve: La Revolución Francesa inició en 1789 con la toma de la Bastilla.",
+    "sequence": [],
+    "studyMs": 3000
+  },
+  {
+    "id": "ME18",
+    "pillar": "memoria",
+    "band": "13-16",
+    "difficulty": 4,
+    "stem": "¿Cuántos artículos individuales se compraron en total?",
+    "options": [
+      "10",
+      "11",
+      "9",
+      "12"
+    ],
+    "correctIndex": 1,
+    "kind": "sequence_recall",
+    "instruction": "Lista de compras: 2 Leches, 1 Pan, 5 Huevos, 3 Manzanas.",
+    "sequence": [
+      "2 Leches",
+      "1 Pan",
+      "5 Huevos",
+      "3 Manzanas"
+    ],
+    "studyMs": 4800
+  },
+  {
+    "id": "ME19",
+    "pillar": "memoria",
+    "band": "13-16",
+    "difficulty": 5,
+    "stem": "¿Cuál era la coordenada Y (el segundo número) del segundo par?",
+    "options": [
+      "3",
+      "4",
+      "6",
+      "9"
+    ],
+    "correctIndex": 2,
+    "kind": "sequence_recall",
+    "instruction": "Coordenadas: (2,3), (4,6), (6,9).",
+    "sequence": [
+      "(2,3)",
+      "(4,6)",
+      "(6,9)"
+    ],
+    "studyMs": 3600
+  },
+  {
+    "id": "ME20",
+    "pillar": "memoria",
+    "band": "13-16",
+    "difficulty": 5,
+    "stem": "¿Qué agencia faltaba para ser la agencia europea memorizada?",
+    "options": [
+      "NASA",
+      "JAXA",
+      "ESA",
+      "Roscosmos"
+    ],
+    "correctIndex": 2,
+    "kind": "sequence_recall",
+    "instruction": "Acronimo: NASA, ESA, JAXA.",
+    "sequence": [
+      "NASA",
+      "ESA",
+      "JAXA"
+    ],
+    "studyMs": 3600
+  },
+  {
+    "id": "L01",
+    "pillar": "logica",
+    "band": "6-8",
+    "difficulty": 1,
+    "stem": "Encuentra al intruso: Perro, Gato, Vaca, Automóvil.",
+    "options": [
+      "Perro",
+      "Vaca",
+      "Automóvil",
+      "Gato"
+    ],
+    "correctIndex": 2,
+    "kind": "multiple_choice"
+  },
+  {
+    "id": "L02",
+    "pillar": "logica",
+    "band": "6-8",
+    "difficulty": 1,
+    "stem": "Si un círculo es redondo, ¿cómo es un cuadrado?",
+    "options": [
+      "Ovalado",
+      "Sin lados",
+      "Con 4 esquinas",
+      "Curvo"
+    ],
+    "correctIndex": 2,
+    "kind": "multiple_choice"
+  },
+  {
+    "id": "L03",
+    "pillar": "logica",
+    "band": "6-8",
+    "difficulty": 1,
+    "stem": "Clasifica: Una manzana es una...",
+    "options": [
+      "Verdura",
+      "Fruta",
+      "Carne",
+      "Dulce"
+    ],
+    "correctIndex": 1,
+    "kind": "multiple_choice"
+  },
+  {
+    "id": "L04",
+    "pillar": "logica",
+    "band": "6-8",
+    "difficulty": 2,
+    "stem": "Si ayer fue Lunes, mañana será...",
+    "options": [
+      "Martes",
+      "Jueves",
+      "Miércoles",
+      "Domingo"
+    ],
+    "correctIndex": 2,
+    "kind": "multiple_choice"
+  },
+  {
+    "id": "L05",
+    "pillar": "logica",
+    "band": "6-8",
+    "difficulty": 2,
+    "stem": "¿Qué usamos para protegernos de la lluvia?",
+    "options": [
+      "Gafas de sol",
+      "Paraguas",
+      "Traje de baño",
+      "Sandalias"
+    ],
+    "correctIndex": 1,
+    "kind": "multiple_choice"
+  },
+  {
+    "id": "L06",
+    "pillar": "logica",
+    "band": "6-8",
+    "difficulty": 2,
+    "stem": "Completa: Día es a Sol, como Noche es a...",
+    "options": [
+      "Estrella",
+      "Oscuridad",
+      "Luna",
+      "Nubes"
+    ],
+    "correctIndex": 2,
+    "kind": "multiple_choice"
+  },
+  {
+    "id": "L07",
+    "pillar": "logica",
+    "band": "6-8",
+    "difficulty": 3,
+    "stem": "¿Qué animal es más lento?",
+    "options": [
+      "Guepardo",
+      "Caballo",
+      "Caracol",
+      "Perro"
+    ],
+    "correctIndex": 2,
+    "kind": "multiple_choice"
+  },
+  {
+    "id": "L08",
+    "pillar": "logica",
+    "band": "9-12",
+    "difficulty": 2,
+    "stem": "Analogía: Pájaro es a Volar como Pez es a...",
+    "options": [
+      "Caminar",
+      "Nadar",
+      "Respirar",
+      "Comer"
+    ],
+    "correctIndex": 1,
+    "kind": "multiple_choice"
+  },
+  {
+    "id": "L09",
+    "pillar": "logica",
+    "band": "9-12",
+    "difficulty": 2,
+    "stem": "Si todos los Zorgs son azules, y Gleep es un Zorg. Entonces Gleep es:",
+    "options": [
+      "Rojo",
+      "Azul",
+      "No se sabe",
+      "Verde"
+    ],
+    "correctIndex": 1,
+    "kind": "multiple_choice"
+  },
+  {
+    "id": "L10",
+    "pillar": "logica",
+    "band": "9-12",
+    "difficulty": 2,
+    "stem": "Patrón numérico: 1, 4, 9, 16, ___",
+    "options": [
+      "20",
+      "24",
+      "25",
+      "30"
+    ],
+    "correctIndex": 2,
+    "kind": "multiple_choice"
+  },
+  {
+    "id": "L11",
+    "pillar": "logica",
+    "band": "9-12",
+    "difficulty": 3,
+    "stem": "María es más alta que Ana. Ana es más alta que Luis. ¿Quién es el más bajo?",
+    "options": [
+      "María",
+      "Ana",
+      "Luis",
+      "Todos iguales"
+    ],
+    "correctIndex": 2,
+    "kind": "multiple_choice"
+  },
+  {
+    "id": "L12",
+    "pillar": "logica",
+    "band": "9-12",
+    "difficulty": 3,
+    "stem": "Si tienes un cubo de hielo en un vaso de agua y se derrite, el nivel del agua...",
+    "options": [
+      "Sube",
+      "Baja",
+      "Se queda igual",
+      "Se desborda"
+    ],
+    "correctIndex": 2,
+    "kind": "multiple_choice"
+  },
+  {
+    "id": "L13",
+    "pillar": "logica",
+    "band": "9-12",
+    "difficulty": 3,
+    "stem": "Deducción: El tren sale a las 3:00. Dura 2 horas. Si te retrasas 30 min, ¿a qué hora llegas?",
+    "options": [
+      "5:00",
+      "5:30",
+      "6:00",
+      "4:30"
+    ],
+    "correctIndex": 1,
+    "kind": "multiple_choice"
+  },
+  {
+    "id": "L14",
+    "pillar": "logica",
+    "band": "9-12",
+    "difficulty": 4,
+    "stem": "¿Cuántos meses tienen 28 días?",
+    "options": [
+      "1",
+      "6",
+      "12",
+      "Febrero solamente"
+    ],
+    "correctIndex": 2,
+    "kind": "multiple_choice"
+  },
+  {
+    "id": "L15",
+    "pillar": "logica",
+    "band": "13-16",
+    "difficulty": 3,
+    "stem": "Silogismo: Ningún pez es mamífero. Las ballenas son mamíferos. Conclusión:",
+    "options": [
+      "Las ballenas son peces",
+      "Las ballenas no son peces",
+      "Los peces son ballenas",
+      "Algunos peces son mamíferos"
+    ],
+    "correctIndex": 1,
+    "kind": "multiple_choice"
+  },
+  {
+    "id": "L16",
+    "pillar": "logica",
+    "band": "13-16",
+    "difficulty": 3,
+    "stem": "Acertijo: Soy alto cuando soy joven, y bajo cuando soy viejo. ¿Qué soy?",
+    "options": [
+      "Un humano",
+      "Un árbol",
+      "Una vela",
+      "Una montaña"
+    ],
+    "correctIndex": 2,
+    "kind": "multiple_choice"
+  },
+  {
+    "id": "L17",
+    "pillar": "logica",
+    "band": "13-16",
+    "difficulty": 4,
+    "stem": "En una carrera, adelantas al segundo lugar. ¿En qué posición quedas?",
+    "options": [
+      "Primero",
+      "Segundo",
+      "Tercero",
+      "Último"
+    ],
+    "correctIndex": 1,
+    "kind": "multiple_choice"
+  },
+  {
+    "id": "L18",
+    "pillar": "logica",
+    "band": "13-16",
+    "difficulty": 4,
+    "stem": "Identificación de patrón: A, C, F, J, ___",
+    "options": [
+      "M",
+      "N",
+      "O",
+      "P"
+    ],
+    "correctIndex": 2,
+    "kind": "multiple_choice"
+  },
+  {
+    "id": "L19",
+    "pillar": "logica",
+    "band": "13-16",
+    "difficulty": 5,
+    "stem": "Si 5 máquinas hacen 5 artículos en 5 minutos, ¿cuánto tardarán 100 máquinas en hacer 100 artículos?",
+    "options": [
+      "100 minutos",
+      "5 minutos",
+      "50 minutos",
+      "10 minutos"
+    ],
+    "correctIndex": 1,
+    "kind": "multiple_choice"
+  },
+  {
+    "id": "L20",
+    "pillar": "logica",
+    "band": "13-16",
+    "difficulty": 5,
+    "stem": "Algunos meses tienen 31 días, otros 30. ¿Cuál es el siguiente en la serie lógica de letras iniciales? E, F, M, A, M, ___",
+    "options": [
+      "A",
+      "J",
+      "S",
+      "O"
+    ],
+    "correctIndex": 1,
+    "kind": "multiple_choice"
+  },
+  {
+    "id": "LE01",
+    "pillar": "lenguaje",
+    "band": "6-8",
+    "difficulty": 1,
+    "stem": "Completa la palabra: P _ R R O",
+    "options": [
+      "A",
+      "E",
+      "I",
+      "O"
+    ],
+    "correctIndex": 1,
+    "kind": "multiple_choice"
+  },
+  {
+    "id": "LE02",
+    "pillar": "lenguaje",
+    "band": "6-8",
+    "difficulty": 1,
+    "stem": "¿Qué palabra rima con GATO?",
+    "options": [
+      "Perro",
+      "Pato",
+      "Casa",
+      "Pelota"
+    ],
+    "correctIndex": 1,
+    "kind": "multiple_choice"
+  },
+  {
+    "id": "LE03",
+    "pillar": "lenguaje",
+    "band": "6-8",
+    "difficulty": 1,
+    "stem": "Elige la palabra correcta: La _____ brilla en el cielo por la noche.",
+    "options": [
+      "Luna",
+      "Sol",
+      "Nube",
+      "Pasto"
+    ],
+    "correctIndex": 0,
+    "kind": "multiple_choice"
+  },
+  {
+    "id": "LE04",
+    "pillar": "lenguaje",
+    "band": "6-8",
+    "difficulty": 2,
+    "stem": "¿Cuál es la primera letra de la palabra ÁRBOL?",
+    "options": [
+      "R",
+      "L",
+      "Á",
+      "B"
+    ],
+    "correctIndex": 2,
+    "kind": "multiple_choice"
+  },
+  {
+    "id": "LE05",
+    "pillar": "lenguaje",
+    "band": "6-8",
+    "difficulty": 2,
+    "stem": "Organiza las letras 'S - O - L' para formar una palabra que da luz.",
+    "options": [
+      "LOS",
+      "SOL",
+      "OLS",
+      "SLO"
+    ],
+    "correctIndex": 1,
+    "kind": "multiple_choice"
+  },
+  {
+    "id": "LE06",
+    "pillar": "lenguaje",
+    "band": "6-8",
+    "difficulty": 2,
+    "stem": "¿Qué hace un perro?",
+    "options": [
+      "Maúlla",
+      "Habla",
+      "Ladra",
+      "Pía"
+    ],
+    "correctIndex": 2,
+    "kind": "multiple_choice"
+  },
+  {
+    "id": "LE07",
+    "pillar": "lenguaje",
+    "band": "6-8",
+    "difficulty": 3,
+    "stem": "El opuesto de FELIZ es...",
+    "options": [
+      "Contento",
+      "Triste",
+      "Rápido",
+      "Alto"
+    ],
+    "correctIndex": 1,
+    "kind": "multiple_choice"
+  },
+  {
+    "id": "LE08",
+    "pillar": "lenguaje",
+    "band": "9-12",
+    "difficulty": 2,
+    "stem": "Sinónimo de RÁPIDO:",
+    "options": [
+      "Lento",
+      "Veloz",
+      "Pesado",
+      "Tranquilo"
+    ],
+    "correctIndex": 1,
+    "kind": "multiple_choice"
+  },
+  {
+    "id": "LE09",
+    "pillar": "lenguaje",
+    "band": "9-12",
+    "difficulty": 2,
+    "stem": "Antónimo de OSCURO:",
+    "options": [
+      "Negro",
+      "Luminoso",
+      "Opaco",
+      "Blando"
+    ],
+    "correctIndex": 1,
+    "kind": "multiple_choice"
+  },
+  {
+    "id": "LE10",
+    "pillar": "lenguaje",
+    "band": "9-12",
+    "difficulty": 2,
+    "stem": "Encuentra la palabra intrusa:",
+    "options": [
+      "Lápiz",
+      "Bolígrafo",
+      "Borrador",
+      "Manzana"
+    ],
+    "correctIndex": 3,
+    "kind": "multiple_choice"
+  },
+  {
+    "id": "LE11",
+    "pillar": "lenguaje",
+    "band": "9-12",
+    "difficulty": 3,
+    "stem": "Completa la frase: 'Camarón que se duerme...'",
+    "options": [
+      "Se lo come el pez",
+      "Se lo lleva la corriente",
+      "Amanece cansado",
+      "No hace nada"
+    ],
+    "correctIndex": 1,
+    "kind": "multiple_choice"
+  },
+  {
+    "id": "LE12",
+    "pillar": "lenguaje",
+    "band": "9-12",
+    "difficulty": 3,
+    "stem": "¿Qué tipo de palabra es 'Correr'?",
+    "options": [
+      "Sustantivo",
+      "Adjetivo",
+      "Verbo",
+      "Artículo"
+    ],
+    "correctIndex": 2,
+    "kind": "multiple_choice"
+  },
+  {
+    "id": "LE13",
+    "pillar": "lenguaje",
+    "band": "9-12",
+    "difficulty": 3,
+    "stem": "Identifica el adjetivo en: 'El perro negro ladra fuerte'.",
+    "options": [
+      "Perro",
+      "Negro",
+      "Ladra",
+      "El"
+    ],
+    "correctIndex": 1,
+    "kind": "multiple_choice"
+  },
+  {
+    "id": "LE14",
+    "pillar": "lenguaje",
+    "band": "9-12",
+    "difficulty": 4,
+    "stem": "¿Qué significa la expresión 'Tirar la toalla'?",
+    "options": [
+      "Secarse",
+      "Rendirse",
+      "Lavar",
+      "Ganar"
+    ],
+    "correctIndex": 1,
+    "kind": "multiple_choice"
+  },
+  {
+    "id": "LE15",
+    "pillar": "lenguaje",
+    "band": "13-16",
+    "difficulty": 3,
+    "stem": "Detección de error gramatical. ¿Cuál frase es incorrecta?",
+    "options": [
+      "Hubieron muchos problemas.",
+      "Hubo muchos problemas.",
+      "Había gente en la sala.",
+      "Habrá comida para todos."
+    ],
+    "correctIndex": 0,
+    "kind": "multiple_choice"
+  },
+  {
+    "id": "LE16",
+    "pillar": "lenguaje",
+    "band": "13-16",
+    "difficulty": 3,
+    "stem": "Relación causa-efecto: Si hay deforestación severa, entonces...",
+    "options": [
+      "Crece más pasto.",
+      "Aumenta la erosión del suelo.",
+      "Baja el nivel del mar.",
+      "Los ríos se limpian."
+    ],
+    "correctIndex": 1,
+    "kind": "multiple_choice"
+  },
+  {
+    "id": "LE17",
+    "pillar": "lenguaje",
+    "band": "13-16",
+    "difficulty": 4,
+    "stem": "¿Qué es una metáfora?",
+    "options": [
+      "Una exageración",
+      "Comparar dos cosas usando 'como'",
+      "Identificar un término real con uno imaginario",
+      "Atribuir cualidades humanas a objetos"
+    ],
+    "correctIndex": 2,
+    "kind": "multiple_choice"
+  },
+  {
+    "id": "LE18",
+    "pillar": "lenguaje",
+    "band": "13-16",
+    "difficulty": 4,
+    "stem": "Elige la palabra que esté escrita correctamente:",
+    "options": [
+      "Desición",
+      "Decición",
+      "Decisión",
+      "Dezisión"
+    ],
+    "correctIndex": 2,
+    "kind": "multiple_choice"
+  },
+  {
+    "id": "LE19",
+    "pillar": "lenguaje",
+    "band": "13-16",
+    "difficulty": 5,
+    "stem": "Comprensión lectora breve: 'Aunque llovía a cántaros, decidió salir a correr.' ¿Qué actitud demuestra el sujeto?",
+    "options": [
+      "Pereza",
+      "Determinación",
+      "Enojo",
+      "Tristeza"
+    ],
+    "correctIndex": 1,
+    "kind": "multiple_choice"
+  },
+  {
+    "id": "LE20",
+    "pillar": "lenguaje",
+    "band": "13-16",
+    "difficulty": 5,
+    "stem": "Identifica la figura literaria: 'El sol es la linterna de la Tierra'.",
+    "options": [
+      "Símil",
+      "Hipérbole",
+      "Metáfora",
+      "Personificación"
+    ],
+    "correctIndex": 2,
+    "kind": "multiple_choice"
+  }
+]

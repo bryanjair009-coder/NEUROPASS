@@ -1,0 +1,7 @@
+{
+  "name": "neuropass-screentime",
+  "version": "0.1.0",
+  "description": "Puente nativo de control de tiempo de pantalla para NEUROpass",
+  "main": "index.ts",
+  "private": true
+}
