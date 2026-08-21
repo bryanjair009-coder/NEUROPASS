@@ -1,7 +1,13 @@
 import { randomUUID } from 'expo-crypto';
 
 import { getDatabase } from '@/data/db';
-import { dayKeyOf, emptyLedger, type DailyLedger, type RewardPolicy } from '@/engine/economy';
+import {
+  dayKeyOf,
+  emptyLedger,
+  extendUnlockWindow,
+  type DailyLedger,
+  type RewardPolicy,
+} from '@/engine/economy';
 
 /**
  * Libro diario de minutos y permisos de tiempo concedidos.
@@ -72,22 +78,26 @@ export async function saveLedger(childId: string, ledger: DailyLedger): Promise<
 }
 
 /**
- * Registra minutos desbloqueados.
+ * Registra minutos desbloqueados y extiende la ventana de juego.
  *
- * La caducidad se cuenta desde el momento de concederlos. Si el menor gana 30
- * minutos y no los usa, se pierden al cabo de la ventana: acumular saldo
- * indefinidamente convertiría la app en una hucha de tiempo de pantalla, que
- * es justo el hábito que pretende evitar.
+ * Los minutos se cuentan como tiempo de reloj, no como tiempo de uso efectivo:
+ * medir el uso real exigiría sondear desde JavaScript con la app en segundo
+ * plano, que es justo lo que ningún sistema operativo permite de forma fiable.
+ *
+ * Si ya hay una ventana abierta, la nueva concesión **empieza donde termina la
+ * anterior** en vez de solaparse con ella. Sin esto, ganar 15 minutos cuando
+ * quedan 20 no añadiría nada: el máximo de las caducidades seguiría siendo el
+ * de la concesión anterior y el menor perdería lo que acaba de ganar.
  */
 export async function grantTime(input: {
   childId: string;
   minutes: number;
   source: 'session' | 'parent';
-  validForMinutes?: number;
   now?: number;
 }): Promise<TimeGrant> {
   const now = input.now ?? Date.now();
-  const validFor = input.validForMinutes ?? Math.max(input.minutes, 60);
+
+  const currentEnd = await unlockedUntil(input.childId, now);
 
   const grant: TimeGrant = {
     id: randomUUID(),
@@ -95,7 +105,7 @@ export async function grantTime(input: {
     minutes: input.minutes,
     source: input.source,
     grantedAt: now,
-    expiresAt: now + validFor * 60_000,
+    expiresAt: extendUnlockWindow(currentEnd, now, input.minutes),
     revokedAt: null,
   };
 

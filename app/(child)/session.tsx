@@ -131,7 +131,7 @@ interface RunnerProps {
   onFinished: (attempts: readonly Attempt[]) => Promise<void>;
 }
 
-function SessionRunner(props: RunnerProps) {
+function SessionRunner({ onFinished, ...props }: RunnerProps) {
   const session = useSession({
     band: props.band,
     seed: props.seed,
@@ -149,8 +149,8 @@ function SessionRunner(props: RunnerProps) {
   useEffect(() => {
     if (session.phase !== 'terminada' || finishing.current) return;
     finishing.current = true;
-    void props.onFinished(session.attempts);
-  }, [session.phase, session.attempts, props]);
+    void onFinished(session.attempts);
+  }, [session.phase, session.attempts, onFinished]);
 
   const exercise = session.exercise;
 

@@ -235,4 +235,25 @@ export function applyReward(
   };
 }
 
+/**
+ * Fin de la ventana de juego tras conceder `minutes`.
+ *
+ * Si ya hay una ventana abierta, la nueva concesión se encadena a partir de su
+ * fin; si no, empieza ahora. Encadenar en vez de solapar es lo que hace que
+ * ganar 15 minutos cuando quedan 20 sirva de algo: solapando, el máximo de las
+ * caducidades seguiría siendo el de la ventana anterior y los minutos recién
+ * ganados desaparecerían.
+ *
+ * Es una función pura y vive aquí, junto al resto de reglas de la economía,
+ * para poder verificarla sin base de datos.
+ */
+export function extendUnlockWindow(
+  currentEnd: number | null,
+  now: number,
+  minutes: number,
+): number {
+  const start = currentEnd !== null && currentEnd > now ? currentEnd : now;
+  return start + Math.max(0, minutes) * 60_000;
+}
+
 const round1 = (value: number): number => Math.round(value * 10) / 10;

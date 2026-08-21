@@ -4,8 +4,12 @@ import { StyleSheet, View } from 'react-native';
 
 import { PILLAR_EMOJI, PILLAR_LABEL } from '@/domain/pillar';
 import { AGE_BAND_LABEL } from '@/domain/age';
-import { audit, describeSchedule } from '@/data/repositories/policy';
-import { listBlockedApps, type BlockedApp } from '@/data/repositories/policy';
+import {
+  audit,
+  describeSchedule,
+  listBlockedApps,
+  type BlockedApp,
+} from '@/data/repositories/policy';
 import { pillarStats, recentSessions, type PillarStat, type SessionSummary } from '@/data/repositories/progress';
 import { grantTime, revokeActiveGrants } from '@/data/repositories/rewards';
 import { masteryPercent, weakestPillar } from '@/engine/mastery';

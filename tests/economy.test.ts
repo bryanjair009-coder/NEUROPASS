@@ -8,6 +8,7 @@ import {
   computeReward,
   dayKeyOf,
   emptyLedger,
+  extendUnlockWindow,
   rolledOver,
   type DailyLedger,
 } from '@/engine/economy';
@@ -193,5 +194,47 @@ describe('control de acceso a una nueva sesión', () => {
     const ledger: DailyLedger = { ...freshLedger(), earnedMinutes: policy.dailyCapMinutes };
     const nextDay = new Date('2026-08-22T09:00:00').getTime();
     expect(canStartSession(ledger, policy, nextDay).allowed).toBe(true);
+  });
+});
+
+describe('ventana de tiempo desbloqueado', () => {
+  const MIN = 60_000;
+
+  it('sin ventana previa, empieza ahora', () => {
+    expect(extendUnlockWindow(null, T0, 15)).toBe(T0 + 15 * MIN);
+  });
+
+  it('con una ventana ya caducada, empieza ahora', () => {
+    expect(extendUnlockWindow(T0 - 5 * MIN, T0, 15)).toBe(T0 + 15 * MIN);
+  });
+
+  it('con una ventana abierta, se encadena en vez de solaparse', () => {
+    /**
+     * Es la regresión que motivó extraer esta función: si la nueva concesión
+     * empezara en `now`, ganar 15 minutos cuando quedan 20 no cambiaría el
+     * máximo de las caducidades y el menor perdería lo recién ganado.
+     */
+    const quedan20 = T0 + 20 * MIN;
+    expect(extendUnlockWindow(quedan20, T0, 15)).toBe(T0 + 35 * MIN);
+  });
+
+  it('encadenar varias veces acumula el total', () => {
+    let end = extendUnlockWindow(null, T0, 10);
+    end = extendUnlockWindow(end, T0, 10);
+    end = extendUnlockWindow(end, T0, 10);
+    expect(end).toBe(T0 + 30 * MIN);
+  });
+
+  it('una concesión de cero minutos no mueve la ventana', () => {
+    const quedan20 = T0 + 20 * MIN;
+    expect(extendUnlockWindow(quedan20, T0, 0)).toBe(quedan20);
+    expect(extendUnlockWindow(null, T0, 0)).toBe(T0);
+  });
+
+  it('un número negativo de minutos no acorta la ventana', () => {
+    // Nada debería llamar así, pero recortar la ventana por un valor negativo
+    // sería quitarle al menor tiempo que ya se había ganado.
+    const quedan20 = T0 + 20 * MIN;
+    expect(extendUnlockWindow(quedan20, T0, -30)).toBe(quedan20);
   });
 });
