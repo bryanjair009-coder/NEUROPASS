@@ -1,0 +1,16 @@
+apply plugin: 'expo-module-gradle-plugin'
+
+group = 'com.neuropass.screentime'
+version = '0.1.0'
+
+android {
+  namespace "com.neuropass.screentime"
+
+  defaultConfig {
+    // API 26 es el piso real del módulo: TYPE_APPLICATION_OVERLAY y los
+    // servicios en primer plano con canal de notificación aparecen en Oreo.
+    minSdkVersion 26
+    versionCode 1
+    versionName "0.1.0"
+  }
+}

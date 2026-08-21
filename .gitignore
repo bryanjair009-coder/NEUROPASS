@@ -41,8 +41,13 @@ yarn-error.*
 /android
 
 # NEUROpass
-ios/
-android/
+#
+# Ojo: aquí NO van `ios/` ni `android/` sin barra inicial. Ese patrón coincide
+# con cualquier directorio de ese nombre a cualquier profundidad, y se llevaría
+# por delante `modules/neuropass-screentime/android/` y su equivalente de iOS,
+# que son código fuente escrito a mano. Los directorios generados por
+# `expo prebuild` ya están ignorados arriba como `/ios` y `/android`, anclados
+# a la raíz.
 *.db
 *.db-shm
 *.db-wal

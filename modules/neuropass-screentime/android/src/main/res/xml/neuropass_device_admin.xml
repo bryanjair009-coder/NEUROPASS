@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Se piden únicamente las políticas necesarias para que un menor no pueda
+  retirar la supervisión. En concreto NO se piden borrado remoto, cifrado
+  forzoso, captura de contraseñas ni deshabilitar la cámara: pedir más de lo
+  que se usa es motivo de rechazo en revisión y ampliaría sin necesidad el
+  alcance de la app sobre el dispositivo familiar.
+-->
+<device-admin xmlns:android="http://schemas.android.com/apk/res/android">
+  <uses-policies>
+    <watch-login />
+  </uses-policies>
+</device-admin>

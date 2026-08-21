@@ -1,0 +1,52 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+  <!--
+    Los tres permisos delicados de esta app. Cada uno se declara aquí y se
+    justifica en docs/PERMISOS.md, que es el texto que va a la ficha de Google
+    Play: una app de la categoría Familias que pida SYSTEM_ALERT_WINDOW y
+    PACKAGE_USAGE_STATS sin justificar se rechaza en revisión.
+  -->
+  <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS"
+      tools:ignore="ProtectedPermissions" xmlns:tools="http://schemas.android.com/tools" />
+  <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+  <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" />
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+  <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+  <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+  <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
+
+  <application>
+    <service
+        android:name=".GuardService"
+        android:exported="false"
+        android:foregroundServiceType="specialUse">
+      <property
+          android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+          android:value="Supervision parental del tiempo de pantalla configurada por la madre, el padre o el tutor del menor." />
+    </service>
+
+    <receiver
+        android:name=".AdminReceiver"
+        android:permission="android.permission.BIND_DEVICE_ADMIN"
+        android:exported="true">
+      <meta-data
+          android:name="android.app.device_admin"
+          android:resource="@xml/neuropass_device_admin" />
+      <intent-filter>
+        <action android:name="android.app.action.DEVICE_ADMIN_ENABLED" />
+        <action android:name="android.app.action.DEVICE_ADMIN_DISABLE_REQUESTED" />
+      </intent-filter>
+    </receiver>
+
+    <receiver
+        android:name=".BootReceiver"
+        android:exported="true"
+        android:enabled="true">
+      <intent-filter>
+        <action android:name="android.intent.action.BOOT_COMPLETED" />
+        <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+      </intent-filter>
+    </receiver>
+  </application>
+</manifest>
