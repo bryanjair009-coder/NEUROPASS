@@ -34,6 +34,7 @@
   "devDependencies": {
     "@types/node": "^26.2.0",
     "@types/react": "~19.2.2",
+    "eas-cli": "^22.3.0",
     "eslint": "^9.0.0",
     "eslint-config-expo": "~57.0.1",
     "typescript": "~6.0.3",
@@ -55,7 +56,9 @@
     "check": "npm run typecheck && npm run lint && npm test",
     "web": "expo start --web --clear",
     "build:apk": "eas build --platform android --profile preview",
-    "build:dev": "eas build --platform android --profile development"
+    "build:dev": "eas build --platform android --profile development",
+    "login": "eas login",
+    "whoami": "eas whoami"
   },
   "private": true
 }
