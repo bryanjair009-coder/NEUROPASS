@@ -78,6 +78,12 @@ function assertValid(exercise: Exercise, where: string): void {
       expect(prompt.minChars, `${where}: minChars`).toBeGreaterThan(0);
       expect(prompt.minDistinctWords, `${where}: minDistinctWords`).toBeGreaterThan(0);
       expect(prompt.placeholder.length, `${where}: placeholder vacío`).toBeGreaterThan(0);
+      /**
+       * Un reto de escritura libre nunca lleva cronómetro. Es la propiedad que
+       * lo distingue: se califica por esfuerzo, y una cuenta atrás lo enviaría
+       * solo al expirar, borrando lo que el menor llevara escrito.
+       */
+      expect(exercise.timeLimitSec, `${where}: no debe tener cronómetro`).toBeNull();
       break;
     }
   }

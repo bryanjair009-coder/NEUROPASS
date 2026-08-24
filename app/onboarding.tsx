@@ -38,6 +38,7 @@ const AVATARS = ['🦊', '🐼', '🦉', '🐙', '🦕', '🐧', '🦁', '🐢',
 
 export default function Onboarding() {
   const bootstrap = useAppStore((state) => state.bootstrap);
+  const unlockParent = useAppStore((state) => state.unlockParent);
   const pinConfigured = useAppStore((state) => state.pinConfigured);
 
   const [step, setStep] = useState<Step>(pinConfigured ? 'menor' : 'bienvenida');
@@ -69,6 +70,9 @@ export default function Onboarding() {
         <ChildStep
           onDone={async () => {
             await bootstrap();
+            // Quien acaba de elegir el PIN ya demostró conocerlo: pedírselo otra
+            // vez al instante es fricción sin ninguna ganancia de seguridad.
+            unlockParent();
             router.replace('/(parent)/dashboard');
           }}
         />

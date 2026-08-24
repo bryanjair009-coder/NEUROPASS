@@ -1,5 +1,4 @@
 import { getRandomBytes } from 'expo-crypto';
-import * as SecureStore from 'expo-secure-store';
 
 import {
   INITIAL_LOCKOUT,
@@ -16,6 +15,7 @@ import {
   verifyPin,
   type PinRecord,
 } from '@/security/pin';
+import { secureStorage } from '@/security/secureStorage';
 
 /**
  * Persistencia del PIN del tutor y de su estado de bloqueo.
@@ -23,6 +23,10 @@ import {
  * Todo vive en SecureStore, que respalda en Keychain (iOS) y en el Keystore de
  * Android: el material queda cifrado con una clave que no sale del hardware
  * seguro y solo es accesible con el dispositivo desbloqueado.
+ *
+ * El almacén concreto se resuelve en `secureStorage.ts`, que es lo único que
+ * cambia entre plataformas. La derivación, el bloqueo y la política del PIN son
+ * los mismos en todas.
  *
  * LÍMITE CONOCIDO, documentado a propósito en vez de disimulado: borrar los
  * datos de la app desde los ajustes de Android elimina también estas entradas.
@@ -48,7 +52,7 @@ export type UnlockResult =
   | { readonly ok: false; readonly reason: 'incorrecto'; readonly status: LockStatus };
 
 export async function hasPin(): Promise<boolean> {
-  return (await SecureStore.getItemAsync(KEY_PIN)) !== null;
+  return (await secureStorage.getItem(KEY_PIN)) !== null;
 }
 
 /**
@@ -68,8 +72,8 @@ export async function setPin(pin: string): Promise<{ recoveryCode: string }> {
   const recoveryCode = generateRecoveryCode();
   const recoveryRecord = createPinRecord(recoveryCode, getRandomBytes(KDF_SALT_BYTES));
 
-  await SecureStore.setItemAsync(KEY_PIN, JSON.stringify(record));
-  await SecureStore.setItemAsync(KEY_RECOVERY, JSON.stringify(recoveryRecord));
+  await secureStorage.setItem(KEY_PIN, JSON.stringify(record));
+  await secureStorage.setItem(KEY_RECOVERY, JSON.stringify(recoveryRecord));
   await saveLockout(INITIAL_LOCKOUT);
 
   return { recoveryCode };
@@ -139,9 +143,9 @@ export async function lockStatus(now = Date.now()): Promise<LockStatus> {
 
 /** Borra el PIN y su estado. Solo desde el flujo de borrado total de datos. */
 export async function clearPin(): Promise<void> {
-  await SecureStore.deleteItemAsync(KEY_PIN);
-  await SecureStore.deleteItemAsync(KEY_RECOVERY);
-  await SecureStore.deleteItemAsync(KEY_LOCKOUT);
+  await secureStorage.removeItem(KEY_PIN);
+  await secureStorage.removeItem(KEY_RECOVERY);
+  await secureStorage.removeItem(KEY_LOCKOUT);
 }
 
 // ---------------------------------------------------------------------------
@@ -172,7 +176,7 @@ async function loadPinRecord(): Promise<PinRecord | null> {
 }
 
 async function loadRecord(key: string): Promise<PinRecord | null> {
-  const raw = await SecureStore.getItemAsync(key);
+  const raw = await secureStorage.getItem(key);
   if (!raw) return null;
   try {
     return JSON.parse(raw) as PinRecord;
@@ -182,7 +186,7 @@ async function loadRecord(key: string): Promise<PinRecord | null> {
 }
 
 async function loadLockout(): Promise<LockoutState> {
-  const raw = await SecureStore.getItemAsync(KEY_LOCKOUT);
+  const raw = await secureStorage.getItem(KEY_LOCKOUT);
   if (!raw) return INITIAL_LOCKOUT;
   try {
     const parsed = JSON.parse(raw) as Partial<LockoutState>;
@@ -199,6 +203,6 @@ async function loadLockout(): Promise<LockoutState> {
 }
 
 async function saveLockout(state: LockoutState): Promise<void> {
-  await SecureStore.setItemAsync(KEY_LOCKOUT, JSON.stringify(state));
+  await secureStorage.setItem(KEY_LOCKOUT, JSON.stringify(state));
 }
 

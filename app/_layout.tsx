@@ -2,7 +2,7 @@ import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Platform, StyleSheet, Text, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
@@ -73,6 +73,7 @@ export default function RootLayout() {
     <GestureHandlerRootView style={styles.root}>
       <SafeAreaProvider>
         <StatusBar style="light" />
+        <View style={styles.frame}>
         <Stack
           screenOptions={{
             headerStyle: { backgroundColor: palette.base },
@@ -87,13 +88,32 @@ export default function RootLayout() {
           <Stack.Screen name="(child)" options={{ headerShown: false }} />
           <Stack.Screen name="(parent)" options={{ headerShown: false }} />
         </Stack>
+        </View>
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1 },
+  root: { flex: 1, backgroundColor: palette.base },
+  /**
+   * En navegador se acota el ancho a tamaño de teléfono y se centra. Sin esto,
+   * una interfaz pensada para 400 px se estira a lo ancho de un monitor y deja
+   * de parecerse a lo que ve el menor, que es justo lo que se quiere revisar.
+   * En Android e iOS la regla no aplica y el contenedor ocupa todo.
+   */
+  frame: Platform.select({
+    web: {
+      flex: 1,
+      width: '100%',
+      maxWidth: 430,
+      alignSelf: 'center',
+      borderLeftWidth: StyleSheet.hairlineWidth,
+      borderRightWidth: StyleSheet.hairlineWidth,
+      borderColor: palette.border,
+    },
+    default: { flex: 1 },
+  }),
   center: {
     flex: 1,
     alignItems: 'center',

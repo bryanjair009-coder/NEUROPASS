@@ -26,6 +26,18 @@ interface AppState {
   ready: boolean;
   pinConfigured: boolean;
 
+  /**
+   * Si el tutor ya se autenticó en esta ejecución.
+   *
+   * Vive aquí y no en un contexto dentro de `(parent)/` porque el alta inicial
+   * ocurre fuera de ese árbol y necesita poder marcarlo: quien acaba de elegir
+   * el PIN no debe tener que escribirlo diez segundos después.
+   *
+   * **Nunca se persiste.** Cerrar la app termina la sesión del tutor, que es
+   * justo lo que se busca en el teléfono del menor.
+   */
+  parentUnlocked: boolean;
+
   children: Child[];
   activeChildId: string | null;
 
@@ -37,6 +49,8 @@ interface AppState {
 
   capabilities: ScreenTimeCapabilities | null;
 
+  unlockParent: () => void;
+  lockParent: () => void;
   bootstrap: () => Promise<void>;
   selectChild: (childId: string) => Promise<void>;
   refreshActiveChild: () => Promise<void>;
@@ -48,6 +62,7 @@ interface AppState {
 export const useAppStore = create<AppState>((set, get) => ({
   ready: false,
   pinConfigured: false,
+  parentUnlocked: false,
   children: [],
   activeChildId: null,
   settings: null,
@@ -55,6 +70,9 @@ export const useAppStore = create<AppState>((set, get) => ({
   schedules: [],
   unlockedUntil: null,
   capabilities: null,
+
+  unlockParent: () => set({ parentUnlocked: true }),
+  lockParent: () => set({ parentUnlocked: false }),
 
   bootstrap: async () => {
     const [children, pinConfigured, capabilities] = await Promise.all([
@@ -65,7 +83,17 @@ export const useAppStore = create<AppState>((set, get) => ({
 
     // Con un único menor no tiene sentido pedir que se elija: se selecciona
     // solo. Es el caso mayoritario y ahorra un toque en cada arranque.
-    const activeChildId = get().activeChildId ?? (children.length === 1 ? (children[0]?.id ?? null) : null);
+    //
+    // Si el que estaba activo ya no existe —lo archivaron o lo borraron— se
+    // descarta en lugar de conservar un identificador colgado, que dejaría la
+    // pantalla del menor esperando datos que nunca llegan.
+    const previous = get().activeChildId;
+    const stillExists = previous !== null && children.some((child) => child.id === previous);
+    const activeChildId = stillExists
+      ? previous
+      : children.length === 1
+        ? (children[0]?.id ?? null)
+        : null;
 
     set({ children, pinConfigured, capabilities, activeChildId, ready: true });
 

@@ -3,6 +3,7 @@ import { useCallback, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { PILLARS, PILLAR_EMOJI, PILLAR_LABEL } from '@/domain/pillar';
+import type { Child } from '@/data/repositories/children';
 import { pillarStats, type PillarStat } from '@/data/repositories/progress';
 import { canStartSession, type SessionGate } from '@/engine/economy';
 import { masteryPercent } from '@/engine/mastery';
@@ -31,6 +32,9 @@ import { useNow } from '@/ui/useNow';
  */
 export default function ChildHome() {
   const child = useActiveChild();
+  const children = useAppStore((state) => state.children);
+  const activeChildId = useAppStore((state) => state.activeChildId);
+  const selectChild = useAppStore((state) => state.selectChild);
   const settings = useAppStore((state) => state.settings);
   const ledger = useAppStore((state) => state.ledger);
   const unlockedUntil = useAppStore((state) => state.unlockedUntil);
@@ -48,6 +52,12 @@ export default function ChildHome() {
       if (child) void pillarStats(child.id).then(setStats);
     }, [child, refresh]),
   );
+
+  // Varios perfiles y ninguno activo: hay que preguntar. Sin esta pantalla la
+  // app se quedaba esperando datos de un menor que nunca se había elegido.
+  if (activeChildId === null && children.length > 0) {
+    return <ChildPicker profiles={children} onPick={selectChild} />;
+  }
 
   if (!child || !settings || !ledger) {
     return (
@@ -141,6 +151,44 @@ export default function ChildHome() {
 
 // ---------------------------------------------------------------------------
 
+/**
+ * Selector de menor.
+ *
+ * Solo aparece cuando hay más de un perfil, que es el caso de hermanos
+ * compartiendo una tableta. Los botones son grandes y con avatar porque quien
+ * elige puede tener seis años y leer poco.
+ */
+function ChildPicker({
+  profiles,
+  onPick,
+}: {
+  profiles: readonly Child[];
+  onPick: (childId: string) => Promise<void>;
+}) {
+  return (
+    <Screen>
+      <Gap size="xxl" />
+      <Txt variant="title" align="center">
+        ¿Quién eres?
+      </Txt>
+      <Gap size="xl" />
+
+      {profiles.map((option) => (
+        <Pressable
+          key={option.id}
+          onPress={() => void onPick(option.id)}
+          accessibilityRole="button"
+          accessibilityLabel={option.alias}
+          style={styles.pickerRow}
+        >
+          <Txt style={styles.pickerAvatar}>{option.avatar}</Txt>
+          <Txt variant="heading">{option.alias}</Txt>
+        </Pressable>
+      ))}
+    </Screen>
+  );
+}
+
 function TimeCard({ remainingMs, hasTime }: { remainingMs: number; hasTime: boolean }) {
   return (
     <Card raised style={[styles.timeCard, hasTime && styles.timeCardActive]}>
@@ -216,5 +264,18 @@ const styles = StyleSheet.create({
   timeCard: { paddingVertical: space.xl },
   timeCardActive: { borderColor: palette.success, ...shadow('md') },
   timeValue: { fontSize: 52, lineHeight: 58 },
+  pickerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.lg,
+    paddingHorizontal: space.xl,
+    paddingVertical: space.lg,
+    marginBottom: space.md,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: palette.border,
+    backgroundColor: palette.surface,
+  },
+  pickerAvatar: { fontSize: 44 },
   pillarRow: { marginBottom: space.lg },
 });

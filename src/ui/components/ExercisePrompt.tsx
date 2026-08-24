@@ -90,6 +90,13 @@ function ChoicePrompt({ exercise, disabled, grade, onRespond }: PromptProps) {
             key={`${exercise.id}-${index}`}
             disabled={disabled}
             accessibilityRole="button"
+            // El nombre se declara explícitamente y no se deja derivar del
+            // texto hijo: muchas opciones son símbolos («▲», «♦») que algunas
+            // capas de accesibilidad no anuncian, y quedarían como botones sin
+            // nombre. Con la respuesta revelada se añade si era la correcta.
+            accessibilityLabel={
+              revealed && isAnswer ? `${option}. Respuesta correcta` : option
+            }
             accessibilityState={{ selected: isChosen, disabled }}
             onPress={() => {
               setChosen(index);

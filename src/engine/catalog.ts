@@ -95,7 +95,13 @@ export function materialize(
     band,
     difficulty,
     fingerprint,
-    timeLimitSec: generated.timeLimitSec ?? timeLimitFor(band, difficulty),
+    // `undefined` significa "el generador no opinó" y se calcula el límite por
+    // defecto; `null` significa "este reto no lleva cronómetro" y hay que
+    // respetarlo. Un `??` aquí colapsaba ambos casos y ponía cuenta atrás a los
+    // retos de escritura libre, que al llegar a cero se enviaban solos y
+    // borraban lo que el menor llevaba escrito.
+    timeLimitSec:
+      generated.timeLimitSec !== undefined ? generated.timeLimitSec : timeLimitFor(band, difficulty),
     prompt: generated.prompt,
   };
 }

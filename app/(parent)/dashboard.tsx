@@ -14,6 +14,7 @@ import { pillarStats, recentSessions, type PillarStat, type SessionSummary } fro
 import { grantTime, revokeActiveGrants } from '@/data/repositories/rewards';
 import { masteryPercent, weakestPillar } from '@/engine/mastery';
 import { isSimulated, pendingRequirements, screenTime } from '@/screentime';
+import { secureStorage } from '@/security/secureStorage';
 import { useActiveChild, useAppStore } from '@/state/appStore';
 import {
   Badge,
@@ -153,8 +154,9 @@ export default function Dashboard() {
       {isSimulated ? (
         <>
           <Notice tone="warning" title="Módulo nativo no cargado">
-            Estás sobre el simulador: los permisos y el bloqueo son ficticios. Compila con
-            `npx expo run:android` para probar el comportamiento real.
+            {secureStorage.isSecure
+              ? 'Estás sobre el simulador: los permisos y el bloqueo son ficticios. Compila con expo run:android para probar el comportamiento real.'
+              : 'Estás en el navegador: además del bloqueo simulado, el PIN se guarda en localStorage y no en el almacén seguro del sistema. Sirve para revisar la interfaz, no para uso real.'}
           </Notice>
           <Gap size="xl" />
         </>
