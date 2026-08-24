@@ -216,9 +216,8 @@ class NeuropassScreentimeModule : Module() {
         AsyncFunction("getGuardStatus") {
             val store = PolicyStore(context)
             val policy = store.load()
-            val reason = PolicyEvaluator.evaluate(
+            val reason = PolicyEvaluator.currentState(
                 policy = policy,
-                packageName = "",
                 nowMs = System.currentTimeMillis(),
                 calendar = Calendar.getInstance(),
             )

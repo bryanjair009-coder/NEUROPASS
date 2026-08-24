@@ -53,7 +53,9 @@
     "bundle": "expo export --platform android --output-dir .expo/verify",
     "doctor": "expo-doctor",
     "check": "npm run typecheck && npm run lint && npm test",
-    "web": "expo start --web --clear"
+    "web": "expo start --web --clear",
+    "build:apk": "eas build --platform android --profile preview",
+    "build:dev": "eas build --platform android --profile development"
   },
   "private": true
 }

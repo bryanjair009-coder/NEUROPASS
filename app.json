@@ -36,7 +36,8 @@
         "android.permission.POST_NOTIFICATIONS",
         "android.permission.QUERY_ALL_PACKAGES",
         "android.permission.RECEIVE_BOOT_COMPLETED"
-      ]
+      ],
+      "versionCode": 1
     },
     "plugins": [
       "expo-router",

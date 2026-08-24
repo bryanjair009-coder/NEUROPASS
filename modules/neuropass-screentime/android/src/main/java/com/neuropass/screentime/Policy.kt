@@ -62,9 +62,22 @@ object PolicyEvaluator {
      * ser un mecanismo para negociarlo.
      */
     fun evaluate(policy: Policy, packageName: String, nowMs: Long, calendar: Calendar): BlockReason {
+        // Una app no restringida se deja pasar sin mirar horarios ni tiempo.
         if (packageName.isEmpty()) return BlockReason.PERMITIDO
         if (!policy.blockedPackages.contains(packageName)) return BlockReason.PERMITIDO
 
+        return currentState(policy, nowMs, calendar)
+    }
+
+    /**
+     * Estado del ocio ahora mismo, sin referirse a ninguna app concreta.
+     *
+     * Es lo que necesita el panel del tutor para decir "jugando" o "bloqueado".
+     * Preguntárselo a `evaluate` con un paquete vacío devolvía siempre
+     * PERMITIDO, porque ese caso está pensado para "no sé qué hay en primer
+     * plano", no para "dime cómo está el sistema".
+     */
+    fun currentState(policy: Policy, nowMs: Long, calendar: Calendar): BlockReason {
         if (isWithinProtectedWindow(policy.scheduleWindows, calendar)) {
             return BlockReason.HORARIO_PROTEGIDO
         }
