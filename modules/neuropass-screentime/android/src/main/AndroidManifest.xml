@@ -39,6 +39,15 @@
       </intent-filter>
     </receiver>
 
+    <!--
+      Receptor del vigilante. No lleva filtro de intención porque solo lo
+      despierta la alarma, con un intent explícito: exportarlo permitiría a
+      cualquier app provocar arranques del servicio.
+    -->
+    <receiver
+        android:name=".WatchdogReceiver"
+        android:exported="false" />
+
     <receiver
         android:name=".BootReceiver"
         android:exported="true"

@@ -13,6 +13,7 @@ import {
 import { pillarStats, recentSessions, type PillarStat, type SessionSummary } from '@/data/repositories/progress';
 import { grantTime, revokeActiveGrants } from '@/data/repositories/rewards';
 import { masteryPercent, weakestPillar } from '@/engine/mastery';
+import type { GuardStatus } from 'neuropass-screentime';
 import { isSimulated, pendingRequirements, screenTime } from '@/screentime';
 import { secureStorage } from '@/security/secureStorage';
 import { useActiveChild, useAppStore } from '@/state/appStore';
@@ -56,6 +57,7 @@ export default function Dashboard() {
   const [stats, setStats] = useState<PillarStat[]>([]);
   const [sessions, setSessions] = useState<SessionSummary[]>([]);
   const [blockedApps, setBlockedApps] = useState<BlockedApp[]>([]);
+  const [guard, setGuard] = useState<GuardStatus | null>(null);
   const [busy, setBusy] = useState(false);
   const now = useNow(5_000);
 
@@ -67,6 +69,7 @@ export default function Dashboard() {
       void pillarStats(child.id).then(setStats);
       void recentSessions(child.id, 7).then(setSessions);
       void listBlockedApps(child.id).then(setBlockedApps);
+      void screenTime.getGuardStatus().then(setGuard);
     }, [child, refresh, refreshCapabilities]),
   );
 
@@ -117,6 +120,29 @@ export default function Dashboard() {
   return (
     <Screen>
       {/* 1. Lo que impide que la app haga su trabajo. */}
+      {guard?.enabled && !guard.alive ? (
+        <>
+          <Notice tone="danger" title="El sistema detuvo la supervisión">
+            NEUROpass está configurado, pero Android cerró el vigilante y ahora mismo no está
+            bloqueando nada. Suele pasar en capas con ahorro de batería agresivo. Concede el inicio
+            automático y quita la restricción de batería para que no vuelva a ocurrir.
+          </Notice>
+          <Gap size="md" />
+          <Row gap="md">
+            <Button
+              label="Inicio automático"
+              variant="secondary"
+              onPress={async () => {
+                const opened = await screenTime.openAutostartSettings();
+                if (!opened) await screenTime.openBatterySettings();
+              }}
+            />
+            <Button label="Batería" variant="secondary" onPress={() => screenTime.openBatterySettings()} />
+          </Row>
+          <Gap size="xl" />
+        </>
+      ) : null}
+
       {blocking.length > 0 ? (
         <>
           <Notice tone="danger" title={`${blocking.length} permiso(s) sin conceder`}>

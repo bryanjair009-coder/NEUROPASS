@@ -146,9 +146,12 @@ export function pendingRequirements(
       key: 'batteryUnrestricted',
       title: 'Quitar la restricción de batería',
       explanation:
-        'Sin esta excepción, el sistema apaga la supervisión al cabo de unas horas y el control deja de aplicarse sin avisar. Es la causa más común de que una app así "deje de funcionar sola".',
+        'Sin esta excepción el sistema cierra la supervisión —en algunas capas, en cuanto sales de la app— y el control deja de aplicarse sin avisar a nadie. Verificado en un dispositivo con HyperOS: el bloqueo funcionaba una vez y no volvía a funcionar.',
+      // Marcado como necesario y no como recomendado: el modo de fallo es
+      // silencioso y total, así que tratarlo como un extra opcional es engañar
+      // a quien configura la app.
       action: (adapter) => adapter.openBatterySettings(),
-      blocking: false,
+      blocking: true,
     });
   }
 

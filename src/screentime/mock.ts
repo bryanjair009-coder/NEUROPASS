@@ -78,6 +78,11 @@ export const mockAdapter: ScreenTimeAdapter = {
     grant('batteryUnrestricted');
   },
 
+  async openAutostartSettings() {
+    // El simulador finge ser Android limpio, que no tiene esa pantalla.
+    return false;
+  },
+
   async requestNotificationPermission() {
     grant('notifications');
     return true;
@@ -133,12 +138,24 @@ export const mockAdapter: ScreenTimeAdapter = {
   async getGuardStatus(): Promise<GuardStatus> {
     const policy = state.policy;
     if (!policy || !state.guardRunning) {
-      return { running: false, foregroundPackage: '', blockedNow: false, reason: 'permitido' };
+      return {
+        running: false,
+        enabled: state.policy !== null,
+        alive: false,
+        lastHeartbeatAt: 0,
+        foregroundPackage: '',
+        blockedNow: false,
+        reason: 'permitido',
+      };
     }
 
     const unlocked = policy.unlockedUntil !== null && Date.now() < policy.unlockedUntil;
     return {
       running: true,
+      enabled: true,
+      alive: true,
+      // El simulador no muere nunca, así que late siempre ahora mismo.
+      lastHeartbeatAt: Date.now(),
       foregroundPackage: '',
       blockedNow: !unlocked,
       reason: unlocked ? 'permitido' : 'sin_tiempo',

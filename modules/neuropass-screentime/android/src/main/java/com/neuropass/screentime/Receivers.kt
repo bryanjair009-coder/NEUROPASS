@@ -56,8 +56,12 @@ class BootReceiver : BroadcastReceiver() {
         // Solo se relanza si el tutor tenía la supervisión activa: arrancar un
         // servicio en primer plano sin política que aplicar sería consumir
         // batería y mostrar una notificación permanente sin motivo.
+        // Tras un reinicio el sistema entrega este aviso con la app en segundo
+        // plano, así que el arranque puede ser rechazado; se programa además el
+        // vigilante para volver a intentarlo.
         if (PolicyStore(context).guardEnabled) {
-            GuardService.start(context)
+            GuardService.startSafely(context)
+            GuardWatchdog.schedule(context)
         }
     }
 }

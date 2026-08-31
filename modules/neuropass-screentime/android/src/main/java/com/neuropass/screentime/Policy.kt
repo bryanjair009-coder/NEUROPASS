@@ -166,6 +166,28 @@ class PolicyStore(context: Context) {
         get() = prefs.getBoolean(KEY_GUARD_ENABLED, false)
         set(value) = prefs.edit().putBoolean(KEY_GUARD_ENABLED, value).apply()
 
+    /**
+     * Marca de tiempo del último ciclo del guardián.
+     *
+     * Es la única forma de distinguir "supervisando" de "creímos que
+     * supervisábamos": si el sistema mata el servicio, nadie avisa a nadie, y
+     * sin este latido el panel del tutor seguiría diciendo que todo está bien.
+     * Se escribe con `commit()` y no con `apply()` porque el proceso puede
+     * morir en cualquier momento y una escritura asíncrona pendiente se
+     * perdería justo en el caso que interesa registrar.
+     */
+    var lastHeartbeatAt: Long
+        get() = prefs.getLong(KEY_HEARTBEAT, 0L)
+        @android.annotation.SuppressLint("ApplySharedPref")
+        set(value) {
+            prefs.edit().putLong(KEY_HEARTBEAT, value).commit()
+        }
+
+    /** Último paquete que el guardián vio en primer plano. Para diagnóstico. */
+    var lastForegroundPackage: String
+        get() = prefs.getString(KEY_LAST_FOREGROUND, "") ?: ""
+        set(value) = prefs.edit().putString(KEY_LAST_FOREGROUND, value).apply()
+
     companion object {
         private const val PREFS_NAME = "neuropass_screentime_policy"
         private const val KEY_PACKAGES = "blocked_packages"
@@ -175,6 +197,8 @@ class PolicyStore(context: Context) {
         private const val KEY_MESSAGE = "shield_message"
         private const val KEY_DEEP_LINK = "challenge_deep_link"
         private const val KEY_GUARD_ENABLED = "guard_enabled"
+        private const val KEY_HEARTBEAT = "last_heartbeat_at"
+        private const val KEY_LAST_FOREGROUND = "last_foreground_package"
         private const val KEY_WEEKDAY_MASK = "weekdayMask"
         private const val KEY_START_MINUTE = "startMinute"
         private const val KEY_END_MINUTE = "endMinute"

@@ -48,6 +48,17 @@ class GuardService : Service() {
 
     private var lastForegroundPackage: String = ""
 
+    /**
+     * Marca del evento de primer plano más reciente ya procesado.
+     *
+     * La ventana de consulta arranca aquí en vez de en un punto fijo respecto a
+     * "ahora". Con una ventana fija, cualquier ciclo que se retrase más que ella
+     * —por Doze, por presión de memoria o porque el sistema retuvo el reparto de
+     * eventos— pierde la transición para siempre, porque en el siguiente sondeo
+     * la app ya lleva rato en primer plano y no genera un evento nuevo.
+     */
+    private var lastEventCursor: Long = 0L
+
     private val tick = object : Runnable {
         override fun run() {
             val nextInterval = runCatching { evaluateOnce() }.getOrElse {
@@ -81,15 +92,31 @@ class GuardService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         handler.removeCallbacks(tick)
         handler.post(tick)
+        // El vigilante se reprograma en cada arranque: si el servicio murió y
+        // esta llamada viene de la alarma, la cadena se mantiene viva.
+        GuardWatchdog.schedule(this)
         // START_STICKY: si el sistema mata el servicio por presión de memoria,
         // debe volver. Es justo el escenario que un menor puede provocar
         // abriendo juegos pesados.
         return START_STICKY
     }
 
+    /**
+     * Deslizar la app fuera de recientes mata el servicio en la mayoría de las
+     * capas de fabricante. Es el gesto más común y menos técnico para desactivar
+     * un control parental, así que se reprograma el vigilante antes de morir.
+     */
+    override fun onTaskRemoved(rootIntent: Intent?) {
+        if (policyStore.guardEnabled) GuardWatchdog.schedule(this)
+        super.onTaskRemoved(rootIntent)
+    }
+
     override fun onDestroy() {
         handler.removeCallbacks(tick)
         overlay.hide()
+        // Si el guardián debía estar activo, su desaparición es un fallo, no un
+        // cierre ordenado: se deja programado el relanzamiento.
+        if (policyStore.guardEnabled) GuardWatchdog.schedule(this)
         super.onDestroy()
     }
 
@@ -97,6 +124,10 @@ class GuardService : Service() {
 
     /** Un ciclo de evaluación. Devuelve cuánto esperar hasta el siguiente. */
     private fun evaluateOnce(): Long {
+        // El latido se escribe antes de cualquier decisión: sirve para saber que
+        // el guardián sigue vivo, no que la evaluación haya salido bien.
+        policyStore.lastHeartbeatAt = System.currentTimeMillis()
+
         val policy = policyStore.load()
 
         if (policy.blockedPackages.isEmpty()) {
@@ -114,6 +145,7 @@ class GuardService : Service() {
 
         val changed = foreground != lastForegroundPackage
         lastForegroundPackage = foreground
+        policyStore.lastForegroundPackage = foreground
 
         return when (reason) {
             BlockReason.PERMITIDO -> {
@@ -134,21 +166,34 @@ class GuardService : Service() {
     }
 
     /**
-     * Paquete en primer plano según los eventos de uso recientes.
+     * Paquete en primer plano.
      *
-     * Se consulta una ventana amplia (no solo el último intervalo) porque
-     * `queryEvents` no garantiza entregar eventos con baja latencia; con una
-     * ventana corta se pierden transiciones y el bloqueo llega tarde.
+     * Dos reglas gobiernan esta función, y ambas nacen de fallos reales:
+     *
+     * 1. **La ventana arranca en el último evento visto**, no a una distancia
+     *    fija de "ahora". Con una ventana fija, un ciclo que se retrase más que
+     *    ella pierde la transición de forma permanente: la app ya está abierta y
+     *    no volverá a generar un evento de apertura.
+     *
+     * 2. **Ausencia de eventos significa "nada cambió", no "no hay nada".**
+     *    Antes se devolvía cadena vacía, que el evaluador interpreta como
+     *    permitido; el resultado era que el bloqueo se retiraba solo en cuanto
+     *    el reparto de eventos se atrasaba un poco. Ahora se conserva el último
+     *    paquete conocido, que es lo que de verdad implica no haber visto
+     *    ninguna transición.
      */
     private fun detectForegroundPackage(): String {
         val usageStats = getSystemService(Context.USAGE_STATS_SERVICE) as? UsageStatsManager
-            ?: return ""
+            ?: return lastForegroundPackage
 
         val now = System.currentTimeMillis()
-        val events = usageStats.queryEvents(now - EVENT_LOOKBACK_MS, now)
+        val from = maxOf(lastEventCursor + 1, now - MAX_LOOKBACK_MS)
+            .coerceAtMost(now - EVENT_LOOKBACK_MS)
+
+        val events = usageStats.queryEvents(from, now)
         val event = UsageEvents.Event()
         var latestPackage = ""
-        var latestTimestamp = 0L
+        var latestTimestamp = lastEventCursor
 
         while (events.hasNextEvent()) {
             events.getNextEvent(event)
@@ -160,8 +205,28 @@ class GuardService : Service() {
             }
         }
 
-        return latestPackage
+        if (latestPackage.isNotEmpty()) {
+            lastEventCursor = latestTimestamp
+            return latestPackage
+        }
+
+        // Sin eventos nuevos: si ya se sabía qué había en pantalla, sigue ahí.
+        if (lastForegroundPackage.isNotEmpty()) return lastForegroundPackage
+
+        // Arranque en frío del servicio, sin historial en memoria. Se recurre a
+        // las estadísticas agregadas, que sobreviven al reinicio del proceso y
+        // en varias capas de fabricante se actualizan antes que los eventos.
+        return mostRecentlyUsedPackage(usageStats, now)
     }
+
+    private fun mostRecentlyUsedPackage(usageStats: UsageStatsManager, now: Long): String =
+        runCatching {
+            usageStats
+                .queryUsageStats(UsageStatsManager.INTERVAL_DAILY, now - MAX_LOOKBACK_MS, now)
+                .maxByOrNull { it.lastTimeUsed }
+                ?.packageName
+                .orEmpty()
+        }.getOrDefault("")
 
     private fun buildNotification(): Notification {
         val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -216,8 +281,15 @@ class GuardService : Service() {
         /** Cadencia en reposo; el compromiso entre latencia y batería. */
         private const val IDLE_INTERVAL_MS = 3_000L
 
-        /** Ventana de eventos que se inspecciona en cada sondeo. */
+        /** Ventana mínima que se inspecciona en cada sondeo. */
         private const val EVENT_LOOKBACK_MS = 15_000L
+
+        /**
+         * Tope de la ventana de eventos. Acota el trabajo cuando el guardián
+         * lleva mucho tiempo sin ejecutarse —tras un reinicio o una muerte
+         * prolongada— en vez de recorrer el historial entero de uso.
+         */
+        private const val MAX_LOOKBACK_MS = 10 * 60_000L
 
         fun start(context: Context) {
             val intent = Intent(context, GuardService::class.java)
@@ -227,6 +299,13 @@ class GuardService : Service() {
                 context.startService(intent)
             }
         }
+
+        /**
+         * Arranque tolerante a fallos, para los puntos que se ejecutan en
+         * segundo plano. Devuelve si el servicio pudo lanzarse, de modo que
+         * quien llama pueda decidir sin tener que capturar la excepción.
+         */
+        fun startSafely(context: Context): Boolean = runCatching { start(context) }.isSuccess
 
         fun stop(context: Context) {
             context.stopService(Intent(context, GuardService::class.java))

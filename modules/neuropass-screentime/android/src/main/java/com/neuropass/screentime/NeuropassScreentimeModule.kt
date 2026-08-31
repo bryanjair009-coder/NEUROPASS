@@ -89,6 +89,46 @@ class NeuropassScreentimeModule : Module() {
             launchSettings(Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS))
         }
 
+        /**
+         * Abre la pantalla de inicio automático del fabricante.
+         *
+         * Ninguna capa expone este ajuste por API: hay que ir a la actividad
+         * concreta de cada una. Se prueban por orden y se cae a la ficha de la
+         * app si ninguna existe, que es lo que ocurre en Android limpio, donde
+         * el ajuste sencillamente no hace falta.
+         */
+        AsyncFunction("openAutostartSettings") {
+            val candidates = listOf(
+                "com.miui.securitycenter" to "com.miui.permcenter.autostart.AutoStartManagementActivity",
+                "com.huawei.systemmanager" to "com.huawei.systemmanager.startupmgr.ui.StartupNormalAppListActivity",
+                "com.coloros.safecenter" to "com.coloros.safecenter.startupapp.StartupAppListActivity",
+                "com.oppo.safe" to "com.oppo.safe.permission.startup.StartupAppListActivity",
+                "com.vivo.permissionmanager" to "com.vivo.permissionmanager.activity.BgStartUpManagerActivity",
+                "com.samsung.android.lool" to "com.samsung.android.sm.battery.ui.BatteryActivity",
+            )
+
+            val opened = candidates.any { (pkg, cls) ->
+                val intent = Intent().setComponent(ComponentName(pkg, cls))
+                if (context.packageManager.resolveActivity(intent, 0) == null) {
+                    false
+                } else {
+                    launchSettings(intent)
+                    true
+                }
+            }
+
+            if (!opened) {
+                launchSettings(
+                    Intent(
+                        Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                        Uri.parse("package:${context.packageName}"),
+                    )
+                )
+            }
+
+            opened
+        }
+
         AsyncFunction("requestNotificationPermission") {
             // En Android 13+ el permiso lo pide el propio contenedor de Expo a
             // través de expo-notifications; aquí solo se reporta el estado para
@@ -199,10 +239,15 @@ class NeuropassScreentimeModule : Module() {
 
             if (parsed.blockedPackages.isEmpty()) {
                 store.guardEnabled = false
+                GuardWatchdog.cancel(context)
                 GuardService.stop(context)
             } else {
                 store.guardEnabled = true
                 GuardService.start(context)
+                // El vigilante se programa aquí y no solo dentro del servicio:
+                // si el sistema impide arrancarlo en este momento, la alarma
+                // sigue siendo el camino de vuelta.
+                GuardWatchdog.schedule(context)
             }
         }
 
@@ -210,6 +255,7 @@ class NeuropassScreentimeModule : Module() {
             val store = PolicyStore(context)
             store.clear()
             store.guardEnabled = false
+            GuardWatchdog.cancel(context)
             GuardService.stop(context)
         }
 
@@ -222,9 +268,18 @@ class NeuropassScreentimeModule : Module() {
                 calendar = Calendar.getInstance(),
             )
 
+            // "Habilitado" y "vivo" son cosas distintas: el sistema puede haber
+            // matado el servicio sin avisar a nadie. El latido es lo único que
+            // distingue supervisar de creer que se supervisa.
+            val heartbeatAge = System.currentTimeMillis() - store.lastHeartbeatAt
+            val alive = store.lastHeartbeatAt > 0L && heartbeatAge < GuardWatchdog.HEARTBEAT_STALE_MS
+
             mapOf(
-                "running" to store.guardEnabled,
-                "foregroundPackage" to "",
+                "running" to (store.guardEnabled && alive),
+                "enabled" to store.guardEnabled,
+                "alive" to alive,
+                "lastHeartbeatAt" to store.lastHeartbeatAt,
+                "foregroundPackage" to store.lastForegroundPackage,
                 "blockedNow" to (reason != BlockReason.PERMITIDO),
                 "reason" to when (reason) {
                     BlockReason.PERMITIDO -> "permitido"

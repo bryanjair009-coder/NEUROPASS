@@ -104,7 +104,24 @@ export interface ScreenTimePolicy {
 }
 
 export interface GuardStatus {
+  /**
+   * El guardián está activo **y** dando señales de vida. Es la única bandera
+   * que la interfaz debe usar para decir "supervisando".
+   */
   readonly running: boolean;
+  /** El tutor tiene la supervisión configurada, viva o no. */
+  readonly enabled: boolean;
+  /**
+   * Hubo latido reciente.
+   *
+   * `enabled && !alive` es el caso que importa: el sistema mató el servicio sin
+   * avisar a nadie. Sin distinguirlo, el panel diría que todo va bien mientras
+   * el menor usa lo que quiere, que es exactamente el fallo que se vio en un
+   * dispositivo con HyperOS.
+   */
+  readonly alive: boolean;
+  /** Epoch ms del último ciclo del guardián; 0 si nunca se ejecutó. */
+  readonly lastHeartbeatAt: number;
   /** Paquete en primer plano en la última comprobación; vacío si se desconoce. */
   readonly foregroundPackage: string;
   readonly blockedNow: boolean;
@@ -126,6 +143,11 @@ export interface ScreenTimeAdapter {
   openUsageAccessSettings(): Promise<void>;
   openOverlaySettings(): Promise<void>;
   openBatterySettings(): Promise<void>;
+  /**
+   * Abre los ajustes de inicio automático del fabricante. Resuelve a `false`
+   * cuando la capa no tiene esa pantalla, que es el caso de Android limpio.
+   */
+  openAutostartSettings(): Promise<boolean>;
 
   requestNotificationPermission(): Promise<boolean>;
   /** Android: activa el administrador de dispositivo (antidesinstalación). */
