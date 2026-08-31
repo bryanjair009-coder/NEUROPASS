@@ -166,6 +166,28 @@ export default function SettingsScreen() {
 
         <Gap size="lg" />
         <Stepper
+          label="Avisar antes de que se acabe"
+          value={settings.rewardPolicy.expiryWarningMinutes}
+          min={0}
+          max={20}
+          step={1}
+          suffix=" min"
+          onChange={(expiryWarningMinutes) =>
+            patch(
+              { rewardPolicy: { ...settings.rewardPolicy, expiryWarningMinutes } },
+              `aviso previo: ${expiryWarningMinutes} min`,
+            )
+          }
+        />
+        <Gap size="sm" />
+        <Txt variant="caption" color={palette.textMuted}>
+          {settings.rewardPolicy.expiryWarningMinutes === 0
+            ? 'Sin aviso: el tiempo se corta sin previo aviso.'
+            : `Llega una notificación ${settings.rewardPolicy.expiryWarningMinutes} minutos antes para que pueda cerrar lo que esté haciendo.`}
+        </Txt>
+
+        <Gap size="lg" />
+        <Stepper
           label="Espera entre sesiones"
           value={settings.rewardPolicy.sessionCooldownMinutes}
           min={0}

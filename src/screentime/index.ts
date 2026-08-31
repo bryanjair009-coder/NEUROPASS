@@ -6,6 +6,7 @@ import nativeModule, {
 } from 'neuropass-screentime';
 
 import type { Schedule } from '@/data/repositories/policy';
+import { expiryWarningAt, type RewardPolicy } from '@/engine/economy';
 import { CHALLENGE_DEEP_LINK } from '@/lib/deeplink';
 import { mockAdapter } from './mock';
 
@@ -60,6 +61,8 @@ export function buildPolicy(input: {
   blockedPackages: readonly string[];
   unlockedUntil: number | null;
   schedules: readonly Schedule[];
+  rewardPolicy: RewardPolicy;
+  now?: number;
 }): ScreenTimePolicy {
   return {
     blockedPackages: input.blockedPackages,
@@ -68,6 +71,7 @@ export function buildPolicy(input: {
     shieldTitle: SHIELD_COPY.title,
     shieldMessage: SHIELD_COPY.message,
     challengeDeepLink: SHIELD_COPY.deepLink,
+    expiryWarningAt: expiryWarningAt(input.unlockedUntil, input.rewardPolicy, input.now ?? Date.now()),
   };
 }
 

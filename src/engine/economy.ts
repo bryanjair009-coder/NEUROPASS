@@ -40,6 +40,15 @@ export interface RewardPolicy {
   /** Factor que se aplica por cada sesión más allá del límite anterior. */
   readonly diminishingFactor: number;
   /**
+   * Minutos de antelación con los que se avisa de que el tiempo se acaba.
+   * `0` desactiva el aviso.
+   *
+   * Vive en esta política y no en una columna propia porque se persiste con
+   * ella en el mismo JSON, y porque forma parte de las mismas reglas de tiempo:
+   * cuánto se gana, cuánto se puede gastar y con cuánto margen se avisa.
+   */
+  readonly expiryWarningMinutes: number;
+  /**
    * Hora local en la que empieza un nuevo día contable (0–23). Se usa 4 y no 0
    * para que la actividad de la madrugada cuente al día anterior, que es como
    * lo entiende una familia.
@@ -57,7 +66,37 @@ export const DEFAULT_REWARD_POLICY: RewardPolicy = {
   fullRateSessionsPerDay: 3,
   diminishingFactor: 0.6,
   dayResetHour: 4,
+  // Cinco minutos: suficiente para terminar una partida o guardar el progreso.
+  // Cortar sin aviso es la causa más citada de que un control parental acabe
+  // desinstalado, y el objetivo de NEUROpass es que el límite se respete, no
+  // que se sufra.
+  expiryWarningMinutes: 5,
 };
+
+/**
+ * Instante en el que debe sonar el aviso de "se acaba el tiempo", o `null` si
+ * no procede avisar.
+ *
+ * Se calcula aquí, en TypeScript, y no en el código nativo: la parte nativa se
+ * limita a programar una alarma en el instante que se le indique. Así la regla
+ * es única, se puede probar bajo Node y no hay que replicarla en Kotlin y en
+ * Swift, que es como la lógica de horarios acabó triplicada.
+ *
+ * No se avisa cuando el margen ya pasó. Si a un menor se le conceden tres
+ * minutos y el aviso es de cinco, disparar la notificación de inmediato solo
+ * añadiría ruido: acaba de ver en pantalla cuánto tiempo tiene.
+ */
+export function expiryWarningAt(
+  unlockedUntil: number | null,
+  policy: RewardPolicy,
+  now: number,
+): number | null {
+  if (unlockedUntil === null) return null;
+  if (policy.expiryWarningMinutes <= 0) return null;
+
+  const warningAt = unlockedUntil - policy.expiryWarningMinutes * 60_000;
+  return warningAt > now ? warningAt : null;
+}
 
 /** Acumulado del día contable en curso. */
 export interface DailyLedger {

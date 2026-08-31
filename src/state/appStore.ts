@@ -136,11 +136,17 @@ export const useAppStore = create<AppState>((set, get) => ({
       unlockedUntil(childId),
     ]);
 
+    // La política de recompensa aporta la antelación del aviso de fin de
+    // tiempo. Se toma del estado si ya está cargada y, si no, de la base: este
+    // método también se invoca desde flujos que aún no han refrescado al menor.
+    const rewardPolicy = get().settings?.rewardPolicy ?? (await getSettings(childId)).rewardPolicy;
+
     await screenTime.applyPolicy(
       buildPolicy({
         blockedPackages: blocked.map((app) => app.packageName),
         unlockedUntil: until,
         schedules,
+        rewardPolicy,
       }),
     );
 

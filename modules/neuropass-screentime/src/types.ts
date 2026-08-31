@@ -101,6 +101,12 @@ export interface ScreenTimePolicy {
   readonly shieldMessage: string;
   /** Enlace profundo que abre la sesión de retos desde la pantalla de bloqueo. */
   readonly challengeDeepLink: string;
+  /**
+   * Instante en el que avisar de que el tiempo está por acabarse, o `null` si
+   * no procede. Lo calcula `expiryWarningAt`; la plataforma solo programa una
+   * alarma para ese momento, sin decidir nada.
+   */
+  readonly expiryWarningAt: number | null;
 }
 
 export interface GuardStatus {

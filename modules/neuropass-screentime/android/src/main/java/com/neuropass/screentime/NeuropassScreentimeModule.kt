@@ -237,6 +237,15 @@ class NeuropassScreentimeModule : Module() {
             val parsed = parsePolicy(policy)
             store.save(parsed)
 
+            // El aviso se reprograma en cada aplicación de política: es la única
+            // forma de que siga siendo correcto cuando el menor gana más tiempo
+            // o el tutor se lo corta.
+            TimeWarning.schedule(
+                context,
+                (policy["expiryWarningAt"] as? Number)?.toLong(),
+                parsed.unlockedUntil,
+            )
+
             if (parsed.blockedPackages.isEmpty()) {
                 store.guardEnabled = false
                 GuardWatchdog.cancel(context)
@@ -256,6 +265,7 @@ class NeuropassScreentimeModule : Module() {
             store.clear()
             store.guardEnabled = false
             GuardWatchdog.cancel(context)
+            TimeWarning.cancel(context)
             GuardService.stop(context)
         }
 

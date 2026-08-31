@@ -49,6 +49,10 @@
         android:exported="false" />
 
     <receiver
+        android:name=".TimeWarningReceiver"
+        android:exported="false" />
+
+    <receiver
         android:name=".BootReceiver"
         android:exported="true"
         android:enabled="true">
