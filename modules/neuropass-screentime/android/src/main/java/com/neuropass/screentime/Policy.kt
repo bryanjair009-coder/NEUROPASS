@@ -42,7 +42,10 @@ data class Policy(
             scheduleWindows = emptyList(),
             shieldTitle = "Tiempo de juego agotado",
             shieldMessage = "Resuelve unos retos en NEUROpass para desbloquear más tiempo.",
-            challengeDeepLink = "neuropass://child/session",
+            // Solo es el valor por omisión: en cuanto el tutor guarda una política, el
+            // enlace real llega desde TypeScript. Aun así debe ser válido, porque es
+            // el que se usa si el guardián arranca antes de que exista política.
+            challengeDeepLink = "neuropass://session",
         )
     }
 }

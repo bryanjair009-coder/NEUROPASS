@@ -6,6 +6,7 @@ import nativeModule, {
 } from 'neuropass-screentime';
 
 import type { Schedule } from '@/data/repositories/policy';
+import { CHALLENGE_DEEP_LINK } from '@/lib/deeplink';
 import { mockAdapter } from './mock';
 
 export type {
@@ -52,7 +53,7 @@ export function toScheduleWindows(schedules: readonly Schedule[]): ScheduleWindo
 export const SHIELD_COPY = {
   title: 'Se acabó el tiempo de juego',
   message: 'Resuelve unos retos en NEUROpass y desbloquea más tiempo.',
-  deepLink: 'neuropass://child/session',
+  deepLink: CHALLENGE_DEEP_LINK,
 } as const;
 
 export function buildPolicy(input: {
