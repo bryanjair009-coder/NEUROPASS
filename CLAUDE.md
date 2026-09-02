@@ -73,6 +73,6 @@ por categorías temáticas.
 
 ## Estado
 
-Núcleo completo, 481 pruebas en verde, el bundle de Android compila. Falta
-compilar y probar el nativo en un dispositivo real, y el entitlement de Apple.
+Núcleo completo, 512 pruebas en verde, el APK de Android compila y se ha
+probado en un dispositivo real. Falta el entitlement de Apple.
 La lista exacta está en la sección «Qué falta» del README.

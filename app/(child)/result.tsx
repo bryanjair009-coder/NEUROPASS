@@ -29,7 +29,7 @@ export default function ResultScreen() {
   const perfect = total > 0 && correct === total;
 
   return (
-    <Screen scroll={false}>
+    <Screen footer={<Button label="Volver al inicio" onPress={() => router.replace('/(child)/home')} />}>
       <View style={styles.center}>
         <Txt style={styles.emoji}>{minutes > 0 ? (perfect ? '🏆' : '🎉') : '💪'}</Txt>
 
@@ -74,9 +74,6 @@ export default function ResultScreen() {
           </>
         ) : null}
       </View>
-
-      <Button label="Volver al inicio" onPress={() => router.replace('/(child)/home')} />
-      <Gap size="lg" />
     </Screen>
   );
 }

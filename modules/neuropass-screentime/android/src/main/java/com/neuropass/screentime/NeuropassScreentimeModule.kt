@@ -291,6 +291,7 @@ class NeuropassScreentimeModule : Module() {
                 "lastHeartbeatAt" to store.lastHeartbeatAt,
                 "foregroundPackage" to store.lastForegroundPackage,
                 "blockedNow" to (reason != BlockReason.PERMITIDO),
+                "paused" to PolicyEvaluator.isPaused(policy, System.currentTimeMillis()),
                 "reason" to when (reason) {
                     BlockReason.PERMITIDO -> "permitido"
                     BlockReason.SIN_TIEMPO -> "sin_tiempo"
@@ -314,6 +315,8 @@ class NeuropassScreentimeModule : Module() {
 
         return Policy(
             blockedPackages = (raw["blockedPackages"] as? List<String>).orEmpty().toSet(),
+            // `null` desde JS es "sin pausa"; un 0 es una pausa indefinida.
+            pausedUntil = (raw["pausedUntil"] as? Number)?.toLong() ?: Policy.SIN_PAUSA,
             // JS entrega `null` cuando no hay tiempo desbloqueado; se traduce
             // a 0, que es "ya caducado" para el evaluador.
             unlockedUntil = (raw["unlockedUntil"] as? Number)?.toLong() ?: 0L,

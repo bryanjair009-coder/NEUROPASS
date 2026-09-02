@@ -28,7 +28,9 @@ import {
   Screen,
   Txt,
 } from '@/ui/components/primitives';
+import { PAUSE_DURATIONS, type ParentPause } from '@/engine/parentMode';
 import { palette, pillarColor, space } from '@/ui/theme';
+import { formatCountdown } from '@/ui/format';
 import { useNow } from '@/ui/useNow';
 
 import { useParentSession } from './_layout';
@@ -58,6 +60,9 @@ export default function Dashboard() {
   const [sessions, setSessions] = useState<SessionSummary[]>([]);
   const [blockedApps, setBlockedApps] = useState<BlockedApp[]>([]);
   const [guard, setGuard] = useState<GuardStatus | null>(null);
+  const parentPause = useAppStore((state) => state.parentPause);
+  const pauseForParent = useAppStore((state) => state.pauseForParent);
+  const resumeChild = useAppStore((state) => state.resumeChild);
   const [busy, setBusy] = useState(false);
   const now = useNow(5_000);
 
@@ -200,10 +205,36 @@ export default function Dashboard() {
           </View>
         </Row>
         <Badge
-          label={playing ? 'Jugando' : 'Bloqueado'}
-          color={playing ? palette.success : palette.textMuted}
+          label={parentPause ? 'En pausa' : playing ? 'Jugando' : 'Bloqueado'}
+          color={parentPause ? palette.warning : playing ? palette.success : palette.textMuted}
         />
       </Row>
+
+      <Gap size="lg" />
+
+      <ParentModeCard
+        pause={parentPause}
+        now={now}
+        busy={busy}
+        onPause={async (minutes) => {
+          setBusy(true);
+          try {
+            await pauseForParent(minutes);
+            await audit('modo_adulto_activado', minutes === null ? 'sin límite' : `${minutes} min`, child.id);
+          } finally {
+            setBusy(false);
+          }
+        }}
+        onResume={async () => {
+          setBusy(true);
+          try {
+            await resumeChild();
+            await audit('modo_adulto_terminado', '', child.id);
+          } finally {
+            setBusy(false);
+          }
+        }}
+      />
 
       <Gap size="lg" />
 
@@ -352,6 +383,76 @@ export default function Dashboard() {
 
 // ---------------------------------------------------------------------------
 
+/**
+ * Modo adulto.
+ *
+ * El teléfono casi nunca es del menor: se lo prestan. Cuando el adulto lo
+ * recupera, sin esta pausa pasan dos cosas indeseables a la vez: el tiempo que
+ * el menor ganó se sigue consumiendo aunque no lo esté disfrutando, y la app
+ * bloquea aplicaciones y pide resolver retos al adulto en su propio teléfono.
+ *
+ * La tarjeta vive arriba, junto al estado del menor, porque en una familia que
+ * comparte dispositivo esta es la acción más frecuente del día.
+ */
+function ParentModeCard({
+  pause,
+  now,
+  busy,
+  onPause,
+  onResume,
+}: {
+  pause: ParentPause | null;
+  now: number;
+  busy: boolean;
+  onPause: (minutes: number | null) => void;
+  onResume: () => void;
+}) {
+  if (pause) {
+    const restante = pause.pausedUntil === null ? null : Math.max(0, pause.pausedUntil - now);
+
+    return (
+      <Card raised style={styles.parentMode}>
+        <Row gap="md">
+          <Txt style={styles.parentModeIcon}>⏸️</Txt>
+          <View style={styles.parentModeText}>
+            <Txt variant="bodyStrong">Tienes el teléfono</Txt>
+            <Txt variant="caption" color={palette.textMuted}>
+              {restante === null
+                ? 'Sin límite. El tiempo del menor está congelado hasta que se lo devuelvas.'
+                : `Se reanuda solo en ${formatCountdown(restante)}. Su tiempo está congelado.`}
+            </Txt>
+          </View>
+        </Row>
+        <Gap size="md" />
+        <Button label="Devolver el teléfono" onPress={onResume} disabled={busy} />
+      </Card>
+    );
+  }
+
+  return (
+    <Card>
+      <Txt variant="bodyStrong">¿Necesitas el teléfono?</Txt>
+      <Gap size="xs" />
+      <Txt variant="caption" color={palette.textMuted}>
+        Congela el tiempo del menor y quita el bloqueo mientras lo usas tú. No pierde ni un minuto
+        de lo que ya ganó.
+      </Txt>
+      <Gap size="md" />
+      <View style={styles.pauseOptions}>
+        {PAUSE_DURATIONS.map((minutes) => (
+          <Button
+            key={minutes ?? 'sin-limite'}
+            label={minutes === null ? 'Sin límite' : `${minutes} min`}
+            variant="secondary"
+            disabled={busy}
+            onPress={() => onPause(minutes)}
+          />
+        ))}
+      </View>
+    </Card>
+  );
+}
+
 function Metric({ label, value }: { label: string; value: string }) {
   return (
     <View style={styles.metric}>
@@ -391,6 +492,10 @@ function NavRow({
 }
 
 const styles = StyleSheet.create({
+  parentMode: { borderColor: palette.warning, borderWidth: 1 },
+  parentModeIcon: { fontSize: 30 },
+  parentModeText: { flex: 1 },
+  pauseOptions: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
   avatar: { fontSize: 36 },
   requirement: { marginBottom: space.md },
   metric: { alignItems: 'center', flex: 1 },

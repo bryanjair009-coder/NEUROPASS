@@ -7,6 +7,7 @@ import nativeModule, {
 
 import type { Schedule } from '@/data/repositories/policy';
 import { expiryWarningAt, type RewardPolicy } from '@/engine/economy';
+import type { ParentPause } from '@/engine/parentMode';
 import { CHALLENGE_DEEP_LINK } from '@/lib/deeplink';
 import { mockAdapter } from './mock';
 
@@ -62,6 +63,7 @@ export function buildPolicy(input: {
   unlockedUntil: number | null;
   schedules: readonly Schedule[];
   rewardPolicy: RewardPolicy;
+  pause: ParentPause | null;
   now?: number;
 }): ScreenTimePolicy {
   return {
@@ -72,6 +74,10 @@ export function buildPolicy(input: {
     shieldMessage: SHIELD_COPY.message,
     challengeDeepLink: SHIELD_COPY.deepLink,
     expiryWarningAt: expiryWarningAt(input.unlockedUntil, input.rewardPolicy, input.now ?? Date.now()),
+    // Una pausa indefinida viaja como 0 porque el lado nativo no distingue
+    // "sin valor" de "sin límite" con un solo número; 0 nunca es un instante
+    // válido en este contexto.
+    pausedUntil: input.pause === null ? null : (input.pause.pausedUntil ?? 0),
   };
 }
 

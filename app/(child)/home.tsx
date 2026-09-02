@@ -7,6 +7,7 @@ import type { Child } from '@/data/repositories/children';
 import { pillarStats, type PillarStat } from '@/data/repositories/progress';
 import { canStartSession, type SessionGate } from '@/engine/economy';
 import { masteryPercent } from '@/engine/mastery';
+import { frozenRemainingMs, type ParentPause } from '@/engine/parentMode';
 import { useActiveChild, useAppStore } from '@/state/appStore';
 import { isSimulated } from '@/screentime';
 import {
@@ -20,6 +21,7 @@ import {
   Txt,
 } from '@/ui/components/primitives';
 import { palette, pillarColor, radius, shadow, space } from '@/ui/theme';
+import { formatCountdown } from '@/ui/format';
 import { useNow } from '@/ui/useNow';
 
 /**
@@ -38,6 +40,7 @@ export default function ChildHome() {
   const settings = useAppStore((state) => state.settings);
   const ledger = useAppStore((state) => state.ledger);
   const unlockedUntil = useAppStore((state) => state.unlockedUntil);
+  const parentPause = useAppStore((state) => state.parentPause);
   const refresh = useAppStore((state) => state.refreshActiveChild);
 
   const [stats, setStats] = useState<PillarStat[]>([]);
@@ -70,7 +73,14 @@ export default function ChildHome() {
   }
 
   const gate = canStartSession(ledger, settings.rewardPolicy, now);
-  const remainingMs = unlockedUntil ? unlockedUntil - now : 0;
+  // Durante el modo adulto el vencimiento ya está desplazado, así que restarle
+  // "ahora" daría un número que no significa nada para el menor. Lo que se le
+  // muestra es lo que recuperará cuando le devuelvan el teléfono.
+  const remainingMs = parentPause
+    ? frozenRemainingMs(parentPause, unlockedUntil, now)
+    : unlockedUntil
+      ? unlockedUntil - now
+      : 0;
   const hasTime = remainingMs > 0;
 
   return (
@@ -104,7 +114,7 @@ export default function ChildHome() {
 
       <Gap size="xl" />
 
-      <TimeCard remainingMs={remainingMs} hasTime={hasTime} />
+      <TimeCard remainingMs={remainingMs} hasTime={hasTime} pause={parentPause} />
 
       <Gap size="lg" />
 
@@ -189,17 +199,32 @@ function ChildPicker({
   );
 }
 
-function TimeCard({ remainingMs, hasTime }: { remainingMs: number; hasTime: boolean }) {
+function TimeCard({
+  remainingMs,
+  hasTime,
+  pause,
+}: {
+  remainingMs: number;
+  hasTime: boolean;
+  pause: ParentPause | null;
+}) {
   return (
-    <Card raised style={[styles.timeCard, hasTime && styles.timeCardActive]}>
+    <Card raised style={[styles.timeCard, hasTime && !pause && styles.timeCardActive]}>
       <Txt variant="caption" color={palette.textMuted} align="center">
-        {hasTime ? 'Tiempo de juego disponible' : 'No tienes tiempo desbloqueado'}
+        {/* Sin este aviso, el menor ve una cuenta atrás detenida y concluye que
+            la app se rompió. Decirlo evita además que crea que perdió el tiempo
+            que había ganado. */}
+        {pause
+          ? '⏸️  En pausa · tu tiempo está guardado'
+          : hasTime
+            ? 'Tiempo de juego disponible'
+            : 'No tienes tiempo desbloqueado'}
       </Txt>
       <Gap size="sm" />
       <Txt
         variant="display"
         align="center"
-        color={hasTime ? palette.success : palette.textFaint}
+        color={pause ? palette.warning : hasTime ? palette.success : palette.textFaint}
         style={styles.timeValue}
       >
         {formatCountdown(remainingMs)}
@@ -241,17 +266,6 @@ function SessionCallToAction({ gate, sessionSize }: { gate: SessionGate; session
 }
 
 /** mm:ss por debajo de una hora, h:mm por encima. */
-function formatCountdown(ms: number): string {
-  const total = Math.max(0, Math.ceil(ms / 1000));
-  const hours = Math.floor(total / 3600);
-  const minutes = Math.floor((total % 3600) / 60);
-  const seconds = total % 60;
-
-  return hours > 0
-    ? `${hours}:${String(minutes).padStart(2, '0')}`
-    : `${minutes}:${String(seconds).padStart(2, '0')}`;
-}
-
 const styles = StyleSheet.create({
   avatar: { fontSize: 40 },
   parentAccess: {

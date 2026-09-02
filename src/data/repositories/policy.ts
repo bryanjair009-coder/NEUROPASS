@@ -162,7 +162,9 @@ export type AuditAction =
   | 'tiempo_concedido'
   | 'tiempo_revocado'
   | 'datos_borrados'
-  | 'datos_exportados';
+  | 'datos_exportados'
+  | 'modo_adulto_activado'
+  | 'modo_adulto_terminado';
 
 /** Registra una acción del tutor. Nunca registra actividad del menor. */
 export async function audit(action: AuditAction, detail = '', childId?: string): Promise<void> {

@@ -107,6 +107,16 @@ export interface ScreenTimePolicy {
    * alarma para ese momento, sin decidir nada.
    */
   readonly expiryWarningAt: number | null;
+  /**
+   * Modo adulto: mientras esté activo no se bloquea nada.
+   *
+   * `null` significa que no hay pausa. Un número es el instante en que la pausa
+   * se levanta sola; `0` es una pausa indefinida, que solo termina cuando el
+   * adulto lo indica. Se envía el instante y no solo una bandera para que el
+   * guardián pueda reanudar el bloqueo por su cuenta, sin depender de que
+   * alguien vuelva a abrir la app.
+   */
+  readonly pausedUntil: number | null;
 }
 
 export interface GuardStatus {
@@ -131,6 +141,8 @@ export interface GuardStatus {
   /** Paquete en primer plano en la última comprobación; vacío si se desconoce. */
   readonly foregroundPackage: string;
   readonly blockedNow: boolean;
+  /** El adulto tiene el teléfono: no se bloquea nada y el tiempo no corre. */
+  readonly paused: boolean;
   readonly reason: 'permitido' | 'sin_tiempo' | 'horario_protegido' | 'desconocido';
 }
 

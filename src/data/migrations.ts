@@ -159,6 +159,24 @@ export const MIGRATIONS: readonly Migration[] = [
       `CREATE INDEX idx_audit_time ON audit_log (created_at DESC)`,
     ],
   },
+
+  {
+    version: 2,
+    name: 'modo_adulto',
+    statements: [
+      // Modo adulto: el teléfono suele ser del padre o la madre, no del menor.
+      // Mientras la pausa está activa no se bloquea nada y el tiempo ganado no
+      // se consume.
+      //
+      // Una fila por menor, y su sola presencia significa "en pausa": no hace
+      // falta una bandera aparte que pueda contradecir a la fila.
+      `CREATE TABLE parent_mode (
+        child_id     TEXT PRIMARY KEY NOT NULL REFERENCES children(id) ON DELETE CASCADE,
+        paused_at    INTEGER NOT NULL,
+        paused_until INTEGER
+      )`,
+    ],
+  },
 ];
 
 export const TARGET_SCHEMA_VERSION = MIGRATIONS.reduce(

@@ -144,6 +144,7 @@ export const mockAdapter: ScreenTimeAdapter = {
         alive: false,
         lastHeartbeatAt: 0,
         foregroundPackage: '',
+        paused: false,
         blockedNow: false,
         reason: 'permitido',
       };
@@ -157,6 +158,7 @@ export const mockAdapter: ScreenTimeAdapter = {
       // El simulador no muere nunca, así que late siempre ahora mismo.
       lastHeartbeatAt: Date.now(),
       foregroundPackage: '',
+      paused: state.policy?.pausedUntil != null,
       blockedNow: !unlocked,
       reason: unlocked ? 'permitido' : 'sin_tiempo',
     };

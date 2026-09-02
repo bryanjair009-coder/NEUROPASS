@@ -30,15 +30,32 @@ data class Policy(
     val blockedPackages: Set<String>,
     /** Epoch ms hasta el que el ocio está permitido; 0 si no hay tiempo desbloqueado. */
     val unlockedUntil: Long,
+    /**
+     * Modo adulto. `-1` significa que no hay pausa, `0` que es indefinida y
+     * cualquier otro valor es el instante en que se levanta sola.
+     *
+     * El instante viaja hasta aquí, en vez de una simple bandera, para que el
+     * guardián pueda reanudar el bloqueo por su cuenta cuando la pausa venza.
+     * Si dependiera de que alguien abriera la app, olvidar el teléfono en manos
+     * del menor dejaría la supervisión desactivada de forma indefinida.
+     */
+    val pausedUntil: Long,
     val scheduleWindows: List<ScheduleWindow>,
     val shieldTitle: String,
     val shieldMessage: String,
     val challengeDeepLink: String,
 ) {
     companion object {
+        /** Valor de `pausedUntil` cuando no hay ninguna pausa activa. */
+        const val SIN_PAUSA = -1L
+
+        /** Valor de `pausedUntil` para una pausa que solo termina a mano. */
+        const val PAUSA_INDEFINIDA = 0L
+
         val EMPTY = Policy(
             blockedPackages = emptySet(),
             unlockedUntil = 0L,
+            pausedUntil = SIN_PAUSA,
             scheduleWindows = emptyList(),
             shieldTitle = "Tiempo de juego agotado",
             shieldMessage = "Resuelve unos retos en NEUROpass para desbloquear más tiempo.",
@@ -73,6 +90,19 @@ object PolicyEvaluator {
     }
 
     /**
+     * Si el teléfono lo está usando el adulto.
+     *
+     * Gana a todo lo demás, horarios protegidos incluidos: durante la pausa el
+     * dispositivo no está en manos del menor, así que aplicarle sus límites no
+     * tendría ningún sentido.
+     */
+    fun isPaused(policy: Policy, nowMs: Long): Boolean = when (policy.pausedUntil) {
+        Policy.SIN_PAUSA -> false
+        Policy.PAUSA_INDEFINIDA -> true
+        else -> nowMs < policy.pausedUntil
+    }
+
+    /**
      * Estado del ocio ahora mismo, sin referirse a ninguna app concreta.
      *
      * Es lo que necesita el panel del tutor para decir "jugando" o "bloqueado".
@@ -81,6 +111,8 @@ object PolicyEvaluator {
      * plano", no para "dime cómo está el sistema".
      */
     fun currentState(policy: Policy, nowMs: Long, calendar: Calendar): BlockReason {
+        if (isPaused(policy, nowMs)) return BlockReason.PERMITIDO
+
         if (isWithinProtectedWindow(policy.scheduleWindows, calendar)) {
             return BlockReason.HORARIO_PROTEGIDO
         }
@@ -124,6 +156,7 @@ class PolicyStore(context: Context) {
         prefs.edit()
             .putStringSet(KEY_PACKAGES, policy.blockedPackages)
             .putLong(KEY_UNLOCKED_UNTIL, policy.unlockedUntil)
+            .putLong(KEY_PAUSED_UNTIL, policy.pausedUntil)
             .putString(KEY_WINDOWS, windows.toString())
             .putString(KEY_TITLE, policy.shieldTitle)
             .putString(KEY_MESSAGE, policy.shieldMessage)
@@ -152,6 +185,7 @@ class PolicyStore(context: Context) {
         return Policy(
             blockedPackages = prefs.getStringSet(KEY_PACKAGES, emptySet()) ?: emptySet(),
             unlockedUntil = prefs.getLong(KEY_UNLOCKED_UNTIL, 0L),
+            pausedUntil = prefs.getLong(KEY_PAUSED_UNTIL, Policy.SIN_PAUSA),
             scheduleWindows = windows,
             shieldTitle = prefs.getString(KEY_TITLE, Policy.EMPTY.shieldTitle) ?: Policy.EMPTY.shieldTitle,
             shieldMessage = prefs.getString(KEY_MESSAGE, Policy.EMPTY.shieldMessage) ?: Policy.EMPTY.shieldMessage,
@@ -195,6 +229,7 @@ class PolicyStore(context: Context) {
         private const val PREFS_NAME = "neuropass_screentime_policy"
         private const val KEY_PACKAGES = "blocked_packages"
         private const val KEY_UNLOCKED_UNTIL = "unlocked_until"
+        private const val KEY_PAUSED_UNTIL = "paused_until"
         private const val KEY_WINDOWS = "schedule_windows"
         private const val KEY_TITLE = "shield_title"
         private const val KEY_MESSAGE = "shield_message"
