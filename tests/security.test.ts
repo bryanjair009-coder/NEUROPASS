@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 
 import {
   KDF_ITERATIONS,
@@ -21,7 +21,11 @@ const SALT = Uint8Array.from({ length: 16 }, (_, i) => i * 7 + 3);
 
 // Derivar con 60 000 iteraciones cuesta cientos de milisegundos; se reutiliza
 // un único registro en los casos que no dependen de crearlo de nuevo.
-const record = createPinRecord('482913', SALT, 1_700_000_000_000);
+let record: PinRecord;
+
+beforeAll(async () => {
+  record = await createPinRecord('482913', SALT, 1_700_000_000_000);
+});
 
 describe('política de PIN', () => {
   it('acepta un PIN razonable', () => {
@@ -75,33 +79,33 @@ describe('derivación y verificación del PIN', () => {
     expect(JSON.stringify(record)).not.toContain('482913');
   });
 
-  it('acepta el PIN correcto y rechaza los demás', () => {
-    expect(verifyPin('482913', record)).toBe(true);
-    expect(verifyPin('482914', record)).toBe(false);
-    expect(verifyPin('', record)).toBe(false);
-    expect(verifyPin('4829130', record)).toBe(false);
+  it('acepta el PIN correcto y rechaza los demás', async () => {
+    expect(await verifyPin('482913', record)).toBe(true);
+    expect(await verifyPin('482914', record)).toBe(false);
+    expect(await verifyPin('', record)).toBe(false);
+    expect(await verifyPin('4829130', record)).toBe(false);
   });
 
-  it('la misma sal y el mismo PIN producen el mismo derivado', () => {
-    expect(createPinRecord('482913', SALT, 0).hashHex).toBe(record.hashHex);
+  it('la misma sal y el mismo PIN producen el mismo derivado', async () => {
+    expect((await createPinRecord('482913', SALT, 0)).hashHex).toBe(record.hashHex);
   });
 
-  it('sales distintas producen derivados distintos para el mismo PIN', () => {
+  it('sales distintas producen derivados distintos para el mismo PIN', async () => {
     const otherSalt = Uint8Array.from({ length: 16 }, (_, i) => i + 200);
-    expect(createPinRecord('482913', otherSalt, 0).hashHex).not.toBe(record.hashHex);
+    expect((await createPinRecord('482913', otherSalt, 0)).hashHex).not.toBe(record.hashHex);
   });
 
-  it('exige una sal de tamaño suficiente', () => {
-    expect(() => createPinRecord('482913', Uint8Array.from([1, 2, 3]))).toThrow(RangeError);
+  it('exige una sal de tamaño suficiente', async () => {
+    await expect(createPinRecord('482913', Uint8Array.from([1, 2, 3]))).rejects.toThrow(RangeError);
   });
 
-  it('rechaza un registro corrupto en vez de lanzar', () => {
+  it('rechaza un registro corrupto en vez de lanzar', async () => {
     const corrupted: PinRecord = { ...record, hashHex: 'no-es-hexadecimal' };
-    expect(verifyPin('482913', corrupted)).toBe(false);
+    expect(await verifyPin('482913', corrupted)).toBe(false);
   });
 
-  it('rechaza un registro de una versión desconocida', () => {
-    expect(verifyPin('482913', { ...record, version: 99 })).toBe(false);
+  it('rechaza un registro de una versión desconocida', async () => {
+    expect(await verifyPin('482913', { ...record, version: 99 })).toBe(false);
   });
 
   it('detecta registros que necesitan regenerarse', () => {

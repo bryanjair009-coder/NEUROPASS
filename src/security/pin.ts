@@ -1,4 +1,5 @@
-import { fromHex, pbkdf2Sha256, timingSafeEqual, toHex, utf8Bytes } from '@/lib/crypto/sha256';
+import { fromHex, timingSafeEqual, toHex } from '@/lib/crypto/sha256';
+import { deriveKey } from '@/security/kdf';
 
 /**
  * PIN del tutor.
@@ -127,12 +128,16 @@ function looksLikeYear(pin: string): boolean {
  * de forma determinista; en producción siempre proviene del CSPRNG del sistema
  * (ver `security/pinStore.ts`).
  */
-export function createPinRecord(pin: string, salt: Uint8Array, now = Date.now()): PinRecord {
+export async function createPinRecord(
+  pin: string,
+  salt: Uint8Array,
+  now = Date.now(),
+): Promise<PinRecord> {
   if (salt.length < KDF_SALT_BYTES) {
     throw new RangeError(`La sal debe tener al menos ${KDF_SALT_BYTES} bytes`);
   }
 
-  const hash = pbkdf2Sha256(utf8Bytes(pin), salt, KDF_ITERATIONS, KDF_KEY_BYTES);
+  const hash = await deriveKey(pin, salt, KDF_ITERATIONS, KDF_KEY_BYTES);
 
   return {
     version: KDF_VERSION,
@@ -150,7 +155,7 @@ export function createPinRecord(pin: string, salt: Uint8Array, now = Date.now())
  * —no las actuales— para que subir `KDF_ITERATIONS` no invalide los PINs ya
  * configurados.
  */
-export function verifyPin(pin: string, record: PinRecord): boolean {
+export async function verifyPin(pin: string, record: PinRecord): Promise<boolean> {
   if (record.version !== KDF_VERSION) return false;
 
   let salt: Uint8Array;
@@ -163,7 +168,7 @@ export function verifyPin(pin: string, record: PinRecord): boolean {
     return false;
   }
 
-  const candidate = pbkdf2Sha256(utf8Bytes(pin), salt, record.iterations, expected.length);
+  const candidate = await deriveKey(pin, salt, record.iterations, expected.length);
   return timingSafeEqual(candidate, expected);
 }
 

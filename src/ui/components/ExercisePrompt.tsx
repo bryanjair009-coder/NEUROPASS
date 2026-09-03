@@ -3,11 +3,12 @@ import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import type { Exercise, ExerciseResponse, Grade, SequenceToken } from '@/domain/exercise';
 import { distinctWords } from '@/engine/grading';
+import { Bubble } from '@/ui/components/Bubble';
 import { Button, Gap, Row, Txt } from '@/ui/components/primitives';
+import { DEFAULT_ACCENT, type SessionAccent } from '@/ui/sessionAccent';
 import {
   MIN_TOUCH_TARGET,
   palette,
-  pillarColor,
   promptTypeScale,
   radius,
   space,
@@ -30,6 +31,8 @@ interface PromptProps {
   /** Calificación ya emitida, en la fase de revisión. */
   readonly grade: Grade | null;
   readonly onRespond: (response: ExerciseResponse) => void;
+  /** Pareja de colores de la sesión en curso. */
+  readonly accent?: SessionAccent;
 }
 
 /**
@@ -57,12 +60,27 @@ export function ExercisePrompt(props: PromptProps) {
 // Enunciado
 // ---------------------------------------------------------------------------
 
-export function Stem({ exercise }: { exercise: Exercise }) {
+/**
+ * Enunciado dentro de la burbuja de color de la sesión.
+ *
+ * El texto va en blanco sobre el relleno saturado, así que el contraste no
+ * depende del color que le toque a la sesión: las parejas de `sessionAccent`
+ * están elegidas para que el blanco funcione sobre cualquiera de ellas.
+ */
+export function Stem({
+  exercise,
+  accent = DEFAULT_ACCENT,
+}: {
+  exercise: Exercise;
+  accent?: SessionAccent;
+}) {
   const scale = promptTypeScale[exercise.band];
   return (
-    <Text style={[styles.stem, scale]} accessibilityRole="header">
-      {exercise.prompt.stem}
-    </Text>
+    <Bubble color={accent.bubble}>
+      <Text style={[styles.stem, scale]} accessibilityRole="header">
+        {exercise.prompt.stem}
+      </Text>
+    </Bubble>
   );
 }
 
@@ -70,13 +88,11 @@ export function Stem({ exercise }: { exercise: Exercise }) {
 // Opción múltiple
 // ---------------------------------------------------------------------------
 
-function ChoicePrompt({ exercise, disabled, grade, onRespond }: PromptProps) {
+function ChoicePrompt({ exercise, disabled, grade, onRespond, accent = DEFAULT_ACCENT }: PromptProps) {
   const [chosen, setChosen] = useState<number | null>(null);
 
   const prompt = exercise.prompt;
   if (prompt.kind !== 'multiple_choice' && prompt.kind !== 'sequence_recall') return null;
-
-  const accent = pillarColor[exercise.pillar];
 
   return (
     <View>
@@ -102,13 +118,16 @@ function ChoicePrompt({ exercise, disabled, grade, onRespond }: PromptProps) {
               setChosen(index);
               onRespond({ kind: 'choice', index });
             }}
-            style={[
+            style={({ pressed }) => [
               styles.option,
-              isChosen && !revealed && { borderColor: accent, backgroundColor: palette.surfaceRaised },
+              { backgroundColor: accent.action, borderColor: accent.action },
+              pressed && !disabled && styles.optionPressed,
+              isChosen && !revealed && styles.optionChosen,
               // En la revisión se marca siempre la correcta, se haya acertado o
               // no: aprender cuál era es más útil que saber que fue un error.
               revealed && isAnswer && styles.optionCorrect,
               revealed && isChosen && !isAnswer && styles.optionWrong,
+              revealed && !isAnswer && !isChosen && styles.optionFaded,
             ]}
           >
             <Text style={styles.optionText}>{option}</Text>
@@ -273,30 +292,35 @@ function OpenPrompt({ exercise, disabled, onRespond }: PromptProps) {
 
 const styles = StyleSheet.create({
   stem: {
-    color: palette.text,
+    color: palette.white,
     fontWeight: '700',
+    textAlign: 'center',
   },
   option: {
     minHeight: MIN_TOUCH_TARGET + 8,
-    borderRadius: radius.md,
-    borderWidth: 1.5,
-    borderColor: palette.border,
-    backgroundColor: palette.surface,
-    paddingHorizontal: space.lg,
+    // Píldora, como en la guía visual: el radio grande separa la respuesta del
+    // enunciado sin necesidad de una línea divisoria.
+    borderRadius: radius.pill,
+    borderWidth: 2,
+    paddingHorizontal: space.xl,
     paddingVertical: space.md,
     marginBottom: space.md,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
   },
-  optionCorrect: { borderColor: palette.success, backgroundColor: palette.successSoft },
-  optionWrong: { borderColor: palette.danger, backgroundColor: palette.dangerSoft },
+  optionPressed: { opacity: 0.72, transform: [{ scale: 0.98 }] },
+  optionChosen: { borderColor: palette.text },
+  optionCorrect: { backgroundColor: palette.success, borderColor: palette.success },
+  optionWrong: { backgroundColor: palette.danger, borderColor: palette.danger },
+  /** Las descartadas se apagan para que la correcta destaque sin taparlas. */
+  optionFaded: { opacity: 0.35 },
   optionText: {
     ...(typography.bodyStrong as object),
-    color: palette.text,
+    color: palette.white,
     flexShrink: 1,
   },
-  optionMark: { fontSize: 20, color: palette.text, marginLeft: space.md },
+  optionMark: { fontSize: 20, color: palette.white, marginLeft: space.md },
 
   studyContainer: { alignItems: 'center', paddingVertical: space.xl },
   token: {

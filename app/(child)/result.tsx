@@ -1,7 +1,9 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 
+import { Bubble } from '@/ui/components/Bubble';
 import { Button, Card, Gap, Notice, Screen, Txt } from '@/ui/components/primitives';
+import { DEFAULT_ACCENT } from '@/ui/sessionAccent';
 import { palette, space } from '@/ui/theme';
 
 /**
@@ -31,14 +33,16 @@ export default function ResultScreen() {
   return (
     <Screen footer={<Button label="Volver al inicio" onPress={() => router.replace('/(child)/home')} />}>
       <View style={styles.center}>
-        <Txt style={styles.emoji}>{minutes > 0 ? (perfect ? '🏆' : '🎉') : '💪'}</Txt>
+        <Bubble color={minutes > 0 ? DEFAULT_ACCENT.bubble : palette.textMuted} maxSize={220}>
+          <Txt style={styles.emoji}>{minutes > 0 ? (perfect ? '🏆' : '🎉') : '💪'}</Txt>
+        </Bubble>
 
-        <Gap size="lg" />
+        <Gap size="xl" />
         <Txt variant="title" align="center">
           {minutes > 0 ? '¡Desbloqueaste tiempo!' : 'Buen intento'}
         </Txt>
 
-        <Gap size="xl" />
+        <Gap size="lg" />
 
         <Card raised style={styles.minutesCard}>
           <Txt variant="display" align="center" color={palette.success} style={styles.minutes}>
@@ -80,7 +84,7 @@ export default function ResultScreen() {
 
 const styles = StyleSheet.create({
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: space.lg },
-  emoji: { fontSize: 72 },
+  emoji: { fontSize: 76, lineHeight: 88 },
   minutesCard: { alignSelf: 'stretch', paddingVertical: space.xl },
   minutes: { fontSize: 64, lineHeight: 70 },
 });

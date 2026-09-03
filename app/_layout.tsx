@@ -7,12 +7,19 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { getDatabase } from '@/data/db';
+import { kdfAccelerator } from '@/screentime';
+import { registerKdfAccelerator } from '@/security/kdf';
 import { useAppStore } from '@/state/appStore';
 import { palette, space, typography } from '@/ui/theme';
 
 // La splash se retira a mano cuando la base ya migró y el estado está cargado:
 // dejar que se oculte sola mostraría una pantalla vacía mientras tanto.
 void SplashScreen.preventAutoHideAsync();
+
+// La derivación del PIN usa la implementación del sistema cuando existe. Se
+// registra aquí, una sola vez y antes de que ninguna pantalla pueda pedir un
+// PIN, en lugar de como efecto secundario de importar un módulo.
+registerKdfAccelerator(kdfAccelerator);
 
 /**
  * A partir del SDK 56, expo-router ya no se apoya en react-navigation, así que
@@ -72,7 +79,7 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={styles.root}>
       <SafeAreaProvider>
-        <StatusBar style="light" />
+        <StatusBar style="dark" />
         <View style={styles.frame}>
         <Stack
           screenOptions={{

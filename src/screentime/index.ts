@@ -9,6 +9,7 @@ import type { Schedule } from '@/data/repositories/policy';
 import { expiryWarningAt, type RewardPolicy } from '@/engine/economy';
 import type { ParentPause } from '@/engine/parentMode';
 import { CHALLENGE_DEEP_LINK } from '@/lib/deeplink';
+import type { KdfAccelerator } from '@/security/kdf';
 import { mockAdapter } from './mock';
 
 export type {
@@ -50,6 +51,19 @@ export function toScheduleWindows(schedules: readonly Schedule[]): ScheduleWindo
       endMinute: schedule.endMinute,
     }));
 }
+
+/**
+ * Acelerador de derivación de clave, o `null` si esta plataforma no lo trae.
+ *
+ * Se expone desde aquí y no se importa desde `security/kdf.ts` para que la
+ * capa de seguridad siga siendo lógica pura, ejecutable bajo Node.
+ */
+export const kdfAccelerator: KdfAccelerator | null = (() => {
+  const derive = nativeModule?.deriveKey;
+  if (typeof derive !== 'function') return null;
+  return (password, saltHex, iterations, keyBytes) =>
+    derive.call(nativeModule, password, saltHex, iterations, keyBytes);
+})();
 
 /** Textos de la pantalla de bloqueo. Viven aquí para no duplicarlos en Kotlin y Swift. */
 export const SHIELD_COPY = {

@@ -1,4 +1,4 @@
-import { router, useFocusEffect } from 'expo-router';
+import { Redirect, router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
@@ -35,6 +35,7 @@ import { useNow } from '@/ui/useNow';
 export default function ChildHome() {
   const child = useActiveChild();
   const children = useAppStore((state) => state.children);
+  const ready = useAppStore((state) => state.ready);
   const activeChildId = useAppStore((state) => state.activeChildId);
   const selectChild = useAppStore((state) => state.selectChild);
   const settings = useAppStore((state) => state.settings);
@@ -55,6 +56,14 @@ export default function ChildHome() {
       if (child) void pillarStats(child.id).then(setStats);
     }, [child, refresh]),
   );
+
+  // Sin ningún perfil no hay nada que mostrar. Se llega aquí por enlace
+  // profundo o por la barra de direcciones en web, saltándose la comprobación
+  // de `app/index.tsx`; sin esta salida la pantalla se queda en "Cargando…"
+  // para siempre, esperando datos de un menor que no existe.
+  if (ready && children.length === 0) {
+    return <Redirect href="/onboarding" />;
+  }
 
   // Varios perfiles y ninguno activo: hay que preguntar. Sin esta pantalla la
   // app se quedaba esperando datos de un menor que nunca se había elegido.

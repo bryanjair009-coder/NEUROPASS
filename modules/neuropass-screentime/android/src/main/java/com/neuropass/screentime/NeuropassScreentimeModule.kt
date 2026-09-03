@@ -22,6 +22,8 @@ import expo.modules.kotlin.modules.Module
 import expo.modules.kotlin.modules.ModuleDefinition
 import java.io.ByteArrayOutputStream
 import java.util.Calendar
+import javax.crypto.SecretKeyFactory
+import javax.crypto.spec.PBEKeySpec
 
 /**
  * Puente nativo de Android.
@@ -46,6 +48,41 @@ class NeuropassScreentimeModule : Module() {
 
     override fun definition() = ModuleDefinition {
         Name("NeuropassScreentime")
+
+        // -------------------------------------------------------------------
+        // Derivación de clave
+        // -------------------------------------------------------------------
+
+        /**
+         * PBKDF2-HMAC-SHA256 por la implementación del sistema.
+         *
+         * En JavaScript las 60 000 iteraciones cuestan más de un segundo en un
+         * teléfono de gama media y, al ser síncronas, congelan la interfaz justo
+         * cuando el tutor acaba de pulsar "Guardar PIN". Aquí bajan a decenas de
+         * milisegundos y, por ser `AsyncFunction`, ni siquiera se ejecutan en el
+         * hilo de JS.
+         *
+         * El lado de TypeScript comprueba contra un vector conocido que este
+         * resultado coincide byte a byte con su propia implementación antes de
+         * confiar en ella: un solo bit de diferencia dejaría fuera del panel a
+         * quien ya tuviera un PIN configurado.
+         */
+        AsyncFunction("deriveKey") { password: String, saltHex: String, iterations: Int, keyBytes: Int ->
+            val salt = ByteArray(saltHex.length / 2) { index ->
+                saltHex.substring(index * 2, index * 2 + 2).toInt(16).toByte()
+            }
+
+            val spec = PBEKeySpec(password.toCharArray(), salt, iterations, keyBytes * 8)
+            val derived = SecretKeyFactory
+                .getInstance("PBKDF2WithHmacSHA256")
+                .generateSecret(spec)
+                .encoded
+
+            // `PBEKeySpec` guarda la contraseña en memoria hasta que se limpia.
+            spec.clearPassword()
+
+            derived.joinToString("") { byte -> "%02x".format(byte) }
+        }
 
         // -------------------------------------------------------------------
         // Capacidades

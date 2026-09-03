@@ -12,30 +12,44 @@ import type { Pillar } from '@/domain/pillar';
  * composición: el del menor usa las escalas grandes y los acentos de pilar; el
  * del tutor usa las escalas densas y el gris neutro.
  *
- * El fondo es oscuro por decisión de producto: buena parte del uso ocurre de
- * noche, y una pantalla blanca a toda luminosidad en la habitación de un niño
- * es un problema de sueño, no de estética.
+ * El fondo es claro, siguiendo la guía visual del proyecto. Se usa un blanco
+ * roto y no un #FFFFFF puro: buena parte del uso ocurre de noche y una pantalla
+ * a máxima luminosidad en la habitación de un niño es un problema de sueño. La
+ * diferencia es imperceptible de día y notable a oscuras.
  */
 
+/**
+ * Colores de marca. Son los cinco de la guía y se usan como acentos rotatorios
+ * en las pantallas del menor (ver `sessionAccent.ts`), no como decoración
+ * suelta: cada uno identifica una sesión completa.
+ */
+export const brand = {
+  morado: '#C64FE3',
+  cian: '#21BFE3',
+  lima: '#8FE016',
+  rosa: '#F2137C',
+  marino: '#101B3F',
+} as const;
+
 export const palette = {
-  // Fondos, de más profundo a más elevado.
-  base: '#0B1020',
-  surface: '#141A2E',
-  surfaceRaised: '#1D2540',
-  border: '#2A3454',
+  // Fondos, del lienzo de la app a las superficies elevadas.
+  base: '#FAFBFF',
+  surface: '#FFFFFF',
+  surfaceRaised: '#FFFFFF',
+  border: '#E3E7F5',
 
-  text: '#F2F5FF',
-  textMuted: '#9AA4C4',
-  textFaint: '#5F6A8C',
+  text: '#101B3F',
+  textMuted: '#5D6789',
+  textFaint: '#98A1BE',
 
-  accent: '#6C5CE7',
-  accentSoft: '#8B7BFF',
+  accent: '#C64FE3',
+  accentSoft: '#F3E0FA',
 
-  success: '#22C55E',
-  successSoft: '#0F3D24',
-  warning: '#F59E0B',
-  danger: '#EF4444',
-  dangerSoft: '#3D1618',
+  success: '#16A34A',
+  successSoft: '#E6F7EC',
+  warning: '#D97706',
+  danger: '#DC2626',
+  dangerSoft: '#FDECEC',
 
   white: '#FFFFFF',
 } as const;
@@ -46,11 +60,11 @@ export const palette = {
  * color acabe significando algo para el menor sin necesidad de leerlo.
  */
 export const pillarColor: Record<Pillar, string> = {
-  matematicas: '#3B82F6',
-  creatividad: '#EC4899',
-  memoria: '#A855F7',
-  logica: '#22C55E',
-  lenguaje: '#F59E0B',
+  matematicas: brand.cian,
+  creatividad: brand.rosa,
+  memoria: brand.morado,
+  logica: brand.lima,
+  lenguaje: brand.marino,
 };
 
 /** Escala de espaciado en múltiplos de 4. */
@@ -103,16 +117,18 @@ export const promptTypeScale = {
  * en iOS hay que dar los cuatro parámetros o la sombra no aparece.
  */
 export function shadow(level: 'sm' | 'md' | 'lg') {
+  // Sobre fondo claro una sombra negra opaca se ve sucia: se baja la opacidad y
+  // se tiñe de azul marino, que es el color del texto y mantiene la escena fría.
   const config = {
-    sm: { elevation: 2, radius: 6, opacity: 0.18, offset: 2 },
-    md: { elevation: 6, radius: 14, opacity: 0.28, offset: 6 },
-    lg: { elevation: 12, radius: 26, opacity: 0.38, offset: 12 },
+    sm: { elevation: 2, radius: 8, opacity: 0.06, offset: 2 },
+    md: { elevation: 5, radius: 16, opacity: 0.1, offset: 6 },
+    lg: { elevation: 10, radius: 28, opacity: 0.14, offset: 12 },
   }[level];
 
   return Platform.select({
     android: { elevation: config.elevation },
     default: {
-      shadowColor: '#000000',
+      shadowColor: brand.marino,
       shadowOpacity: config.opacity,
       shadowRadius: config.radius,
       shadowOffset: { width: 0, height: config.offset },

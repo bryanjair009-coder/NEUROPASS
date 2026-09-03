@@ -83,6 +83,13 @@ export const mockAdapter: ScreenTimeAdapter = {
     return false;
   },
 
+  async deriveKey() {
+    // El simulador no acelera nada: `security/kdf.ts` detecta que el resultado
+    // no coincide con su vector de control y se queda con su propia
+    // implementación, que es la verificada contra los vectores oficiales.
+    throw new Error('El simulador no deriva claves');
+  },
+
   async requestNotificationPermission() {
     grant('notifications');
     return true;

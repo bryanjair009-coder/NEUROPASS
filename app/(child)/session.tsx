@@ -12,6 +12,7 @@ import { getLedger, grantTime, saveLedger } from '@/data/repositories/rewards';
 import { useActiveChild, useAppStore } from '@/state/appStore';
 import { useSession } from '@/state/useSession';
 import { ExercisePrompt, StudyPhase, Stem } from '@/ui/components/ExercisePrompt';
+import { sessionAccent } from '@/ui/sessionAccent';
 import { Badge, Button, Card, Gap, ProgressBar, Row, Screen, Txt } from '@/ui/components/primitives';
 import { palette, pillarColor } from '@/ui/theme';
 
@@ -132,6 +133,10 @@ interface RunnerProps {
 }
 
 function SessionRunner({ onFinished, ...props }: RunnerProps) {
+  // El color de la tanda se deriva de la misma semilla que los retos: estable
+  // mientras dura la sesión y distinto en la siguiente.
+  const accent = sessionAccent(props.seed);
+
   const session = useSession({
     band: props.band,
     seed: props.seed,
@@ -164,7 +169,7 @@ function SessionRunner({ onFinished, ...props }: RunnerProps) {
     );
   }
 
-  const accent = pillarColor[exercise.pillar];
+  const pillarAccent = pillarColor[exercise.pillar];
   const reviewing = session.phase === 'revisando';
 
   return (
@@ -213,11 +218,11 @@ function SessionRunner({ onFinished, ...props }: RunnerProps) {
       </Row>
 
       <Gap size="sm" />
-      <ProgressBar value={session.index / session.total} color={accent} />
+      <ProgressBar value={session.index / session.total} color={accent.action} />
       <Gap size="xl" />
 
       <Row gap="sm">
-        <Badge label={`${PILLAR_EMOJI[exercise.pillar]} ${PILLAR_LABEL[exercise.pillar]}`} color={accent} />
+        <Badge label={`${PILLAR_EMOJI[exercise.pillar]} ${PILLAR_LABEL[exercise.pillar]}`} color={pillarAccent} />
         <Badge label={'★'.repeat(exercise.difficulty)} color={palette.textMuted} />
       </Row>
 
@@ -231,11 +236,12 @@ function SessionRunner({ onFinished, ...props }: RunnerProps) {
         />
       ) : (
         <>
-          <Stem exercise={exercise} />
+          <Stem exercise={exercise} accent={accent} />
           <Gap size="xl" />
 
           <ExercisePrompt
             exercise={exercise}
+            accent={accent}
             disabled={reviewing}
             grade={session.lastAttempt?.grade ?? null}
             onRespond={(response) => {

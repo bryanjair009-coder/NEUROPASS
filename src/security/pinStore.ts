@@ -68,9 +68,9 @@ export async function setPin(pin: string): Promise<{ recoveryCode: string }> {
   const strength = validatePinStrength(pin);
   if (!strength.ok) throw new Error(strength.reason);
 
-  const record = createPinRecord(pin, getRandomBytes(KDF_SALT_BYTES));
+  const record = await createPinRecord(pin, getRandomBytes(KDF_SALT_BYTES));
   const recoveryCode = generateRecoveryCode();
-  const recoveryRecord = createPinRecord(recoveryCode, getRandomBytes(KDF_SALT_BYTES));
+  const recoveryRecord = await createPinRecord(recoveryCode, getRandomBytes(KDF_SALT_BYTES));
 
   await secureStorage.setItem(KEY_PIN, JSON.stringify(record));
   await secureStorage.setItem(KEY_RECOVERY, JSON.stringify(recoveryRecord));
@@ -94,7 +94,7 @@ export async function unlock(pin: string, now = Date.now()): Promise<UnlockResul
   const status = evaluateLock(lockout, now);
   if (status.locked) return { ok: false, reason: 'bloqueado', status };
 
-  if (verifyPin(pin, record)) {
+  if (await verifyPin(pin, record)) {
     await saveLockout(registerSuccess());
     return { ok: true };
   }
@@ -124,7 +124,7 @@ export async function resetWithRecoveryCode(
   if (status.locked) return { ok: false, reason: 'Demasiados intentos. Espera antes de volver a probar.' };
 
   const normalized = normalizeRecoveryCode(recoveryCode);
-  if (!verifyPin(normalized, stored)) {
+  if (!(await verifyPin(normalized, stored))) {
     await saveLockout(registerFailure(lockout, now));
     return { ok: false, reason: 'El código de recuperación no coincide.' };
   }

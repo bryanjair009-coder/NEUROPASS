@@ -166,6 +166,12 @@ export interface ScreenTimeAdapter {
    * cuando la capa no tiene esa pantalla, que es el caso de Android limpio.
    */
   openAutostartSettings(): Promise<boolean>;
+  /**
+   * PBKDF2-HMAC-SHA256 por la implementación del sistema. Devuelve la clave en
+   * hexadecimal. Existe por rendimiento: la versión en JavaScript bloquea el
+   * hilo más de un segundo en un teléfono de gama media.
+   */
+  deriveKey(password: string, saltHex: string, iterations: number, keyBytes: number): Promise<string>;
 
   requestNotificationPermission(): Promise<boolean>;
   /** Android: activa el administrador de dispositivo (antidesinstalación). */
