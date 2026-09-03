@@ -11,10 +11,12 @@ import type { MasteryState } from '@/engine/mastery';
 import { getLedger, grantTime, saveLedger } from '@/data/repositories/rewards';
 import { useActiveChild, useAppStore } from '@/state/appStore';
 import { useSession } from '@/state/useSession';
+import { usePalette } from '@/ui/ThemeProvider';
+import type { Palette } from '@/ui/theme';
 import { ExercisePrompt, StudyPhase, Stem } from '@/ui/components/ExercisePrompt';
 import { sessionAccent } from '@/ui/sessionAccent';
 import { Badge, Button, Card, Gap, ProgressBar, Row, Screen, Txt } from '@/ui/components/primitives';
-import { palette, pillarColor } from '@/ui/theme';
+import { pillarColor } from '@/ui/theme';
 
 /**
  * Sesión de retos.
@@ -25,6 +27,7 @@ import { palette, pillarColor } from '@/ui/theme';
  * `useSession`; aquí solo se dibuja y se persiste al terminar.
  */
 export default function SessionScreen() {
+  const palette = usePalette();
   const child = useActiveChild();
   const settings = useAppStore((state) => state.settings);
   const syncPolicy = useAppStore((state) => state.syncPolicy);
@@ -133,6 +136,7 @@ interface RunnerProps {
 }
 
 function SessionRunner({ onFinished, ...props }: RunnerProps) {
+  const palette = usePalette();
   // El color de la tanda se deriva de la misma semilla que los retos: estable
   // mientras dura la sesión y distinto en la siguiente.
   const accent = sessionAccent(props.seed);
@@ -178,7 +182,7 @@ function SessionRunner({ onFinished, ...props }: RunnerProps) {
       footer={
         reviewing ? (
           <View>
-            <Txt variant="bodyStrong" color={feedbackColor(session.lastAttempt)}>
+            <Txt variant="bodyStrong" color={feedbackColor(session.lastAttempt, palette)}>
               {session.lastAttempt?.grade.feedback}
             </Txt>
             {session.lastAttempt?.grade.expected &&
@@ -294,7 +298,7 @@ function SessionRunner({ onFinished, ...props }: RunnerProps) {
   );
 }
 
-function feedbackColor(attempt: Attempt | null): string {
+function feedbackColor(attempt: Attempt | null, palette: Palette): string {
   switch (attempt?.grade.outcome) {
     case 'correct':
     case 'accepted':

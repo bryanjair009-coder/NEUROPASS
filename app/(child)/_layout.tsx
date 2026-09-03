@@ -1,6 +1,6 @@
 import { Stack } from 'expo-router';
 
-import { palette } from '@/ui/theme';
+import { usePalette } from '@/ui/ThemeProvider';
 
 /**
  * Zona del menor.
@@ -10,6 +10,7 @@ import { palette } from '@/ui/theme';
  * sin conceder, que desde el lado del menor se vive como una injusticia.
  */
 export default function ChildLayout() {
+  const palette = usePalette();
   return (
     <Stack
       screenOptions={{

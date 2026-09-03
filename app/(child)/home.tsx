@@ -1,6 +1,6 @@
 import { Redirect, router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 
 import { PILLARS, PILLAR_EMOJI, PILLAR_LABEL } from '@/domain/pillar';
 import type { Child } from '@/data/repositories/children';
@@ -20,7 +20,9 @@ import {
   Screen,
   Txt,
 } from '@/ui/components/primitives';
-import { palette, pillarColor, radius, shadow, space } from '@/ui/theme';
+import { makeStyles } from '@/ui/makeStyles';
+import { usePalette } from '@/ui/ThemeProvider';
+import { pillarColor, radius, shadow, space } from '@/ui/theme';
 import { formatCountdown } from '@/ui/format';
 import { useNow } from '@/ui/useNow';
 
@@ -33,6 +35,8 @@ import { useNow } from '@/ui/useNow';
  * propio rendimiento convierte el juego en una evaluación permanente.
  */
 export default function ChildHome() {
+  const palette = usePalette();
+  const styles = useStyles();
   const child = useActiveChild();
   const children = useAppStore((state) => state.children);
   const ready = useAppStore((state) => state.ready);
@@ -184,6 +188,7 @@ function ChildPicker({
   profiles: readonly Child[];
   onPick: (childId: string) => Promise<void>;
 }) {
+  const styles = useStyles();
   return (
     <Screen>
       <Gap size="xxl" />
@@ -217,6 +222,8 @@ function TimeCard({
   hasTime: boolean;
   pause: ParentPause | null;
 }) {
+  const palette = usePalette();
+  const styles = useStyles();
   return (
     <Card raised style={[styles.timeCard, hasTime && !pause && styles.timeCardActive]}>
       <Txt variant="caption" color={palette.textMuted} align="center">
@@ -243,6 +250,7 @@ function TimeCard({
 }
 
 function SessionCallToAction({ gate, sessionSize }: { gate: SessionGate; sessionSize: number }) {
+  const palette = usePalette();
   if (gate.allowed) {
     return (
       <View>
@@ -275,7 +283,7 @@ function SessionCallToAction({ gate, sessionSize }: { gate: SessionGate; session
 }
 
 /** mm:ss por debajo de una hora, h:mm por encima. */
-const styles = StyleSheet.create({
+const useStyles = makeStyles((palette) => ({
   avatar: { fontSize: 40 },
   parentAccess: {
     paddingHorizontal: space.md,
@@ -301,4 +309,4 @@ const styles = StyleSheet.create({
   },
   pickerAvatar: { fontSize: 44 },
   pillarRow: { marginBottom: space.lg },
-});
+}));

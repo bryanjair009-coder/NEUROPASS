@@ -1,14 +1,16 @@
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { StyleSheet, TextInput, View } from 'react-native';
+import { TextInput, View } from 'react-native';
 
 import { audit } from '@/data/repositories/policy';
 import { formatRemaining } from '@/security/lockout';
 import { PIN_MAX_LENGTH } from '@/security/pin';
 import { lockStatus, resetWithRecoveryCode, unlock } from '@/security/pinStore';
 import { useAppStore } from '@/state/appStore';
+import { makeStyles } from '@/ui/makeStyles';
+import { usePalette } from '@/ui/ThemeProvider';
 import { Button, Card, Gap, Notice, Screen, Txt } from '@/ui/components/primitives';
-import { palette, radius, space, typography } from '@/ui/theme';
+import { radius, space, typography } from '@/ui/theme';
 
 import { useParentSession } from './_layout';
 
@@ -21,6 +23,8 @@ import { useParentSession } from './_layout';
  * activar el bloqueo, y le regala información gratis sobre el mecanismo.
  */
 export default function UnlockScreen() {
+  const palette = usePalette();
+  const styles = useStyles();
   const session = useParentSession();
   const refreshCapabilities = useAppStore((state) => state.refreshCapabilities);
 
@@ -135,6 +139,8 @@ export default function UnlockScreen() {
 // ---------------------------------------------------------------------------
 
 function RecoveryFlow({ onCancel }: { onCancel: () => void }) {
+  const palette = usePalette();
+  const styles = useStyles();
   const session = useParentSession();
 
   const [code, setCode] = useState('');
@@ -229,7 +235,7 @@ function RecoveryFlow({ onCancel }: { onCancel: () => void }) {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((palette) => ({
   emoji: { fontSize: 56 },
   pinInput: {
     ...(typography.title as object),
@@ -253,4 +259,4 @@ const styles = StyleSheet.create({
     paddingVertical: space.md,
   },
   spacer: { height: space.xxxl },
-});
+}));

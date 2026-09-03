@@ -1,7 +1,7 @@
 import * as Clipboard from 'expo-clipboard';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { StyleSheet, TextInput, View } from 'react-native';
+import { TextInput, View } from 'react-native';
 
 import { AGE_BANDS, AGE_BAND_LABEL, type AgeBand } from '@/domain/age';
 import { createChild } from '@/data/repositories/children';
@@ -19,7 +19,9 @@ import {
   Screen,
   Txt,
 } from '@/ui/components/primitives';
-import { palette, radius, space, typography } from '@/ui/theme';
+import { makeStyles } from '@/ui/makeStyles';
+import { usePalette } from '@/ui/ThemeProvider';
+import { radius, space, typography } from '@/ui/theme';
 
 /**
  * Configuración inicial, en cuatro pasos.
@@ -84,6 +86,7 @@ export default function Onboarding() {
 // ---------------------------------------------------------------------------
 
 function Welcome({ onNext }: { onNext: () => void }) {
+  const palette = usePalette();
   return (
     <View>
       <Txt variant="display">NEUROpass</Txt>
@@ -117,6 +120,8 @@ function Welcome({ onNext }: { onNext: () => void }) {
 }
 
 function Bullet({ emoji, text }: { emoji: string; text: string }) {
+  const palette = usePalette();
+  const styles = useStyles();
   return (
     <Row gap="md" align="flex-start" style={styles.bullet}>
       <Txt variant="body">{emoji}</Txt>
@@ -130,6 +135,7 @@ function Bullet({ emoji, text }: { emoji: string; text: string }) {
 // ---------------------------------------------------------------------------
 
 function PinStep({ onDone }: { onDone: (recoveryCode: string) => void }) {
+  const palette = usePalette();
   const [pin, setPinValue] = useState('');
   const [confirmation, setConfirmation] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -205,6 +211,8 @@ function PinField({
   value: string;
   onChange: (value: string) => void;
 }) {
+  const palette = usePalette();
+  const styles = useStyles();
   return (
     <View>
       <Txt variant="caption" color={palette.textMuted}>
@@ -228,6 +236,8 @@ function PinField({
 // ---------------------------------------------------------------------------
 
 function RecoveryStep({ code, onNext }: { code: string; onNext: () => void }) {
+  const palette = usePalette();
+  const styles = useStyles();
   const [confirmed, setConfirmed] = useState(false);
   const [copied, setCopied] = useState(false);
 
@@ -276,6 +286,8 @@ function RecoveryStep({ code, onNext }: { code: string; onNext: () => void }) {
 // ---------------------------------------------------------------------------
 
 function ChildStep({ onDone }: { onDone: () => Promise<void> }) {
+  const palette = usePalette();
+  const styles = useStyles();
   const [alias, setAlias] = useState('');
   const [avatar, setAvatar] = useState<string>(AVATARS[0]);
   const [band, setBand] = useState<AgeBand>('9-12');
@@ -361,7 +373,7 @@ function ChildStep({ onDone }: { onDone: () => Promise<void> }) {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((palette) => ({
   bullet: { marginBottom: space.md },
   bulletText: { flexShrink: 1 },
   pinInput: {
@@ -388,4 +400,4 @@ const styles = StyleSheet.create({
   recoveryCode: { fontSize: 20, letterSpacing: 2, color: palette.accentSoft },
   avatarButton: { paddingHorizontal: space.lg },
   bandOption: { marginBottom: space.sm },
-});
+}));

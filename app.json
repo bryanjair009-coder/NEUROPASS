@@ -6,7 +6,6 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "scheme": "neuropass",
-    "userInterfaceStyle": "light",
     "assetBundlePatterns": [
       "**/*"
     ],

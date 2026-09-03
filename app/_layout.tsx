@@ -10,7 +10,9 @@ import { getDatabase } from '@/data/db';
 import { kdfAccelerator } from '@/screentime';
 import { registerKdfAccelerator } from '@/security/kdf';
 import { useAppStore } from '@/state/appStore';
-import { palette, space, typography } from '@/ui/theme';
+import { makeStyles } from '@/ui/makeStyles';
+import { ThemeProvider, useTheme } from '@/ui/ThemeProvider';
+import { space, typography } from '@/ui/theme';
 
 // La splash se retira a mano cuando la base ya migró y el estado está cargado:
 // dejar que se oculte sola mostraría una pantalla vacía mientras tanto.
@@ -28,7 +30,9 @@ registerKdfAccelerator(kdfAccelerator);
  * de la navegación.
  */
 
-export default function RootLayout() {
+function RootContent() {
+  const { palette, isDark } = useTheme();
+  const styles = useStyles();
   const bootstrap = useAppStore((state) => state.bootstrap);
   const ready = useAppStore((state) => state.ready);
   const [failure, setFailure] = useState<string | null>(null);
@@ -79,7 +83,9 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={styles.root}>
       <SafeAreaProvider>
-        <StatusBar style="dark" />
+        {/* La barra de estado sigue al tema: iconos oscuros sobre fondo claro
+            y claros sobre fondo oscuro. */}
+        <StatusBar style={isDark ? 'light' : 'dark'} />
         <View style={styles.frame}>
         <Stack
           screenOptions={{
@@ -101,7 +107,7 @@ export default function RootLayout() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((palette) => ({
   root: { flex: 1, backgroundColor: palette.base },
   /**
    * En navegador se acota el ancho a tamaño de teléfono y se centra. Sin esto,
@@ -130,4 +136,17 @@ const styles = StyleSheet.create({
   },
   errorTitle: { ...(typography.title as object), color: palette.text, marginBottom: space.md },
   errorBody: { ...(typography.body as object), color: palette.textMuted, textAlign: 'center' },
-});
+}));
+
+/**
+ * El proveedor de tema va por fuera del contenido a propósito: `useTheme()` solo
+ * funciona dentro del árbol que el proveedor monta, así que el componente que
+ * lo instala no puede consumirlo.
+ */
+export default function RootLayout() {
+  return (
+    <ThemeProvider>
+      <RootContent />
+    </ThemeProvider>
+  );
+}

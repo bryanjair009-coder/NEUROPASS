@@ -1,6 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Animated, Easing, StyleSheet, View, type LayoutChangeEvent } from 'react-native';
 
+
+import { LinearGradient } from 'expo-linear-gradient';
+
+import { darken, lighten, withAlpha } from '@/lib/color';
 import { radius, shadow, space } from '@/ui/theme';
 
 /**
@@ -15,6 +19,12 @@ import { radius, shadow, space } from '@/ui/theme';
  * lo que un círculo admite con holgura, la burbuja se convierte en una forma
  * redondeada de la misma altura y color. Se conserva el lenguaje visual y no se
  * sacrifica la legibilidad, que en una app de ejercicios es la función.
+ *
+ * **Tiene volumen, no color plano.** Un degradado del color aclarado al color
+ * oscurecido, más un brillo desplazado hacia arriba, bastan para que se lea
+ * como una esfera con una fuente de luz y no como un círculo relleno. Los tres
+ * tonos se derivan del color de la sesión, así que no hay que declarar
+ * variantes a mano de cada color de marca.
  *
  * **La animación es discreta y perpetua.** Una flotación lenta de unos pocos
  * píxeles, más una entrada con escala. Le da vida a la pantalla sin competir
@@ -88,7 +98,6 @@ export function Bubble({ children, color, maxSize = 300 }: BubbleProps) {
       style={[
         styles.burbuja,
         {
-          backgroundColor: color,
           width: maxSize,
           height: alto,
           borderRadius: cabeEnCirculo ? maxSize / 2 : radius.xl,
@@ -105,6 +114,30 @@ export function Bubble({ children, color, maxSize = 300 }: BubbleProps) {
         shadow('lg'),
       ]}
     >
+      <LinearGradient
+        colors={[lighten(color, 0.22), color, darken(color, 0.18)]}
+        locations={[0, 0.55, 1]}
+        start={{ x: 0.2, y: 0 }}
+        end={{ x: 0.85, y: 1 }}
+        style={[StyleSheet.absoluteFill, { borderRadius: cabeEnCirculo ? maxSize / 2 : radius.xl }]}
+      />
+
+      {/* Brillo especular: una mancha clara arriba a la izquierda. Es lo que
+          convierte el degradado en una superficie curva a la vista. */}
+      <View
+        style={[
+          styles.brillo,
+          {
+            width: maxSize * 0.42,
+            height: maxSize * 0.28,
+            borderRadius: maxSize * 0.21,
+            backgroundColor: withAlpha('#FFFFFF', 0.28),
+            top: maxSize * 0.1,
+            left: maxSize * 0.14,
+          },
+        ]}
+      />
+
       <View
         style={styles.contenido}
         onLayout={(evento: LayoutChangeEvent) =>
@@ -123,6 +156,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: space.xl,
+    overflow: 'hidden',
   },
   contenido: { width: '100%', alignItems: 'center', justifyContent: 'center' },
+  brillo: { position: 'absolute' },
 });

@@ -1,7 +1,8 @@
 import { Stack } from 'expo-router';
 
 import { useAppStore } from '@/state/appStore';
-import { palette, typography } from '@/ui/theme';
+import { usePalette } from '@/ui/ThemeProvider';
+import { typography } from '@/ui/theme';
 
 /**
  * Zona del tutor.
@@ -24,6 +25,7 @@ export function useParentSession() {
 }
 
 export default function ParentLayout() {
+  const palette = usePalette();
   return (
     <Stack
       screenOptions={{

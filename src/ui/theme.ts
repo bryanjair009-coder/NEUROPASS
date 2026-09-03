@@ -12,10 +12,14 @@ import type { Pillar } from '@/domain/pillar';
  * composición: el del menor usa las escalas grandes y los acentos de pilar; el
  * del tutor usa las escalas densas y el gris neutro.
  *
- * El fondo es claro, siguiendo la guía visual del proyecto. Se usa un blanco
- * roto y no un #FFFFFF puro: buena parte del uso ocurre de noche y una pantalla
- * a máxima luminosidad en la habitación de un niño es un problema de sueño. La
- * diferencia es imperceptible de día y notable a oscuras.
+ * Hay dos paletas con las mismas claves. Los componentes nunca importan una en
+ * concreto: piden la vigente con `useTheme()`, y así el mismo árbol sirve para
+ * los dos temas sin duplicar pantallas.
+ *
+ * El modo claro usa un blanco roto y no #FFFFFF puro: buena parte del uso
+ * ocurre de noche y una pantalla a máxima luminosidad en la habitación de un
+ * niño es un problema de sueño. El modo oscuro existe por lo mismo, y por eso
+ * sigue al sistema de forma predeterminada.
  */
 
 /**
@@ -31,7 +35,7 @@ export const brand = {
   marino: '#101B3F',
 } as const;
 
-export const palette = {
+export const lightPalette = {
   // Fondos, del lienzo de la app a las superficies elevadas.
   base: '#FAFBFF',
   surface: '#FFFFFF',
@@ -53,6 +57,39 @@ export const palette = {
 
   white: '#FFFFFF',
 } as const;
+
+/** Las dos paletas comparten claves; los valores son colores libres, no literales. */
+export type Palette = Record<keyof typeof lightPalette, string>;
+
+/**
+ * Paleta oscura.
+ *
+ * No es la clara invertida: los colores de marca se aclaran un poco para no
+ * perder saturación sobre fondo oscuro, y los fondos usan un azul muy
+ * desaturado en lugar de negro puro, que sobre OLED produce bordes duros donde
+ * termina cada tarjeta.
+ */
+export const darkPalette: Palette = {
+  base: '#0B1020',
+  surface: '#141A2E',
+  surfaceRaised: '#1D2540',
+  border: '#2A3454',
+
+  text: '#F2F5FF',
+  textMuted: '#9AA4C4',
+  textFaint: '#5F6A8C',
+
+  accent: '#D874F0',
+  accentSoft: '#2E1B3B',
+
+  success: '#3DD68C',
+  successSoft: '#12341F',
+  warning: '#FBBF24',
+  danger: '#F87171',
+  dangerSoft: '#3A1A1A',
+
+  white: '#FFFFFF',
+};
 
 /**
  * Un color por pilar. Se usan en el radar de progreso, en la cabecera de cada

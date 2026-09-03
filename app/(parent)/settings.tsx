@@ -1,7 +1,7 @@
 import * as Clipboard from 'expo-clipboard';
 import { Redirect, router } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
-import { Alert, Pressable, StyleSheet, View } from 'react-native';
+import { Alert, Pressable, Switch, View } from 'react-native';
 
 import { PILLARS, PILLAR_EMOJI, PILLAR_LABEL, type Pillar } from '@/domain/pillar';
 import { AGE_BANDS, AGE_BAND_LABEL, type AgeBand } from '@/domain/age';
@@ -22,7 +22,9 @@ import {
   Screen,
   Txt,
 } from '@/ui/components/primitives';
-import { palette, radius, space } from '@/ui/theme';
+import { makeStyles } from '@/ui/makeStyles';
+import { useTheme, type ThemeMode } from '@/ui/ThemeProvider';
+import { radius, space } from '@/ui/theme';
 
 import { useParentSession } from './_layout';
 
@@ -35,6 +37,8 @@ import { useParentSession } from './_layout';
  * lo que revisan tanto Apple como Google en una app de la categoría Familias.
  */
 export default function SettingsScreen() {
+  const { palette } = useTheme();
+  const styles = useStyles();
   const session = useParentSession();
   const child = useActiveChild();
   const settings = useAppStore((state) => state.settings);
@@ -116,6 +120,13 @@ export default function SettingsScreen() {
           Cambiar el rango no borra el progreso, pero la dificultad se recalibra en las siguientes
           sesiones.
         </Txt>
+      </Card>
+
+      <Gap size="xl" />
+      <Txt variant="heading">Apariencia</Txt>
+      <Gap size="md" />
+      <Card>
+        <AppearanceControl />
       </Card>
 
       <Gap size="xl" />
@@ -445,6 +456,8 @@ function Stepper({
   suffix?: string;
   onChange: (value: number) => void;
 }) {
+  const { palette } = useTheme();
+  const styles = useStyles();
   return (
     <View>
       <Txt variant="caption" color={palette.textMuted}>
@@ -485,7 +498,54 @@ function Stepper({
   );
 }
 
-const styles = StyleSheet.create({
+/**
+ * Control de apariencia.
+ *
+ * Un interruptor de modo oscuro y, aparte, la opción de volver a seguir al
+ * sistema. Se hace así y no con tres botones porque el caso mayoritario es
+ * encenderlo o apagarlo, y quien nunca lo toque se queda siguiendo al teléfono
+ * sin haber tenido que decidir nada.
+ */
+function AppearanceControl() {
+  const { palette, isDark, mode, setMode } = useTheme();
+  const styles = useStyles();
+
+  return (
+    <View>
+      <Row justify="space-between">
+        <View style={styles.appearanceLabel}>
+          <Txt variant="bodyStrong">Modo oscuro</Txt>
+          <Txt variant="caption" color={palette.textMuted}>
+            {mode === 'sistema'
+              ? `Siguiendo al teléfono: ahora está en ${isDark ? 'oscuro' : 'claro'}.`
+              : `Fijado en ${mode}, sin seguir al teléfono.`}
+          </Txt>
+        </View>
+        <Switch
+          value={isDark}
+          onValueChange={(activado: boolean) => setMode(activado ? 'oscuro' : 'claro')}
+          trackColor={{ false: palette.border, true: palette.accent }}
+          thumbColor={palette.white}
+          accessibilityLabel="Modo oscuro"
+        />
+      </Row>
+
+      {mode === 'sistema' ? null : (
+        <>
+          <Gap size="md" />
+          <Button
+            label="Volver a seguir al teléfono"
+            variant="secondary"
+            onPress={() => setMode('sistema' as ThemeMode)}
+          />
+        </>
+      )}
+    </View>
+  );
+}
+
+const useStyles = makeStyles((palette) => ({
+  appearanceLabel: { flex: 1, paddingRight: space.lg },
   pillarRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -509,4 +569,4 @@ const styles = StyleSheet.create({
   },
   responseCard: { marginBottom: space.md },
   grow: { flex: 1, marginRight: space.md },
-});
+}));

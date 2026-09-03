@@ -1,6 +1,6 @@
 import { Redirect } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
-import { Pressable, StyleSheet, TextInput, View } from 'react-native';
+import { Pressable, TextInput, View } from 'react-native';
 
 import {
   ALL_WEEKDAYS,
@@ -25,7 +25,9 @@ import {
   Screen,
   Txt,
 } from '@/ui/components/primitives';
-import { MIN_TOUCH_TARGET, palette, radius, space, typography } from '@/ui/theme';
+import { makeStyles } from '@/ui/makeStyles';
+import { usePalette } from '@/ui/ThemeProvider';
+import { MIN_TOUCH_TARGET, radius, space, typography } from '@/ui/theme';
 
 import { useParentSession } from './_layout';
 
@@ -55,6 +57,8 @@ const TEMPLATES: readonly Template[] = [
 ];
 
 export default function SchedulesScreen() {
+  const palette = usePalette();
+  const styles = useStyles();
   const session = useParentSession();
   const child = useActiveChild();
   const syncPolicy = useAppStore((state) => state.syncPolicy);
@@ -226,6 +230,8 @@ function DraftEditor({
   onCancel: () => void;
   onSave: () => void;
 }) {
+  const palette = usePalette();
+  const styles = useStyles();
   return (
     <Card raised>
       <Txt variant="caption" color={palette.textMuted}>
@@ -304,6 +310,8 @@ function TimeStepper({
   minute: number;
   onChange: (minute: number) => void;
 }) {
+  const palette = usePalette();
+  const styles = useStyles();
   const step = 30;
   return (
     <View style={styles.grow}>
@@ -328,7 +336,7 @@ function TimeStepper({
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((palette) => ({
   scheduleCard: { marginBottom: space.md },
   scheduleText: { flex: 1, marginRight: space.md },
   input: {
@@ -360,4 +368,4 @@ const styles = StyleSheet.create({
     backgroundColor: palette.surfaceRaised,
   },
   grow: { flex: 1 },
-});
+}));

@@ -1,6 +1,6 @@
 import { Redirect, router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 
 import { PILLAR_EMOJI, PILLAR_LABEL } from '@/domain/pillar';
 import { AGE_BAND_LABEL } from '@/domain/age';
@@ -29,7 +29,9 @@ import {
   Txt,
 } from '@/ui/components/primitives';
 import { PAUSE_DURATIONS, type ParentPause } from '@/engine/parentMode';
-import { palette, pillarColor, space } from '@/ui/theme';
+import { makeStyles } from '@/ui/makeStyles';
+import { usePalette } from '@/ui/ThemeProvider';
+import { pillarColor, space } from '@/ui/theme';
 import { formatCountdown } from '@/ui/format';
 import { useNow } from '@/ui/useNow';
 
@@ -45,6 +47,8 @@ import { useParentSession } from './_layout';
  * sin el cual nada se está bloqueando.
  */
 export default function Dashboard() {
+  const palette = usePalette();
+  const styles = useStyles();
   const session = useParentSession();
   const child = useActiveChild();
   const settings = useAppStore((state) => state.settings);
@@ -407,6 +411,8 @@ function ParentModeCard({
   onPause: (minutes: number | null) => void;
   onResume: () => void;
 }) {
+  const palette = usePalette();
+  const styles = useStyles();
   if (pause) {
     const restante = pause.pausedUntil === null ? null : Math.max(0, pause.pausedUntil - now);
 
@@ -454,6 +460,8 @@ function ParentModeCard({
 }
 
 function Metric({ label, value }: { label: string; value: string }) {
+  const palette = usePalette();
+  const styles = useStyles();
   return (
     <View style={styles.metric}>
       <Txt variant="title">{value}</Txt>
@@ -475,6 +483,8 @@ function NavRow({
   onPress: () => void;
   warning?: boolean;
 }) {
+  const palette = usePalette();
+  const styles = useStyles();
   return (
     <Card style={styles.navRow}>
       <Row justify="space-between">
@@ -491,7 +501,7 @@ function NavRow({
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((palette) => ({
   parentMode: { borderColor: palette.warning, borderWidth: 1 },
   parentModeIcon: { fontSize: 30 },
   parentModeText: { flex: 1 },
@@ -504,4 +514,4 @@ const styles = StyleSheet.create({
   navText: { flex: 1, marginRight: space.md },
   statRow: { marginBottom: space.lg },
   sessionRow: { paddingVertical: space.sm },
-});
+}));

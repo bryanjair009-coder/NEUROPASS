@@ -1,10 +1,10 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 
-import { Bubble } from '@/ui/components/Bubble';
+import { usePalette } from '@/ui/ThemeProvider';
+import { RewardMark } from '@/ui/components/RewardMark';
 import { Button, Card, Gap, Notice, Screen, Txt } from '@/ui/components/primitives';
-import { DEFAULT_ACCENT } from '@/ui/sessionAccent';
-import { palette, space } from '@/ui/theme';
+import { space } from '@/ui/theme';
 
 /**
  * Resultado de la sesión.
@@ -16,6 +16,7 @@ import { palette, space } from '@/ui/theme';
  * mensaje que sostiene el hábito.
  */
 export default function ResultScreen() {
+  const palette = usePalette();
   const params = useLocalSearchParams<{
     minutes?: string;
     correct?: string;
@@ -33,9 +34,11 @@ export default function ResultScreen() {
   return (
     <Screen footer={<Button label="Volver al inicio" onPress={() => router.replace('/(child)/home')} />}>
       <View style={styles.center}>
-        <Bubble color={minutes > 0 ? DEFAULT_ACCENT.bubble : palette.textMuted} maxSize={220}>
-          <Txt style={styles.emoji}>{minutes > 0 ? (perfect ? '🏆' : '🎉') : '💪'}</Txt>
-        </Bubble>
+        {minutes > 0 ? (
+          <RewardMark celebrate={perfect} />
+        ) : (
+          <Txt style={styles.emoji}>💪</Txt>
+        )}
 
         <Gap size="xl" />
         <Txt variant="title" align="center">

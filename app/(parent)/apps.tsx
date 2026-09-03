@@ -1,6 +1,6 @@
 import { Redirect } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
-import { Image, Pressable, StyleSheet, TextInput, View } from 'react-native';
+import { Image, Pressable, TextInput, View } from 'react-native';
 
 import { audit, listBlockedApps, setBlockedApps } from '@/data/repositories/policy';
 import { screenTime, type InstalledApp } from '@/screentime';
@@ -15,7 +15,9 @@ import {
   Screen,
   Txt,
 } from '@/ui/components/primitives';
-import { MIN_TOUCH_TARGET, palette, radius, space, typography } from '@/ui/theme';
+import { makeStyles } from '@/ui/makeStyles';
+import { usePalette } from '@/ui/ThemeProvider';
+import { MIN_TOUCH_TARGET, radius, space, typography } from '@/ui/theme';
 
 import { useParentSession } from './_layout';
 
@@ -49,6 +51,8 @@ export default function AppsScreen() {
 // ---------------------------------------------------------------------------
 
 function PackageListMode({ childId, onSynced }: { childId: string; onSynced: () => Promise<void> }) {
+  const palette = usePalette();
+  const styles = useStyles();
   const [apps, setApps] = useState<InstalledApp[] | null>(null);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [query, setQuery] = useState('');
@@ -241,6 +245,7 @@ function PackageListMode({ childId, onSynced }: { childId: string; onSynced: () 
 // ---------------------------------------------------------------------------
 
 function SystemPickerMode({ onSynced }: { onSynced: () => Promise<void> }) {
+  const palette = usePalette();
   const [count, setCount] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -285,7 +290,7 @@ function SystemPickerMode({ onSynced }: { onSynced: () => Promise<void> }) {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((palette) => ({
   search: {
     ...(typography.body as object),
     color: palette.text,
@@ -317,4 +322,4 @@ const styles = StyleSheet.create({
     backgroundColor: palette.surfaceRaised,
   },
   appText: { flex: 1 },
-});
+}));

@@ -12,7 +12,9 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { MIN_TOUCH_TARGET, palette, radius, shadow, space, typography } from '@/ui/theme';
+import { makeStyles } from '@/ui/makeStyles';
+import { usePalette } from '@/ui/ThemeProvider';
+import { MIN_TOUCH_TARGET, radius, shadow, space, typography, type Palette } from '@/ui/theme';
 
 /**
  * Primitivas de interfaz.
@@ -41,15 +43,21 @@ interface TxtProps {
 export function Txt({
   children,
   variant = 'body',
-  color = palette.text,
+  color,
   align = 'left',
   style,
   numberOfLines,
 }: TxtProps) {
+  // El color por omisión sale del tema vigente y no puede fijarse en la firma:
+  // un valor por defecto se evalúa al importar el módulo, cuando todavía no se
+  // sabe qué tema está activo.
+  const palette = usePalette();
+  const resolved = color ?? palette.text;
+
   return (
     <Text
       numberOfLines={numberOfLines}
-      style={[typography[variant] as TextStyle, { color, textAlign: align }, style]}
+      style={[typography[variant] as TextStyle, { color: resolved, textAlign: align }, style]}
     >
       {children}
     </Text>
@@ -69,6 +77,7 @@ interface ScreenProps {
 }
 
 export function Screen({ children, scroll = true, footer, padded = true }: ScreenProps) {
+  const styles = useStyles();
   const body = padded ? { padding: space.xl } : undefined;
 
   return (
@@ -97,6 +106,9 @@ interface CardProps {
 }
 
 export function Card({ children, style, raised = false, accent }: CardProps) {
+  const palette = usePalette();
+  const styles = useStyles();
+
   return (
     <View
       style={[
@@ -178,8 +190,10 @@ export function Button({
   icon,
   style,
 }: ButtonProps) {
+  const palette = usePalette();
+  const styles = useStyles();
   const inert = disabled || loading;
-  const colors = BUTTON_COLORS[variant];
+  const colors = buttonColors(palette)[variant];
 
   return (
     <Pressable
@@ -212,31 +226,47 @@ export function Button({
   );
 }
 
-const BUTTON_COLORS: Record<ButtonVariant, { background: string; border: string; text: string }> = {
-  primary: { background: palette.accent, border: palette.accent, text: palette.white },
-  secondary: { background: palette.surfaceRaised, border: palette.border, text: palette.text },
-  ghost: { background: 'transparent', border: 'transparent', text: palette.textMuted },
-  danger: { background: palette.dangerSoft, border: palette.danger, text: palette.danger },
-};
+function buttonColors(
+  palette: Palette,
+): Record<ButtonVariant, { background: string; border: string; text: string }> {
+  return {
+    primary: { background: palette.accent, border: palette.accent, text: palette.white },
+    secondary: { background: palette.surface, border: palette.border, text: palette.text },
+    ghost: { background: 'transparent', border: 'transparent', text: palette.textMuted },
+    danger: { background: palette.dangerSoft, border: palette.danger, text: palette.danger },
+  };
+}
 
 // ---------------------------------------------------------------------------
 // Indicadores
 // ---------------------------------------------------------------------------
 
 /** Barra de progreso simple. `value` se recorta a 0..1. */
-export function ProgressBar({ value, color = palette.accent }: { value: number; color?: string }) {
+export function ProgressBar({ value, color }: { value: number; color?: string }) {
+  const palette = usePalette();
+  const styles = useStyles();
   const clamped = Math.min(1, Math.max(0, value));
+
   return (
     <View style={styles.progressTrack}>
-      <View style={[styles.progressFill, { width: `${clamped * 100}%`, backgroundColor: color }]} />
+      <View
+        style={[
+          styles.progressFill,
+          { width: `${clamped * 100}%`, backgroundColor: color ?? palette.accent },
+        ]}
+      />
     </View>
   );
 }
 
-export function Badge({ label, color = palette.accent }: { label: string; color?: string }) {
+export function Badge({ label, color }: { label: string; color?: string }) {
+  const palette = usePalette();
+  const styles = useStyles();
+  const resolved = color ?? palette.accent;
+
   return (
-    <View style={[styles.badge, { borderColor: color }]}>
-      <Text style={[typography.caption as TextStyle, { color }]}>{label}</Text>
+    <View style={[styles.badge, { borderColor: resolved }]}>
+      <Text style={[typography.caption as TextStyle, { color: resolved }]}>{label}</Text>
     </View>
   );
 }
@@ -253,6 +283,9 @@ export function EmptyState({
   description: string;
   action?: { label: string; onPress: () => void };
 }) {
+  const palette = usePalette();
+  const styles = useStyles();
+
   return (
     <View style={styles.emptyState}>
       <Text style={styles.emptyEmoji}>{emoji}</Text>
@@ -283,8 +316,11 @@ export function Notice({
   title: string;
   children?: ReactNode;
 }) {
+  const palette = usePalette();
+  const styles = useStyles();
+
   const color = {
-    info: palette.accentSoft,
+    info: palette.accent,
     warning: palette.warning,
     danger: palette.danger,
     success: palette.success,
@@ -311,7 +347,7 @@ export function Notice({
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((palette) => ({
   screen: { flex: 1, backgroundColor: palette.base },
   flex: { flex: 1 },
   scrollContent: { flexGrow: 1 },
@@ -369,4 +405,4 @@ const styles = StyleSheet.create({
     padding: space.lg,
     backgroundColor: palette.surface,
   },
-});
+}));

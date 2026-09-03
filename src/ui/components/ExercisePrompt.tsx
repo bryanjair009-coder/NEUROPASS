@@ -3,17 +3,15 @@ import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import type { Exercise, ExerciseResponse, Grade, SequenceToken } from '@/domain/exercise';
 import { distinctWords } from '@/engine/grading';
+import { makeStyles } from '@/ui/makeStyles';
+import { usePalette } from '@/ui/ThemeProvider';
+import { LinearGradient } from 'expo-linear-gradient';
+
+import { darken, lighten } from '@/lib/color';
 import { Bubble } from '@/ui/components/Bubble';
 import { Button, Gap, Row, Txt } from '@/ui/components/primitives';
 import { DEFAULT_ACCENT, type SessionAccent } from '@/ui/sessionAccent';
-import {
-  MIN_TOUCH_TARGET,
-  palette,
-  promptTypeScale,
-  radius,
-  space,
-  typography,
-} from '@/ui/theme';
+import { MIN_TOUCH_TARGET, promptTypeScale, radius, space, typography } from '@/ui/theme';
 
 /**
  * Presentación de un reto.
@@ -74,6 +72,7 @@ export function Stem({
   exercise: Exercise;
   accent?: SessionAccent;
 }) {
+  const styles = useStyles();
   const scale = promptTypeScale[exercise.band];
   return (
     <Bubble color={accent.bubble}>
@@ -89,18 +88,28 @@ export function Stem({
 // ---------------------------------------------------------------------------
 
 function ChoicePrompt({ exercise, disabled, grade, onRespond, accent = DEFAULT_ACCENT }: PromptProps) {
+  const palette = usePalette();
+  const styles = useStyles();
   const [chosen, setChosen] = useState<number | null>(null);
 
   const prompt = exercise.prompt;
   if (prompt.kind !== 'multiple_choice' && prompt.kind !== 'sequence_recall') return null;
+
+  const revealed = grade !== null;
+
+  /** Color de una píldora según la fase: el de la sesión, o el veredicto. */
+  const colorPildora = (index: number): string => {
+    if (!revealed) return accent.action;
+    if (index === prompt.correctIndex) return palette.success;
+    if (index === chosen) return palette.danger;
+    return palette.textFaint;
+  };
 
   return (
     <View>
       {prompt.options.map((option, index) => {
         const isChosen = chosen === index;
         const isAnswer = index === prompt.correctIndex;
-        const revealed = grade !== null;
-
         return (
           <Pressable
             key={`${exercise.id}-${index}`}
@@ -120,17 +129,27 @@ function ChoicePrompt({ exercise, disabled, grade, onRespond, accent = DEFAULT_A
             }}
             style={({ pressed }) => [
               styles.option,
-              { backgroundColor: accent.action, borderColor: accent.action },
+              { borderBottomColor: darken(colorPildora(index), 0.28) },
               pressed && !disabled && styles.optionPressed,
               isChosen && !revealed && styles.optionChosen,
-              // En la revisión se marca siempre la correcta, se haya acertado o
-              // no: aprender cuál era es más útil que saber que fue un error.
-              revealed && isAnswer && styles.optionCorrect,
-              revealed && isChosen && !isAnswer && styles.optionWrong,
+              // En la revisión se apagan las descartadas para que la correcta
+              // destaque sin llegar a taparlas: saber cuál era es más útil que
+              // saber que hubo un error.
               revealed && !isAnswer && !isChosen && styles.optionFaded,
             ]}
           >
-            <Text style={styles.optionText}>{option}</Text>
+            <LinearGradient
+              colors={[lighten(colorPildora(index), 0.16), darken(colorPildora(index), 0.06)]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 0, y: 1 }}
+              style={StyleSheet.absoluteFill}
+            />
+
+            {/* La marca va en posición absoluta para que el texto quede
+                centrado en la píldora tanto antes como después de revelarse. */}
+            <Text style={styles.optionText} numberOfLines={2}>
+              {option}
+            </Text>
             {revealed && isAnswer ? <Text style={styles.optionMark}>✓</Text> : null}
             {revealed && isChosen && !isAnswer ? <Text style={styles.optionMark}>✕</Text> : null}
           </Pressable>
@@ -158,6 +177,8 @@ export function StudyPhase({
   sequence: readonly SequenceToken[];
   onSkip: () => void;
 }) {
+  const palette = usePalette();
+  const styles = useStyles();
   return (
     <View style={styles.studyContainer}>
       <Txt variant="heading" align="center" color={palette.textMuted}>
@@ -193,6 +214,8 @@ export function StudyPhase({
 // ---------------------------------------------------------------------------
 
 function NumericPrompt({ exercise, disabled, grade, onRespond }: PromptProps) {
+  const palette = usePalette();
+  const styles = useStyles();
   const [value, setValue] = useState('');
 
   const prompt = exercise.prompt;
@@ -238,6 +261,8 @@ function NumericPrompt({ exercise, disabled, grade, onRespond }: PromptProps) {
 // ---------------------------------------------------------------------------
 
 function OpenPrompt({ exercise, disabled, onRespond }: PromptProps) {
+  const palette = usePalette();
+  const styles = useStyles();
   const [text, setText] = useState('');
 
   const prompt = exercise.prompt;
@@ -290,7 +315,7 @@ function OpenPrompt({ exercise, disabled, onRespond }: PromptProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((palette) => ({
   stem: {
     color: palette.white,
     fontWeight: '700',
@@ -301,26 +326,33 @@ const styles = StyleSheet.create({
     // Píldora, como en la guía visual: el radio grande separa la respuesta del
     // enunciado sin necesidad de una línea divisoria.
     borderRadius: radius.pill,
-    borderWidth: 2,
-    paddingHorizontal: space.xl,
+    // El borde inferior más grueso y oscuro imita un relieve: la píldora deja
+    // de verse como un rectángulo plano de color y parece tener canto.
+    borderWidth: 0,
+    borderBottomWidth: 4,
+    paddingHorizontal: space.xxl,
     paddingVertical: space.md,
     marginBottom: space.md,
-    flexDirection: 'row',
+    justifyContent: 'center',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    overflow: 'hidden',
   },
-  optionPressed: { opacity: 0.72, transform: [{ scale: 0.98 }] },
-  optionChosen: { borderColor: palette.text },
-  optionCorrect: { backgroundColor: palette.success, borderColor: palette.success },
-  optionWrong: { backgroundColor: palette.danger, borderColor: palette.danger },
-  /** Las descartadas se apagan para que la correcta destaque sin taparlas. */
-  optionFaded: { opacity: 0.35 },
+  /** Al pulsar se hunde: el canto se reduce y el contenido baja con él. */
+  optionPressed: { borderBottomWidth: 1, transform: [{ translateY: 3 }] },
+  optionChosen: { borderWidth: 2, borderColor: palette.text },
+  optionFaded: { opacity: 0.4 },
   optionText: {
     ...(typography.bodyStrong as object),
     color: palette.white,
+    textAlign: 'center',
     flexShrink: 1,
   },
-  optionMark: { fontSize: 20, color: palette.white, marginLeft: space.md },
+  optionMark: {
+    position: 'absolute',
+    right: space.lg,
+    fontSize: 20,
+    color: palette.white,
+  },
 
   studyContainer: { alignItems: 'center', paddingVertical: space.xl },
   token: {
@@ -357,4 +389,4 @@ const styles = StyleSheet.create({
     backgroundColor: palette.surface,
     padding: space.lg,
   },
-});
+}));

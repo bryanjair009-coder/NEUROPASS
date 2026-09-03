@@ -177,6 +177,20 @@ export const MIGRATIONS: readonly Migration[] = [
       )`,
     ],
   },
+
+  {
+    version: 3,
+    name: 'preferencias_de_app',
+    statements: [
+      // Ajustes que no pertenecen a ningún menor: por ahora el tema visual.
+      // Se guardan aquí y no junto al PIN porque no son secretos, y conviene
+      // que sobrevivan a un restablecimiento del PIN.
+      `CREATE TABLE app_prefs (
+        key   TEXT PRIMARY KEY NOT NULL,
+        value TEXT NOT NULL
+      )`,
+    ],
+  },
 ];
 
 export const TARGET_SCHEMA_VERSION = MIGRATIONS.reduce(
