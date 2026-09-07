@@ -62,6 +62,15 @@ interface AppState {
   selectChild: (childId: string) => Promise<void>;
   refreshActiveChild: () => Promise<void>;
   refreshCapabilities: () => Promise<void>;
+  /**
+   * Tema vigente, solo para poder enviarlo con la política.
+   *
+   * La pantalla de bloqueo la dibuja el código nativo y puede aparecer sin que
+   * exista el proceso de JavaScript, así que no puede consultar el contexto de
+   * React: necesita el dato ya resuelto dentro de la política.
+   */
+  darkTheme: boolean;
+  setDarkTheme: (darkTheme: boolean) => void;
   /** Vuelve a enviar la política completa al guardián nativo. */
   syncPolicy: () => Promise<void>;
   /** Entrega el teléfono al adulto: congela el tiempo y suspende el bloqueo. */
@@ -81,6 +90,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   schedules: [],
   unlockedUntil: null,
   parentPause: null,
+  darkTheme: false,
   capabilities: null,
 
   unlockParent: () => set({ parentUnlocked: true }),
@@ -139,6 +149,12 @@ export const useAppStore = create<AppState>((set, get) => ({
     set({ capabilities: await screenTime.getCapabilities() });
   },
 
+  setDarkTheme: (darkTheme) => {
+    if (get().darkTheme === darkTheme) return;
+    set({ darkTheme });
+    void get().syncPolicy();
+  },
+
   pauseForParent: async (durationMinutes) => {
     const childId = get().activeChildId;
     if (!childId) return;
@@ -180,6 +196,7 @@ export const useAppStore = create<AppState>((set, get) => ({
         schedules,
         rewardPolicy,
         pause,
+        darkTheme: get().darkTheme,
       }),
     );
 

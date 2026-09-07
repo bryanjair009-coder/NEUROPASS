@@ -39,6 +39,16 @@ const PAREJAS: readonly SessionAccent[] = [
   { bubble: brand.cian, action: brand.morado },
 ];
 
+/**
+ * Todas las parejas, para la pantalla de bloqueo nativa.
+ *
+ * El overlay se dibuja en Kotlin y puede aparecer sin que el proceso de
+ * JavaScript exista, así que recibe la lista completa con la política y elige
+ * una al azar en cada aparición. Definirla aquí evita tener los colores de
+ * marca escritos por duplicado en dos lenguajes.
+ */
+export const ALL_ACCENTS: readonly SessionAccent[] = PAREJAS;
+
 export function sessionAccent(seed: string): SessionAccent {
   return PAREJAS[hashString(seed) % PAREJAS.length] as SessionAccent;
 }

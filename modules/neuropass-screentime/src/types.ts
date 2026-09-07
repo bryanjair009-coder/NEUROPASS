@@ -99,6 +99,16 @@ export interface ScreenTimePolicy {
   /** Texto que se muestra en la pantalla de bloqueo, ya localizado. */
   readonly shieldTitle: string;
   readonly shieldMessage: string;
+  /**
+   * Mensajes entre los que la pantalla de bloqueo elige al azar en cada
+   * aparición. Viajan con la política —en lugar de estar escritos en Kotlin y
+   * en Swift— para que cambiar el texto no exija recompilar lo nativo.
+   */
+  readonly shieldMessages: readonly string[];
+  /** Parejas de color de marca; la pantalla de bloqueo rota entre ellas. */
+  readonly shieldAccents: readonly { readonly bubble: string; readonly action: string }[];
+  /** Si la app está en modo oscuro, para que el bloqueo no deslumbre de noche. */
+  readonly darkTheme: boolean;
   /** Enlace profundo que abre la sesión de retos desde la pantalla de bloqueo. */
   readonly challengeDeepLink: string;
   /**

@@ -32,10 +32,15 @@ registerKdfAccelerator(kdfAccelerator);
 
 function RootContent() {
   const { palette, isDark } = useTheme();
+  const setDarkTheme = useAppStore((state) => state.setDarkTheme);
   const styles = useStyles();
   const bootstrap = useAppStore((state) => state.bootstrap);
   const ready = useAppStore((state) => state.ready);
   const [failure, setFailure] = useState<string | null>(null);
+
+  useEffect(() => {
+    setDarkTheme(isDark);
+  }, [isDark, setDarkTheme]);
 
   useEffect(() => {
     let cancelled = false;

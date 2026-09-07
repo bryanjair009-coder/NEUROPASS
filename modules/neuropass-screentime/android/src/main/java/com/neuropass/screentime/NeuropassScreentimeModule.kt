@@ -9,6 +9,7 @@ import android.content.Intent
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.graphics.Color
 import android.graphics.Canvas
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
@@ -350,8 +351,24 @@ class NeuropassScreentimeModule : Module() {
             )
         }
 
+        val mensajes = (raw["shieldMessages"] as? List<String>).orEmpty()
+
+        val acentos = (raw["shieldAccents"] as? List<Map<String, Any?>>).orEmpty().mapNotNull { par ->
+            // Un color mal formado se descarta en lugar de tumbar la política
+            // entera: la pantalla de bloqueo tiene un acento de respaldo.
+            runCatching {
+                ShieldAccent(
+                    bubble = Color.parseColor(par["bubble"] as String),
+                    action = Color.parseColor(par["action"] as String),
+                )
+            }.getOrNull()
+        }
+
         return Policy(
             blockedPackages = (raw["blockedPackages"] as? List<String>).orEmpty().toSet(),
+            shieldMessages = mensajes,
+            shieldAccents = acentos,
+            darkTheme = raw["darkTheme"] as? Boolean ?: false,
             // `null` desde JS es "sin pausa"; un 0 es una pausa indefinida.
             pausedUntil = (raw["pausedUntil"] as? Number)?.toLong() ?: Policy.SIN_PAUSA,
             // JS entrega `null` cuando no hay tiempo desbloqueado; se traduce

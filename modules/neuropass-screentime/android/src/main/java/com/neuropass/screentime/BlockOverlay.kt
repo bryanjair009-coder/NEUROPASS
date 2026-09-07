@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.graphics.PixelFormat
-import android.graphics.drawable.GradientDrawable
 import android.net.Uri
 import android.provider.Settings
 import android.util.TypedValue
@@ -24,15 +23,22 @@ import android.widget.TextView
  *  - **No es modal ni atrapa al usuario.** Deja siempre salir al inicio. Una
  *    superposición que secuestra el dispositivo es exactamente el patrón que
  *    usan las apps maliciosas y es causa directa de rechazo en Google Play.
- *  - **Explica y ofrece una salida.** El texto dice por qué está ahí y el
- *    botón principal lleva a resolver retos. Bloquear sin ofrecer el camino
- *    para desbloquear convierte la app en un castigo opaco.
- *  - **No culpa al menor.** "Se acabó el tiempo de juego", nunca "no te lo has
- *    ganado".
+ *  - **Explica y ofrece una salida.** El botón principal lleva a resolver retos.
+ *    Bloquear sin ofrecer el camino para desbloquear convierte la app en un
+ *    castigo opaco.
+ *  - **No culpa al menor.** Los mensajes plantean lo que viene como algo que
+ *    vale la pena, nunca como un castigo por lo que hizo.
+ *  - **No se repite.** El mensaje y la pareja de colores cambian en cada
+ *    aparición. Es la pantalla que más veces ve un menor, y una idéntica
+ *    veinte veces al día deja de leerse a los tres días.
  *
  * La vista se construye en código y no en XML a propósito: un módulo de Expo
  * que arrastra layouts y temas propios choca con los recursos de la app
  * anfitriona y complica el `prebuild`.
+ *
+ * El lenguaje visual —burbuja con degradado, píldora con canto— se reconstruye
+ * aquí con la API de dibujo de Android en `ShieldStyle`, porque una vista de
+ * `WindowManager` no puede reutilizar nada de React Native.
  */
 class BlockOverlay(private val context: Context) {
 
@@ -44,7 +50,8 @@ class BlockOverlay(private val context: Context) {
 
     fun show(policy: Policy, reason: BlockReason) {
         // Ya visible por el mismo motivo: no se reconstruye. Recrear la vista
-        // en cada ciclo de sondeo produciría un parpadeo constante.
+        // en cada ciclo de sondeo produciría un parpadeo constante, y de paso
+        // cambiaría el mensaje y el color varias veces por segundo.
         if (view != null && shownReason == reason) return
         hide()
 
@@ -77,59 +84,68 @@ class BlockOverlay(private val context: Context) {
     }
 
     private fun buildView(policy: Policy, reason: BlockReason): View {
+        val oscuro = policy.darkTheme
+        val fondo = if (oscuro) FONDO_OSCURO else FONDO_CLARO
+        val texto = if (oscuro) TEXTO_OSCURO else TEXTO_CLARO
+
+        val acento = policy.shieldAccents.randomOrNull() ?: ACENTO_POR_OMISION
+
         val root = LinearLayout(context).apply {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER
-            setBackgroundColor(BACKGROUND)
+            setBackgroundColor(fondo)
             setPadding(dp(32), dp(48), dp(32), dp(48))
         }
 
-        root.addView(TextView(context).apply {
-            text = "🧠"
-            setTextSize(TypedValue.COMPLEX_UNIT_SP, 56f)
-            gravity = Gravity.CENTER
-        })
+        root.addView(
+            SquareHost(context, SparkIcon(context, texto)),
+            LinearLayout.LayoutParams(dp(104), dp(104)),
+        )
 
-        root.addView(TextView(context).apply {
-            text = when (reason) {
-                BlockReason.HORARIO_PROTEGIDO -> "Ahora no toca pantalla"
-                else -> policy.shieldTitle
-            }
-            setTextColor(Color.WHITE)
-            setTextSize(TypedValue.COMPLEX_UNIT_SP, 26f)
-            gravity = Gravity.CENTER
-            setPadding(0, dp(20), 0, dp(10))
-        })
-
-        root.addView(TextView(context).apply {
-            text = when (reason) {
-                BlockReason.HORARIO_PROTEGIDO ->
-                    "Tu familia marcó este horario como tiempo sin juegos. Vuelve cuando termine."
-                else -> policy.shieldMessage
-            }
-            setTextColor(SUBTLE)
-            setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f)
-            gravity = Gravity.CENTER
-            setPadding(0, 0, 0, dp(32))
-        })
-
-        // Durante un horario protegido no se ofrece el atajo a los retos:
-        // resolverlos no levantaría el bloqueo y prometerlo sería mentir.
-        if (reason != BlockReason.HORARIO_PROTEGIDO) {
-            root.addView(primaryButton("Resolver retos") {
-                openDeepLink(policy.challengeDeepLink)
-            })
+        // Durante un horario protegido el texto es fijo y no se ofrece el atajo
+        // a los retos: resolverlos no levantaría el bloqueo, y prometerlo sería
+        // mentirle al menor.
+        val mensaje = if (reason == BlockReason.HORARIO_PROTEGIDO) {
+            "Ahora no toca pantalla. Tu familia reservó este rato para descansar."
+        } else {
+            policy.shieldMessages.randomOrNull() ?: policy.shieldMessage
         }
 
-        root.addView(secondaryButton("Ir al inicio") {
-            hide()
-            context.startActivity(
-                Intent(Intent.ACTION_MAIN).apply {
-                    addCategory(Intent.CATEGORY_HOME)
-                    flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                }
+        root.addView(
+            TextView(context).apply {
+                text = mensaje
+                setTextColor(Color.WHITE)
+                setTextSize(TypedValue.COMPLEX_UNIT_SP, 17f)
+                gravity = Gravity.CENTER
+                background = ShieldStyle.bubble(acento.bubble)
+                setPadding(dp(32), dp(32), dp(32), dp(32))
+            },
+            LinearLayout.LayoutParams(dp(250), dp(250)).apply {
+                topMargin = dp(24)
+                bottomMargin = dp(36)
+            },
+        )
+
+        if (reason != BlockReason.HORARIO_PROTEGIDO) {
+            root.addView(
+                pillButton("Resolver retos", acento.action) {
+                    openDeepLink(policy.challengeDeepLink)
+                },
+                LinearLayout.LayoutParams(dp(256), LinearLayout.LayoutParams.WRAP_CONTENT),
             )
-        })
+        }
+
+        root.addView(
+            secondaryButton("volver al inicio", texto) {
+                hide()
+                context.startActivity(
+                    Intent(Intent.ACTION_MAIN).apply {
+                        addCategory(Intent.CATEGORY_HOME)
+                        flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                    }
+                )
+            }
+        )
 
         return root
     }
@@ -149,28 +165,26 @@ class BlockOverlay(private val context: Context) {
         }
     }
 
-    private fun primaryButton(label: String, onClick: () -> Unit): Button =
+    private fun pillButton(label: String, color: Int, onClick: () -> Unit): Button =
         Button(context).apply {
             text = label
             setTextColor(Color.WHITE)
             isAllCaps = false
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 17f)
-            background = GradientDrawable().apply {
-                cornerRadius = dp(16).toFloat()
-                setColor(ACCENT)
-            }
-            setPadding(dp(28), dp(14), dp(28), dp(14))
+            background = ShieldStyle.pill(color, dp(30).toFloat(), dp(4))
+            setPadding(dp(28), dp(14), dp(28), dp(18))
             setOnClickListener { onClick() }
         }
 
-    private fun secondaryButton(label: String, onClick: () -> Unit): Button =
+    /** Enlace de texto, sin fondo: la salida existe pero no compite con el reto. */
+    private fun secondaryButton(label: String, color: Int, onClick: () -> Unit): Button =
         Button(context).apply {
             text = label
-            setTextColor(SUBTLE)
+            setTextColor(color)
             isAllCaps = false
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f)
             background = null
-            setPadding(dp(20), dp(16), dp(20), dp(8))
+            setPadding(dp(20), dp(18), dp(20), dp(8))
             setOnClickListener { onClick() }
         }
 
@@ -178,8 +192,17 @@ class BlockOverlay(private val context: Context) {
         (value * context.resources.displayMetrics.density).toInt()
 
     private companion object {
-        val BACKGROUND = Color.parseColor("#0B1020")
-        val SUBTLE = Color.parseColor("#9AA4C4")
-        val ACCENT = Color.parseColor("#6C5CE7")
+        // Los mismos valores que lightPalette y darkPalette en TypeScript.
+        // tests/shield.test.ts comprueba que no se separen.
+        val FONDO_CLARO = Color.parseColor("#FAFBFF")
+        val FONDO_OSCURO = Color.parseColor("#0B1020")
+        val TEXTO_CLARO = Color.parseColor("#101B3F")
+        val TEXTO_OSCURO = Color.parseColor("#F2F5FF")
+
+        /** Respaldo si la política llegara sin acentos. */
+        val ACENTO_POR_OMISION = ShieldAccent(
+            bubble = Color.parseColor("#C64FE3"),
+            action = Color.parseColor("#21BFE3"),
+        )
     }
 }
