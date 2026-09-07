@@ -41,6 +41,7 @@ export default function ParentLayout() {
       <Stack.Screen name="apps" options={{ title: 'Apps limitadas' }} />
       <Stack.Screen name="schedules" options={{ title: 'Horarios protegidos' }} />
       <Stack.Screen name="settings" options={{ title: 'Ajustes' }} />
+      <Stack.Screen name="diagnostics" options={{ title: 'Diagnóstico' }} />
     </Stack>
   );
 }

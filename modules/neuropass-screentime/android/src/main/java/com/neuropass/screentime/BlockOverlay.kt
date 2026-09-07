@@ -98,7 +98,7 @@ class BlockOverlay(private val context: Context) {
         }
 
         root.addView(
-            SquareHost(context, SparkIcon(context, texto)),
+            SquareHost(context, IdeaIcon(context, texto)),
             LinearLayout.LayoutParams(dp(104), dp(104)),
         )
 
