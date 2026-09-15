@@ -2,7 +2,7 @@
   "expo": {
     "name": "NEUROpass",
     "slug": "neuropass",
-    "version": "0.6.0",
+    "version": "0.7.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "scheme": "neuropass",
@@ -25,7 +25,7 @@
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png",
-        "backgroundColor": "#FAFBFF"
+        "backgroundColor": "#F4F1FF"
       },
       "permissions": [
         "android.permission.PACKAGE_USAGE_STATS",
@@ -36,7 +36,7 @@
         "android.permission.QUERY_ALL_PACKAGES",
         "android.permission.RECEIVE_BOOT_COMPLETED"
       ],
-      "versionCode": 8
+      "versionCode": 9
     },
     "plugins": [
       "expo-router",
@@ -47,7 +47,7 @@
         {
           "image": "./assets/splash-icon.png",
           "resizeMode": "contain",
-          "backgroundColor": "#FAFBFF",
+          "backgroundColor": "#F4F1FF",
           "imageWidth": 200
         }
       ],
