@@ -184,12 +184,13 @@ analítica.
 Estas son las piezas que no se pueden completar sin hardware o aprobaciones
 externas, y lo que exige cada una:
 
-**Android — compilar y probar en dispositivo.** Requiere Android Studio con SDK
-36 y JDK 17. El código Kotlin está completo (servicio guardián, overlay, Device
-Admin, arranque tras reinicio) pero nunca se ha ejecutado en un teléfono real.
-Lo que hay que verificar primero: la latencia del sondeo de `UsageStatsManager`
-en distintas capas de fabricante, y si el servicio sobrevive sin la exención de
-optimización de batería.
+**Android — más dispositivos y el escudo rediseñado.** El APK se compila con EAS
+(perfil `preview`) y se ha probado en un teléfono real con HyperOS: el guardián
+sobrevive gracias al vigilante y a la exención de batería, el overlay bloquea y
+el aviso previo llega. Falta probarlo en capas de otros fabricantes, donde la
+latencia del sondeo de `UsageStatsManager` puede cambiar, y comprobar en un
+dispositivo el escudo rediseñado con AXO: se dibuja en Kotlin y no se puede ver
+en la web ni en el simulador.
 
 **iOS — entitlement de Apple.** `com.apple.developer.family-controls` es
 restringido: hay que solicitarlo a Apple justificando que la app es
@@ -207,7 +208,8 @@ implementada: la app es local-first y funciona completa sin ella.
 
 **Fichas de tienda.** El texto justificativo de cada permiso está en
 [`docs/PERMISOS.md`](docs/PERMISOS.md), listo para copiarse a la consola de
-Google Play y a App Store Connect.
+Google Play y a App Store Connect. Las capturas de pantalla hay que rehacerlas:
+son anteriores al rediseño con AXO.
 
 ---
 
