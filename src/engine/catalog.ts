@@ -2,6 +2,7 @@ import type { AgeBand } from '@/domain/age';
 import type { Difficulty, Exercise } from '@/domain/exercise';
 import { PILLARS, type Pillar } from '@/domain/pillar';
 import { CREATIVITY_GENERATORS } from '@/engine/generators/creativity';
+import { ENGLISH_GENERATORS } from '@/engine/generators/english';
 import { LANGUAGE_GENERATORS } from '@/engine/generators/language';
 import { LOGIC_GENERATORS } from '@/engine/generators/logic';
 import { MATH_GENERATORS } from '@/engine/generators/math';
@@ -22,6 +23,7 @@ export const ALL_GENERATORS: readonly ExerciseGenerator[] = [
   ...MEMORY_GENERATORS,
   ...LOGIC_GENERATORS,
   ...LANGUAGE_GENERATORS,
+  ...ENGLISH_GENERATORS,
 ];
 
 const byId = new Map(ALL_GENERATORS.map((g) => [g.id, g]));
@@ -52,13 +54,19 @@ export function generatorById(id: string): ExerciseGenerator | undefined {
  * Si ningún generador cubre la dificultad exacta se devuelve el conjunto
  * completo del rango en lugar de un arreglo vacío: es preferible presentar un
  * reto de dificultad contigua que dejar al menor sin ejercicio.
+ *
+ * El inglés se retira *antes* de filtrar por dificultad. Al revés, si solo un
+ * generador en inglés cubriera la dificultad pedida, el filtro exacto lo
+ * elegiría, quitarlo después dejaría la lista vacía y el pilar se saltaría.
  */
 export function generatorsFor(
   pillar: Pillar,
   band: AgeBand,
   difficulty?: Difficulty,
+  includeEnglish = true,
 ): readonly ExerciseGenerator[] {
-  const bucket = index.get(`${pillar}|${band}`) ?? [];
+  const all = index.get(`${pillar}|${band}`) ?? [];
+  const bucket = includeEnglish ? all : all.filter((generator) => generator.idioma !== 'en');
   if (difficulty === undefined) return bucket;
 
   const exact = bucket.filter(

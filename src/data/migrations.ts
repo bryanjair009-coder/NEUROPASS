@@ -191,6 +191,18 @@ export const MIGRATIONS: readonly Migration[] = [
       )`,
     ],
   },
+
+  {
+    version: 4,
+    name: 'retos_en_ingles',
+    statements: [
+      // Si el tutor quiere retos de inglés dentro de Lenguaje. Activado por
+      // omisión, también para los perfiles que ya existían: es contenido nuevo
+      // de la app y el tutor decide si lo retira. Es un ajuste, no un dato del
+      // menor, así que no toca la frontera de privacidad.
+      `ALTER TABLE child_settings ADD COLUMN include_english INTEGER NOT NULL DEFAULT 1`,
+    ],
+  },
 ];
 
 export const TARGET_SCHEMA_VERSION = MIGRATIONS.reduce(

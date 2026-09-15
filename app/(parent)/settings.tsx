@@ -253,6 +253,28 @@ export default function SettingsScreen() {
       <Gap size="lg" />
       <Row justify="space-between">
         <View style={styles.grow}>
+          <Txt variant="bodyStrong">Retos de inglés</Txt>
+          <Txt variant="caption" color={palette.textMuted}>
+            Vocabulario y oraciones sencillas dentro de Lenguaje, adaptados a su edad. Las
+            instrucciones siguen en español.
+          </Txt>
+        </View>
+        <Button
+          label={settings.includeEnglish ? 'Activados' : 'Desactivados'}
+          variant={settings.includeEnglish ? 'primary' : 'secondary'}
+          fullWidth={false}
+          onPress={() =>
+            patch(
+              { includeEnglish: !settings.includeEnglish },
+              `retos de inglés: ${!settings.includeEnglish}`,
+            )
+          }
+        />
+      </Row>
+
+      <Gap size="lg" />
+      <Row justify="space-between">
+        <View style={styles.grow}>
           <Txt variant="bodyStrong">Retos de respuesta escrita</Txt>
           <Txt variant="caption" color={palette.textMuted}>
             Los de creatividad. Se guardan en este teléfono y puedes leerlos abajo.

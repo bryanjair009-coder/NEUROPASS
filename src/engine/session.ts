@@ -37,6 +37,8 @@ export interface SessionPlanInput {
   readonly bankRatio?: number;
   /** Si el tutor deshabilitó los retos de respuesta escrita. */
   readonly allowOpenResponse?: boolean;
+  /** Si el tutor mantiene los retos de inglés dentro del pilar de Lenguaje. */
+  readonly includeEnglish?: boolean;
 }
 
 export interface SessionPlan {
@@ -59,6 +61,7 @@ export function planSession(input: SessionPlanInput): SessionPlan {
     recentFingerprints = [],
     bankRatio = DEFAULT_BANK_RATIO,
     allowOpenResponse = true,
+    includeEnglish = true,
   } = input;
 
   if (size < 1) throw new RangeError('Una sesión necesita al menos un reto');
@@ -78,7 +81,7 @@ export function planSession(input: SessionPlanInput): SessionPlan {
     const wantsBank = bankUsed / size < bankRatio && rng.bool(bankRatio);
     const exercise =
       (wantsBank ? pickFromBank(rng, pillar, band, difficulty, seen, slot) : null) ??
-      pickGenerated(rng, pillar, band, difficulty, seen, slot, openResponseUsed) ??
+      pickGenerated(rng, pillar, band, difficulty, seen, slot, openResponseUsed, includeEnglish) ??
       pickFromBank(rng, pillar, band, difficulty, seen, slot);
 
     if (!exercise) {
@@ -102,7 +105,7 @@ export function planSession(input: SessionPlanInput): SessionPlan {
     const pillar = rng.pick(focusPillars ?? PILLARS);
     const difficulty = targetDifficulty(mastery[pillar] ?? { rating: 850, attempts: 0 });
     const filler =
-      pickGenerated(rng, pillar, band, difficulty, seen, exercises.length, openResponseUsed) ??
+      pickGenerated(rng, pillar, band, difficulty, seen, exercises.length, openResponseUsed, includeEnglish) ??
       pickFromBank(rng, pillar, band, difficulty, seen, exercises.length);
     if (!filler) continue;
     if (filler.prompt.kind === 'open_response') openResponseUsed = true;
@@ -198,8 +201,9 @@ function pickGenerated(
   seen: ReadonlySet<string>,
   slot: number,
   openResponseUsed: boolean,
+  includeEnglish: boolean,
 ): Exercise | null {
-  const available = generatorsFor(pillar, band, difficulty);
+  const available = generatorsFor(pillar, band, difficulty, includeEnglish);
   if (available.length === 0) return null;
 
   let fallback: Exercise | null = null;

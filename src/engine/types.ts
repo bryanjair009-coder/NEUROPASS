@@ -26,6 +26,11 @@ export interface ExerciseGenerator {
   /** Nombre legible para el panel del tutor. */
   readonly label: string;
   readonly pillar: Pillar;
+  /**
+   * Lengua del contenido. Sin la clave, español. Los retos en inglés se marcan
+   * para que el tutor pueda retirarlos sin tocar el resto del pilar.
+   */
+  readonly idioma?: 'en';
   readonly bands: readonly AgeBand[];
   /** Rango de dificultad soportado, inclusivo. */
   readonly difficulty: readonly [Difficulty, Difficulty];

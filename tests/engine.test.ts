@@ -313,6 +313,30 @@ describe('planificador de sesiones', () => {
     }
   });
 
+  it('incluye retos de inglés en Lenguaje en los tres rangos', () => {
+    for (const band of AGE_BANDS) {
+      const ingles = Array.from({ length: 20 }, (_, seed) =>
+        planSession({ ...baseInput(band, 8), seed: `ingles|${band}|${seed}`, focusPillars: ['lenguaje'] }),
+      ).flatMap((plan) => plan.exercises.filter((e) => e.sourceId.startsWith('ingles.')));
+      expect(ingles.length, band).toBeGreaterThan(0);
+    }
+  });
+
+  it('omite los retos de inglés cuando el tutor los desactiva', () => {
+    for (const band of AGE_BANDS) {
+      for (let seed = 0; seed < 20; seed += 1) {
+        const plan = planSession({
+          ...baseInput(band, 8),
+          seed: `sin-ingles|${band}|${seed}`,
+          focusPillars: ['lenguaje'],
+          includeEnglish: false,
+        });
+        expect(plan.exercises.length, `${band} · semilla ${seed}`).toBe(8);
+        expect(plan.exercises.some((e) => e.sourceId.startsWith('ingles.')), `${band} · semilla ${seed}`).toBe(false);
+      }
+    }
+  });
+
   it('no repite retos dentro de una misma sesión', () => {
     for (const band of AGE_BANDS) {
       for (let seed = 0; seed < 30; seed += 1) {

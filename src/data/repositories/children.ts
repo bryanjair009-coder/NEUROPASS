@@ -28,6 +28,8 @@ export interface ChildSettings {
   /** Pilares habilitados; vacío significa "los cinco". */
   readonly focusPillars: readonly Pillar[];
   readonly allowOpenResponse: boolean;
+  /** Retos de inglés dentro del pilar de Lenguaje. */
+  readonly includeEnglish: boolean;
   readonly rewardPolicy: RewardPolicy;
 }
 
@@ -44,6 +46,7 @@ interface SettingsRow {
   session_size: number;
   focus_pillars: string;
   allow_open_response: number;
+  include_english: number;
   reward_policy: string;
 }
 
@@ -166,7 +169,7 @@ export async function deleteChildPermanently(childId: string): Promise<void> {
 export async function getSettings(childId: string): Promise<ChildSettings> {
   const db = await getDatabase();
   const row = await db.getFirstAsync<SettingsRow>(
-    `SELECT child_id, session_size, focus_pillars, allow_open_response, reward_policy
+    `SELECT child_id, session_size, focus_pillars, allow_open_response, include_english, reward_policy
      FROM child_settings WHERE child_id = ?`,
     childId,
   );
@@ -177,6 +180,7 @@ export async function getSettings(childId: string): Promise<ChildSettings> {
       sessionSize: 5,
       focusPillars: [],
       allowOpenResponse: true,
+      includeEnglish: true,
       rewardPolicy: DEFAULT_REWARD_POLICY,
     };
   }
@@ -186,6 +190,7 @@ export async function getSettings(childId: string): Promise<ChildSettings> {
     sessionSize: clampSessionSize(row.session_size),
     focusPillars: parsePillars(row.focus_pillars),
     allowOpenResponse: row.allow_open_response === 1,
+    includeEnglish: row.include_english === 1,
     rewardPolicy: parseRewardPolicy(row.reward_policy),
   };
 }
@@ -205,11 +210,12 @@ export async function updateSettings(
   const db = await getDatabase();
   await db.runAsync(
     `UPDATE child_settings
-     SET session_size = ?, focus_pillars = ?, allow_open_response = ?, reward_policy = ?, updated_at = ?
+     SET session_size = ?, focus_pillars = ?, allow_open_response = ?, include_english = ?, reward_policy = ?, updated_at = ?
      WHERE child_id = ?`,
     next.sessionSize,
     JSON.stringify(next.focusPillars),
     next.allowOpenResponse ? 1 : 0,
+    next.includeEnglish ? 1 : 0,
     JSON.stringify(next.rewardPolicy),
     Date.now(),
     childId,

@@ -73,7 +73,8 @@ por categorías temáticas.
 
 ## Estado
 
-Núcleo completo y rediseño con AXO aplicado, 536 pruebas en verde. El APK de
+Núcleo completo, rediseño con AXO aplicado y retos de inglés dentro de Lenguaje
+(desactivables por el tutor), 608 pruebas en verde. El APK de
 Android compila y se ha probado en un dispositivo real; el escudo rediseñado
 todavía no. Falta el entitlement de Apple.
 La lista exacta está en la sección «Qué falta» del README.

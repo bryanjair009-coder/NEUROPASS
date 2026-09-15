@@ -142,6 +142,7 @@ export interface UseSessionInput {
   readonly focusPillars: readonly Pillar[];
   readonly recentFingerprints: readonly string[];
   readonly allowOpenResponse: boolean;
+  readonly includeEnglish: boolean;
 }
 
 export interface UseSessionResult {
@@ -176,6 +177,7 @@ export function useSession(input: UseSessionInput): UseSessionResult {
         mastery: input.mastery,
         recentFingerprints: input.recentFingerprints,
         allowOpenResponse: input.allowOpenResponse,
+        includeEnglish: input.includeEnglish,
         // Una lista vacía significa "los cinco pilares"; se omite la clave en
         // lugar de pasar `undefined`, que con `exactOptionalPropertyTypes` no
         // es lo mismo que no pasarla.

@@ -101,6 +101,7 @@ export default function SessionScreen() {
       mastery={context.mastery}
       focusPillars={settings.focusPillars}
       allowOpenResponse={settings.allowOpenResponse}
+      includeEnglish={settings.includeEnglish}
       recentFingerprints={context.recentFingerprints}
       policy={settings.rewardPolicy}
       ledger={ledger ?? emptyLedger(context.startedAt, settings.rewardPolicy)}
@@ -150,6 +151,7 @@ interface RunnerProps {
   mastery: Record<Pillar, MasteryState>;
   focusPillars: readonly Pillar[];
   allowOpenResponse: boolean;
+  includeEnglish: boolean;
   recentFingerprints: readonly string[];
   policy: RewardPolicy;
   /** Libro del día al empezar, para calcular los minutos que se van ganando. */
@@ -170,6 +172,7 @@ function SessionRunner({ onFinished, policy, ledger, startedAt, ...props }: Runn
     focusPillars: props.focusPillars,
     recentFingerprints: props.recentFingerprints,
     allowOpenResponse: props.allowOpenResponse,
+    includeEnglish: props.includeEnglish,
   });
 
   // Guarda contra un doble cierre: `onFinished` escribe en la base y concede
