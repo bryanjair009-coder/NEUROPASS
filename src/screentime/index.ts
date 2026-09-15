@@ -9,7 +9,6 @@ import type { Schedule } from '@/data/repositories/policy';
 import { expiryWarningAt, type RewardPolicy } from '@/engine/economy';
 import type { ParentPause } from '@/engine/parentMode';
 import { CHALLENGE_DEEP_LINK } from '@/lib/deeplink';
-import { ALL_ACCENTS } from '@/ui/sessionAccent';
 import { SHIELD_MESSAGES } from '@/ui/shieldMessages';
 import type { KdfAccelerator } from '@/security/kdf';
 import { mockAdapter } from './mock';
@@ -90,7 +89,6 @@ export function buildPolicy(input: {
     shieldTitle: SHIELD_COPY.title,
     shieldMessage: SHIELD_COPY.message,
     shieldMessages: SHIELD_MESSAGES,
-    shieldAccents: ALL_ACCENTS,
     darkTheme: input.darkTheme,
     challengeDeepLink: SHIELD_COPY.deepLink,
     expiryWarningAt: expiryWarningAt(input.unlockedUntil, input.rewardPolicy, input.now ?? Date.now()),

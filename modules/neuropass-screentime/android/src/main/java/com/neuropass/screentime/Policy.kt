@@ -20,9 +20,6 @@ import java.util.Calendar
  * "¿bloqueo o no?" está ahí, no dispersa por el servicio.
  */
 
-/** Pareja de colores de marca para la pantalla de bloqueo. */
-data class ShieldAccent(val bubble: Int, val action: Int)
-
 data class ScheduleWindow(
     val weekdayMask: Int,
     val startMinute: Int,
@@ -54,7 +51,6 @@ data class Policy(
      * significa esperar una compilación en la nube.
      */
     val shieldMessages: List<String>,
-    val shieldAccents: List<ShieldAccent>,
     /** Tema de la app, para que el bloqueo no deslumbre de noche. */
     val darkTheme: Boolean,
     val challengeDeepLink: String,
@@ -74,7 +70,6 @@ data class Policy(
             shieldTitle = "Tiempo de juego agotado",
             shieldMessage = "Resuelve unos retos en NEUROpass para desbloquear más tiempo.",
             shieldMessages = emptyList(),
-            shieldAccents = emptyList(),
             darkTheme = false,
             // Solo es el valor por omisión: en cuanto el tutor guarda una política, el
             // enlace real llega desde TypeScript. Aun así debe ser válido, porque es
@@ -178,16 +173,11 @@ class PolicyStore(context: Context) {
             .putString(KEY_TITLE, policy.shieldTitle)
             .putString(KEY_MESSAGE, policy.shieldMessage)
             .putString(KEY_MESSAGES, JSONArray(policy.shieldMessages).toString())
-            .putString(
-                KEY_ACCENTS,
-                JSONArray().apply {
-                    policy.shieldAccents.forEach { acento ->
-                        put(JSONObject().put(KEY_BUBBLE, acento.bubble).put(KEY_ACTION, acento.action))
-                    }
-                }.toString(),
-            )
             .putBoolean(KEY_DARK_THEME, policy.darkTheme)
             .putString(KEY_DEEP_LINK, policy.challengeDeepLink)
+            // Las parejas de color del escudo anterior ya no existen. Se borra la
+            // clave para que un teléfono actualizado no arrastre un dato muerto.
+            .remove(KEY_ACCENTS_OBSOLETA)
             .apply()
     }
 
@@ -214,22 +204,12 @@ class PolicyStore(context: Context) {
             val array = JSONArray(prefs.getString(KEY_MESSAGES, "[]") ?: "[]")
             for (index in 0 until array.length()) mensajes.add(array.getString(index))
         }
-
-        val acentos = mutableListOf<ShieldAccent>()
-        runCatching {
-            val array = JSONArray(prefs.getString(KEY_ACCENTS, "[]") ?: "[]")
-            for (index in 0 until array.length()) {
-                val item = array.getJSONObject(index)
-                acentos.add(ShieldAccent(item.getInt(KEY_BUBBLE), item.getInt(KEY_ACTION)))
-            }
-        }
-        // Con el JSON corrupto se sigue con las listas vacías: la pantalla de
-        // bloqueo tiene respaldos para ambas y prefiere verse sosa a no salir.
+        // Con el JSON corrupto se sigue sin mensajes: la pantalla de bloqueo
+        // recurre a `shieldMessage` y prefiere verse sosa a no salir.
 
         return Policy(
             blockedPackages = prefs.getStringSet(KEY_PACKAGES, emptySet()) ?: emptySet(),
             shieldMessages = mensajes,
-            shieldAccents = acentos,
             darkTheme = prefs.getBoolean(KEY_DARK_THEME, false),
             unlockedUntil = prefs.getLong(KEY_UNLOCKED_UNTIL, 0L),
             pausedUntil = prefs.getLong(KEY_PAUSED_UNTIL, Policy.SIN_PAUSA),
@@ -281,10 +261,8 @@ class PolicyStore(context: Context) {
         private const val KEY_TITLE = "shield_title"
         private const val KEY_MESSAGE = "shield_message"
         private const val KEY_MESSAGES = "shield_messages"
-        private const val KEY_ACCENTS = "shield_accents"
+        private const val KEY_ACCENTS_OBSOLETA = "shield_accents"
         private const val KEY_DARK_THEME = "dark_theme"
-        private const val KEY_BUBBLE = "bubble"
-        private const val KEY_ACTION = "action"
         private const val KEY_DEEP_LINK = "challenge_deep_link"
         private const val KEY_GUARD_ENABLED = "guard_enabled"
         private const val KEY_HEARTBEAT = "last_heartbeat_at"

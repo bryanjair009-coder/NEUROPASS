@@ -105,8 +105,6 @@ export interface ScreenTimePolicy {
    * en Swift— para que cambiar el texto no exija recompilar lo nativo.
    */
   readonly shieldMessages: readonly string[];
-  /** Parejas de color de marca; la pantalla de bloqueo rota entre ellas. */
-  readonly shieldAccents: readonly { readonly bubble: string; readonly action: string }[];
   /** Si la app está en modo oscuro, para que el bloqueo no deslumbre de noche. */
   readonly darkTheme: boolean;
   /** Enlace profundo que abre la sesión de retos desde la pantalla de bloqueo. */

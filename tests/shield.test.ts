@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
@@ -22,61 +22,56 @@ const REPO_ROOT = join(__dirname, '..');
 
 const leer = (ruta: string): string => readFileSync(join(REPO_ROOT, ruta), 'utf8');
 
-const OVERLAY = 'modules/neuropass-screentime/android/src/main/java/com/neuropass/screentime/BlockOverlay.kt';
-const ESTILO = 'modules/neuropass-screentime/android/src/main/java/com/neuropass/screentime/ShieldStyle.kt';
+const MODULO = 'modules/neuropass-screentime/android/src/main';
+const OVERLAY = `${MODULO}/java/com/neuropass/screentime/BlockOverlay.kt`;
+const ESTILO = `${MODULO}/java/com/neuropass/screentime/ShieldStyle.kt`;
+
+const deKotlin = (overlay: string, constante: string): string => {
+  const encontrado = overlay.match(
+    new RegExp(`val ${constante} = Color\\.parseColor\\("(#[0-9A-Fa-f]{6})"\\)`),
+  );
+  if (!encontrado?.[1]) throw new Error(`No se localizó ${constante} en BlockOverlay.kt`);
+  return encontrado[1].toUpperCase();
+};
+
+/** Valor hexadecimal de una clave dentro del bloque `export const <bloque>` de theme.ts. */
+const deTs = (theme: string, bloque: 'marca' | 'paletaDia' | 'paletaNoche', nombre: string): string => {
+  const desde = theme.indexOf(`export const ${bloque}`);
+  const trozo = theme.slice(desde, desde + 900);
+  const encontrado = trozo.match(new RegExp(`\\b${nombre}: '(#[0-9A-Fa-f]{6})'`));
+  if (!encontrado?.[1]) throw new Error(`No se localizó ${nombre} en ${bloque}`);
+  return encontrado[1].toUpperCase();
+};
 
 describe('colores de la pantalla de bloqueo', () => {
   it('usa los mismos fondos y textos que las paletas de TypeScript', () => {
     const theme = leer('src/ui/theme.ts');
     const overlay = leer(OVERLAY);
 
-    const deTs = (nombre: string, bloque: 'paletaDia' | 'paletaNoche'): string => {
-      const desde = theme.indexOf(`export const ${bloque}`);
-      const trozo = theme.slice(desde, desde + 900);
-      const encontrado = trozo.match(new RegExp(`${nombre}: '(#[0-9A-Fa-f]{6})'`));
-      if (!encontrado?.[1]) throw new Error(`No se localizó ${nombre} en ${bloque}`);
-      return encontrado[1].toUpperCase();
-    };
-
-    const deKotlin = (constante: string): string => {
-      const encontrado = overlay.match(
-        new RegExp(`val ${constante} = Color\\.parseColor\\("(#[0-9A-Fa-f]{6})"\\)`),
-      );
-      if (!encontrado?.[1]) throw new Error(`No se localizó ${constante} en BlockOverlay.kt`);
-      return encontrado[1].toUpperCase();
-    };
-
-    expect(deKotlin('FONDO_CLARO')).toBe(deTs('base', 'paletaDia'));
-    expect(deKotlin('FONDO_OSCURO')).toBe(deTs('base', 'paletaNoche'));
-    expect(deKotlin('TEXTO_CLARO')).toBe(deTs('text', 'paletaDia'));
-    expect(deKotlin('TEXTO_OSCURO')).toBe(deTs('text', 'paletaNoche'));
+    expect(deKotlin(overlay, 'FONDO_CLARO')).toBe(deTs(theme, 'paletaDia', 'base'));
+    expect(deKotlin(overlay, 'FONDO_OSCURO')).toBe(deTs(theme, 'paletaNoche', 'base'));
+    expect(deKotlin(overlay, 'TEXTO_CLARO')).toBe(deTs(theme, 'paletaDia', 'text'));
+    expect(deKotlin(overlay, 'TEXTO_OSCURO')).toBe(deTs(theme, 'paletaNoche', 'text'));
+    expect(deKotlin(overlay, 'TEXTO_SUAVE_CLARO')).toBe(deTs(theme, 'paletaDia', 'textMuted'));
+    expect(deKotlin(overlay, 'TEXTO_SUAVE_OSCURO')).toBe(deTs(theme, 'paletaNoche', 'textMuted'));
   });
 
-  it('el acento de respaldo son colores de marca reales', () => {
+  it('la píldora y el antetítulo usan los colores de marca de la app', () => {
     const theme = leer('src/ui/theme.ts');
     const overlay = leer(OVERLAY);
 
-    const marca = [...theme.matchAll(/: '(#[0-9A-Fa-f]{6})',/g)].map((m) =>
-      (m[1] as string).toUpperCase(),
-    );
-    const respaldo = [...overlay.matchAll(/(?:bubble|action) = Color\.parseColor\("(#[0-9A-Fa-f]{6})"\)/g)].map(
-      (m) => (m[1] as string).toUpperCase(),
-    );
-
-    expect(respaldo).toHaveLength(2);
-    for (const color of respaldo) expect(marca, `${color} no es un color de marca`).toContain(color);
+    expect(deKotlin(overlay, 'MORADO')).toBe(deTs(theme, 'marca', 'morado'));
+    expect(deKotlin(overlay, 'MORADO_OSC')).toBe(deTs(theme, 'marca', 'moradoOsc'));
+    expect(deKotlin(overlay, 'AQUA')).toBe(deTs(theme, 'marca', 'aqua'));
+    expect(deKotlin(overlay, 'AQUA_OSC')).toBe(deTs(theme, 'marca', 'aquaOsc'));
   });
 
-  it('el degradado nativo usa las mismas proporciones que el de la app', () => {
-    // Si estas cifras se separan, la burbuja de la pantalla de bloqueo tendría
-    // un volumen distinto al de la misma burbuja dentro de la app.
-    const estilo = leer(ESTILO);
-
-    expect(estilo).toContain('lighten(color, 0.22f)');
-    expect(estilo).toContain('darken(color, 0.18f)');
-    expect(estilo).toContain('darken(color, 0.28f)');
-    expect(estilo).toContain('lighten(color, 0.16f)');
-    expect(estilo).toContain('darken(color, 0.06f)');
+  it('la píldora tiene el mismo volumen que el botón principal de la app', () => {
+    // Si estas cifras se separan, «Resolver retos» se vería distinto en la
+    // pantalla de bloqueo que el mismo botón dentro de la app.
+    expect(leer('src/ui/components/primitives.tsx')).toContain('lighten(palette.accent, 0.2)');
+    expect(leer(ESTILO)).toContain('lighten(color, 0.2f)');
+    expect(leer(OVERLAY)).toContain('ShieldStyle.pill(MORADO, MORADO_OSC');
   });
 
   it('aclarar y oscurecer coinciden entre los dos lenguajes', () => {
@@ -98,6 +93,25 @@ describe('colores de la pantalla de bloqueo', () => {
   });
 });
 
+describe('AXO en la pantalla de bloqueo', () => {
+  it('el recorte y la tipografía existen en los recursos del módulo', () => {
+    // Una referencia a un recurso que no está no falla hasta compilar en la
+    // nube, y el fallo llega veinte minutos después.
+    const overlay = leer(OVERLAY);
+
+    expect(overlay).toContain('R.drawable.neuropass_axo_reto');
+    expect(existsSync(join(REPO_ROOT, MODULO, 'res/drawable-nodpi/neuropass_axo_reto.png'))).toBe(true);
+
+    expect(overlay).toContain('R.font.neuropass_baloo2_bold');
+    expect(existsSync(join(REPO_ROOT, MODULO, 'res/font/neuropass_baloo2_bold.ttf'))).toBe(true);
+  });
+
+  it('durante un horario protegido no ofrece el atajo a los retos', () => {
+    const overlay = leer(OVERLAY);
+    expect(overlay).toContain('if (!protegido) {');
+  });
+});
+
 describe('mensajes de la pantalla de bloqueo', () => {
   it('hay variedad suficiente para no repetirse a diario', () => {
     expect(SHIELD_MESSAGES.length).toBeGreaterThanOrEqual(8);
@@ -107,9 +121,10 @@ describe('mensajes de la pantalla de bloqueo', () => {
     expect(new Set(SHIELD_MESSAGES).size).toBe(SHIELD_MESSAGES.length);
   });
 
-  it('caben en la burbuja', () => {
-    // La burbuja mide 250 dp y el texto va a 17 sp. Por encima de ~95
-    // caracteres el texto desborda el círculo en pantallas pequeñas.
+  it('caben bajo AXO sin empujar el botón fuera de la pantalla', () => {
+    // El mensaje va a 25 sp en un ancho máximo de 290 dp. Por encima de ~95
+    // caracteres ocupa cinco líneas, y en un teléfono pequeño la píldora de
+    // «Resolver retos» queda por debajo del borde.
     for (const mensaje of SHIELD_MESSAGES) {
       expect(mensaje.length, mensaje).toBeLessThanOrEqual(95);
     }
