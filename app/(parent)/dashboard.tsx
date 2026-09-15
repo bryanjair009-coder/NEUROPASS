@@ -1,6 +1,6 @@
 import { Redirect, router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 
 import { PILLAR_EMOJI, PILLAR_LABEL } from '@/domain/pillar';
 import { AGE_BAND_LABEL } from '@/domain/age';
@@ -14,6 +14,7 @@ import { pillarStats, recentSessions, type PillarStat, type SessionSummary } fro
 import { grantTime, revokeActiveGrants } from '@/data/repositories/rewards';
 import { masteryPercent, weakestPillar } from '@/engine/mastery';
 import type { GuardStatus } from 'neuropass-screentime';
+import { withAlpha } from '@/lib/color';
 import { isSimulated, pendingRequirements, screenTime } from '@/screentime';
 import { secureStorage } from '@/security/secureStorage';
 import { useActiveChild, useAppStore } from '@/state/appStore';
@@ -30,8 +31,8 @@ import {
 } from '@/ui/components/primitives';
 import { PAUSE_DURATIONS, type ParentPause } from '@/engine/parentMode';
 import { makeStyles } from '@/ui/makeStyles';
-import { usePalette } from '@/ui/ThemeProvider';
-import { pillarColor, space } from '@/ui/theme';
+import { useTheme } from '@/ui/ThemeProvider';
+import { marca, pillarColor, radius, shadow, space, tonoMarca, type TonoMarca } from '@/ui/theme';
 import { formatCountdown } from '@/ui/format';
 import { useNow } from '@/ui/useNow';
 
@@ -45,9 +46,12 @@ import { useParentSession } from './_layout';
  * los controles inmediatos y al final el progreso. Un panel ordenado por
  * secciones temáticas se lee bonito y esconde el hecho de que falta un permiso
  * sin el cual nada se está bloqueando.
+ *
+ * Sin animaciones, con densidad alta y pastel plano: quien entra aquí busca un
+ * dato en diez segundos, no un juego.
  */
 export default function Dashboard() {
-  const palette = usePalette();
+  const { palette } = useTheme();
   const styles = useStyles();
   const session = useParentSession();
   const child = useActiveChild();
@@ -102,6 +106,18 @@ export default function Dashboard() {
     Object.fromEntries(stats.map((stat) => [stat.pillar, stat.mastery])) as never,
   );
 
+  const estado = parentPause
+    ? { etiqueta: 'En pausa', fondo: palette.pastelMango, tinta: palette.warning }
+    : playing
+      ? { etiqueta: 'Jugando', fondo: palette.successSoft, tinta: palette.success }
+      : { etiqueta: 'Bloqueado', fondo: palette.accentSoft, tinta: palette.textMuted };
+
+  const intentos30 = stats.reduce((suma, stat) => suma + stat.attemptsLast30Days, 0);
+  const aciertos30 = stats.reduce(
+    (suma, stat) => suma + (stat.accuracyLast30Days ?? 0) * stat.attemptsLast30Days,
+    0,
+  );
+
   const grantExtra = async (minutes: number) => {
     setBusy(true);
     try {
@@ -128,40 +144,65 @@ export default function Dashboard() {
 
   return (
     <Screen>
+      {/* De quién es el panel. Ocupa una línea y no tiene peso visual: lo
+          primero que llama la atención sigue siendo el aviso de permisos. */}
+      <View style={styles.cabecera}>
+        <View style={styles.flex}>
+          <Text style={styles.micro}>PANEL DE TUTORES</Text>
+          <Text style={styles.nombre} numberOfLines={1}>
+            {child.avatar} {child.alias} · {AGE_BAND_LABEL[child.band]}
+          </Text>
+        </View>
+        <View style={[styles.estado, { backgroundColor: estado.fondo }]}>
+          <Text style={[styles.estadoTexto, { color: estado.tinta }]}>● {estado.etiqueta}</Text>
+        </View>
+      </View>
+      <Gap size="lg" />
+
       {/* 1. Lo que impide que la app haga su trabajo. */}
       {guard?.enabled && !guard.alive ? (
         <>
-          <Notice tone="danger" title="El sistema detuvo la supervisión">
+          <Alerta titulo="El sistema detuvo la supervisión">
             NEUROpass está configurado, pero Android cerró el vigilante y ahora mismo no está
             bloqueando nada. Suele pasar en capas con ahorro de batería agresivo. Concede el inicio
             automático y quita la restricción de batería para que no vuelva a ocurrir.
-          </Notice>
+          </Alerta>
           <Gap size="md" />
           <Row gap="md">
             <Button
               label="Inicio automático"
               variant="secondary"
+              fullWidth={false}
+              style={styles.flex}
               onPress={async () => {
                 const opened = await screenTime.openAutostartSettings();
                 if (!opened) await screenTime.openBatterySettings();
               }}
             />
-            <Button label="Batería" variant="secondary" onPress={() => screenTime.openBatterySettings()} />
+            <Button
+              label="Batería"
+              variant="secondary"
+              fullWidth={false}
+              style={styles.flex}
+              onPress={() => screenTime.openBatterySettings()}
+            />
           </Row>
-          <Gap size="xl" />
+          <Gap size="lg" />
         </>
       ) : null}
 
       {blocking.length > 0 ? (
         <>
-          <Notice tone="danger" title={`${blocking.length} permiso(s) sin conceder`}>
+          <Alerta titulo={`${blocking.length} permiso(s) sin conceder`}>
             Hasta que los concedas, NEUROpass no está bloqueando nada.
-          </Notice>
+          </Alerta>
           <Gap size="md" />
           {requirements.map((requirement) => (
             <Card key={requirement.key} style={styles.requirement}>
               <Row justify="space-between">
-                <Txt variant="bodyStrong">{requirement.title}</Txt>
+                <Txt variant="bodyStrong" style={styles.flex}>
+                  {requirement.title}
+                </Txt>
                 <Badge
                   label={requirement.blocking ? 'necesario' : 'recomendado'}
                   color={requirement.blocking ? palette.danger : palette.warning}
@@ -182,7 +223,7 @@ export default function Dashboard() {
               />
             </Card>
           ))}
-          <Gap size="xl" />
+          <Gap size="lg" />
         </>
       ) : null}
 
@@ -193,29 +234,11 @@ export default function Dashboard() {
               ? 'Estás sobre el simulador: los permisos y el bloqueo son ficticios. Compila con expo run:android para probar el comportamiento real.'
               : 'Estás en el navegador: además del bloqueo simulado, el PIN se guarda en localStorage y no en el almacén seguro del sistema. Sirve para revisar la interfaz, no para uso real.'}
           </Notice>
-          <Gap size="xl" />
+          <Gap size="lg" />
         </>
       ) : null}
 
       {/* 2. Estado de ahora mismo. */}
-      <Row justify="space-between">
-        <Row gap="md">
-          <Txt style={styles.avatar}>{child.avatar}</Txt>
-          <View>
-            <Txt variant="heading">{child.alias}</Txt>
-            <Txt variant="caption" color={palette.textMuted}>
-              {AGE_BAND_LABEL[child.band]}
-            </Txt>
-          </View>
-        </Row>
-        <Badge
-          label={parentPause ? 'En pausa' : playing ? 'Jugando' : 'Bloqueado'}
-          color={parentPause ? palette.warning : playing ? palette.success : palette.textMuted}
-        />
-      </Row>
-
-      <Gap size="lg" />
-
       <ParentModeCard
         pause={parentPause}
         now={now}
@@ -240,58 +263,41 @@ export default function Dashboard() {
         }}
       />
 
-      <Gap size="lg" />
-
-      <Card raised>
-        <Row justify="space-between">
-          <Metric label="Ganados hoy" value={`${ledger.earnedMinutes} min`} />
-          <Metric label="Tope diario" value={`${settings.rewardPolicy.dailyCapMinutes} min`} />
-          <Metric label="Sesiones" value={String(ledger.sessionsCompleted)} />
-        </Row>
+      <Gap size="md" />
+      <View style={styles.tarjeta}>
+        <View style={styles.tarjetaCabecera}>
+          <Text style={styles.tituloSeccion}>Hoy</Text>
+          <Txt variant="caption" color={palette.textMuted}>
+            día contable desde las {settings.rewardPolicy.dayResetHour}:00
+          </Txt>
+        </View>
+        <Gap size="md" />
+        <View style={styles.metricas}>
+          <Metrica valor={String(ledger.earnedMinutes)} etiqueta="min ganados" tono="morado" />
+          <Metrica valor={String(settings.rewardPolicy.dailyCapMinutes)} etiqueta="tope diario" tono="aqua" />
+          <Metrica valor={String(ledger.sessionsCompleted)} etiqueta="sesiones" tono="lima" />
+        </View>
         <Gap size="md" />
         <ProgressBar
           value={ledger.earnedMinutes / Math.max(1, settings.rewardPolicy.dailyCapMinutes)}
           color={palette.accent}
         />
-      </Card>
-
-      <Gap size="lg" />
+      </View>
 
       {/* 3. Controles inmediatos: lo que un tutor necesita a mitad de una tarde. */}
-      <Txt variant="heading">Acción rápida</Txt>
-      <Gap size="md" />
-      <Row gap="sm">
-        <Button
-          label="+15 min"
-          variant="secondary"
-          fullWidth={false}
-          disabled={busy}
-          onPress={() => grantExtra(15)}
-          style={styles.quickButton}
-        />
-        <Button
-          label="+30 min"
-          variant="secondary"
-          fullWidth={false}
-          disabled={busy}
-          onPress={() => grantExtra(30)}
-          style={styles.quickButton}
-        />
-        <Button
-          label="Cortar ya"
-          variant="danger"
-          fullWidth={false}
-          disabled={busy}
-          onPress={cutNow}
-          style={styles.quickButton}
-        />
-      </Row>
-
-      <Gap size="xl" />
+      <Gap size="lg" />
+      <Text style={styles.tituloSeccion}>Acción rápida</Text>
+      <Gap size="sm" />
+      <View style={styles.acciones}>
+        <BotonRapido label="+15 min" disabled={busy} onPress={() => grantExtra(15)} />
+        <BotonRapido label="+30 min" disabled={busy} onPress={() => grantExtra(30)} />
+        <BotonRapido label="Cortar ya" peligro disabled={busy} onPress={cutNow} />
+      </View>
 
       {/* 4. Configuración. */}
-      <Txt variant="heading">Configuración</Txt>
-      <Gap size="md" />
+      <Gap size="lg" />
+      <Text style={styles.tituloSeccion}>Configuración</Text>
+      <Gap size="sm" />
       <NavRow
         label="Apps limitadas"
         detail={
@@ -317,68 +323,83 @@ export default function Dashboard() {
         onPress={() => router.push('/(parent)/settings')}
       />
 
-      <Gap size="xl" />
-
       {/* 5. Progreso. */}
-      <Txt variant="heading">Progreso por pilar</Txt>
-      <Gap size="sm" />
+      <Gap size="lg" />
+      <Text style={styles.tituloSeccion}>Progreso por pilar</Text>
+      <Gap size="xs" />
       <Txt variant="caption" color={palette.textMuted}>
-        Últimos 30 días. El nivel refleja la dificultad que resuelve con soltura, no una nota.
+        {intentos30 === 0
+          ? 'Todavía no hay retos en los últimos 30 días.'
+          : `Últimos 30 días: ${intentos30} retos, ${Math.round((aciertos30 / intentos30) * 100)}% de aciertos.`}{' '}
+        El nivel refleja la dificultad que resuelve con soltura, no una nota.
       </Txt>
-      <Gap size="md" />
-
-      {stats.map((stat) => (
-        <View key={stat.pillar} style={styles.statRow}>
-          <Row justify="space-between">
-            <Txt variant="bodyStrong">
-              {PILLAR_EMOJI[stat.pillar]}  {PILLAR_LABEL[stat.pillar]}
-            </Txt>
-            <Txt variant="caption" color={palette.textMuted}>
-              {stat.attemptsLast30Days === 0
-                ? 'sin datos'
-                : `${Math.round((stat.accuracyLast30Days ?? 0) * 100)}% · ${stat.attemptsLast30Days} retos`}
-            </Txt>
-          </Row>
-          <Gap size="sm" />
-          <ProgressBar value={masteryPercent(stat.mastery) / 100} color={pillarColor[stat.pillar]} />
-        </View>
-      ))}
+      <Gap size="sm" />
+      <View style={[styles.tarjeta, styles.listaPilares]}>
+        {stats.map((stat) => {
+          const porcentaje = Math.round(masteryPercent(stat.mastery));
+          return (
+            <View
+              key={stat.pillar}
+              style={styles.filaPilar}
+              accessible
+              accessibilityLabel={`${PILLAR_LABEL[stat.pillar]}: nivel ${porcentaje} por ciento, ${stat.attemptsLast30Days} retos en 30 días`}
+            >
+              <View style={[styles.punto, { backgroundColor: pillarColor[stat.pillar] }]} />
+              <Text style={styles.filaNombre}>{PILLAR_LABEL[stat.pillar]}</Text>
+              <View style={styles.barraPilar}>
+                <View
+                  style={[
+                    styles.barraPilarRelleno,
+                    { width: `${porcentaje}%`, backgroundColor: pillarColor[stat.pillar] },
+                  ]}
+                />
+              </View>
+              <Text style={styles.filaPorcentaje}>{porcentaje}%</Text>
+            </View>
+          );
+        })}
+      </View>
 
       {weakest ? (
         <>
           <Gap size="md" />
-          <Notice tone="info" title={`Pilar más rezagado: ${PILLAR_LABEL[weakest]}`}>
-            NEUROpass ya le está dando más peso en las próximas sesiones. No hace falta que cambies
-            nada.
-          </Notice>
+          <View style={styles.nota}>
+            <Text style={styles.notaEmoji}>{PILLAR_EMOJI[weakest]}</Text>
+            <Text style={styles.notaTexto}>
+              <Text style={styles.notaFuerte}>{PILLAR_LABEL[weakest]}</Text> es el pilar más rezagado.
+              NEUROpass ya le está dando más peso en las próximas sesiones; no hace falta que cambies
+              nada.
+            </Text>
+          </View>
         </>
       ) : null}
 
-      <Gap size="xl" />
-
-      <Txt variant="heading">Últimas sesiones</Txt>
-      <Gap size="md" />
-      {sessions.length === 0 ? (
-        <Txt variant="caption" color={palette.textFaint}>
-          Todavía no hay sesiones completadas.
-        </Txt>
-      ) : (
-        sessions.map((entry) => (
-          <Row key={entry.id} justify="space-between" style={styles.sessionRow}>
-            <Txt variant="caption" color={palette.textMuted}>
-              {new Date(entry.startedAt).toLocaleString('es-MX', {
-                day: '2-digit',
-                month: 'short',
-                hour: '2-digit',
-                minute: '2-digit',
-              })}
-            </Txt>
-            <Txt variant="caption">
-              {entry.correctCount}/{entry.totalCount} · +{entry.grantedMinutes} min
-            </Txt>
-          </Row>
-        ))
-      )}
+      <Gap size="lg" />
+      <Text style={styles.tituloSeccion}>Últimas sesiones</Text>
+      <Gap size="sm" />
+      <View style={styles.tarjeta}>
+        {sessions.length === 0 ? (
+          <Txt variant="caption" color={palette.textMuted}>
+            Todavía no hay sesiones completadas.
+          </Txt>
+        ) : (
+          sessions.map((entry) => (
+            <Row key={entry.id} justify="space-between" style={styles.sessionRow}>
+              <Txt variant="caption" color={palette.textMuted}>
+                {new Date(entry.startedAt).toLocaleString('es-MX', {
+                  day: '2-digit',
+                  month: 'short',
+                  hour: '2-digit',
+                  minute: '2-digit',
+                })}
+              </Txt>
+              <Txt variant="caption">
+                {entry.correctCount}/{entry.totalCount} · +{entry.grantedMinutes} min
+              </Txt>
+            </Row>
+          ))
+        )}
+      </View>
 
       <Gap size="xxl" />
     </Screen>
@@ -386,6 +407,22 @@ export default function Dashboard() {
 }
 
 // ---------------------------------------------------------------------------
+
+/** Aviso urgente. Pastel rosa y no rojo: urgente no es lo mismo que alarmante. */
+function Alerta({ titulo, children }: { titulo: string; children: string }) {
+  const styles = useStyles();
+  return (
+    <View style={styles.alerta} accessibilityRole="alert">
+      <View style={styles.alertaIcono}>
+        <Text style={styles.alertaEmoji}>⚠️</Text>
+      </View>
+      <View style={styles.flex}>
+        <Text style={styles.alertaTitulo}>{titulo}</Text>
+        <Text style={styles.alertaTexto}>{children}</Text>
+      </View>
+    </View>
+  );
+}
 
 /**
  * Modo adulto.
@@ -411,16 +448,16 @@ function ParentModeCard({
   onPause: (minutes: number | null) => void;
   onResume: () => void;
 }) {
-  const palette = usePalette();
+  const { palette } = useTheme();
   const styles = useStyles();
   if (pause) {
     const restante = pause.pausedUntil === null ? null : Math.max(0, pause.pausedUntil - now);
 
     return (
-      <Card raised style={styles.parentMode}>
+      <View style={[styles.tarjeta, { backgroundColor: palette.pastelMango }]}>
         <Row gap="md">
-          <Txt style={styles.parentModeIcon}>⏸️</Txt>
-          <View style={styles.parentModeText}>
+          <Text style={styles.parentModeIcon}>⏸️</Text>
+          <View style={styles.flex}>
             <Txt variant="bodyStrong">Tienes el teléfono</Txt>
             <Txt variant="caption" color={palette.textMuted}>
               {restante === null
@@ -431,12 +468,12 @@ function ParentModeCard({
         </Row>
         <Gap size="md" />
         <Button label="Devolver el teléfono" onPress={onResume} disabled={busy} />
-      </Card>
+      </View>
     );
   }
 
   return (
-    <Card>
+    <View style={styles.tarjeta}>
       <Txt variant="bodyStrong">¿Necesitas el teléfono?</Txt>
       <Gap size="xs" />
       <Txt variant="caption" color={palette.textMuted}>
@@ -444,31 +481,73 @@ function ParentModeCard({
         de lo que ya ganó.
       </Txt>
       <Gap size="md" />
-      <View style={styles.pauseOptions}>
+      <View style={styles.acciones}>
         {PAUSE_DURATIONS.map((minutes) => (
-          <Button
+          <BotonRapido
             key={minutes ?? 'sin-limite'}
             label={minutes === null ? 'Sin límite' : `${minutes} min`}
-            variant="secondary"
             disabled={busy}
             onPress={() => onPause(minutes)}
           />
         ))}
       </View>
-    </Card>
+    </View>
   );
 }
 
-function Metric({ label, value }: { label: string; value: string }) {
-  const palette = usePalette();
+/** Una cifra del día sobre el pastel de su color. */
+function Metrica({ valor, etiqueta, tono }: { valor: string; etiqueta: string; tono: TonoMarca }) {
+  const { palette, isDark } = useTheme();
+  const styles = useStyles();
+  const fondo = { morado: palette.accentSoft, aqua: palette.pastelAqua, lima: palette.pastelLima }[
+    tono as 'morado' | 'aqua' | 'lima'
+  ];
+  return (
+    <View style={[styles.metrica, { backgroundColor: fondo }]}>
+      {/* De día el tono saturado no alcanza contraste sobre su pastel; de noche
+          es el oscuro el que se pierde sobre el tinte translúcido. */}
+      <Text style={[styles.metricaValor, { color: isDark ? tonoMarca[tono].base : tonoMarca[tono].canto }]}>
+        {valor}
+      </Text>
+      <Text style={styles.metricaEtiqueta}>{etiqueta}</Text>
+    </View>
+  );
+}
+
+/**
+ * Botón plano para acciones repetidas. Sin canto a propósito: en esta zona el
+ * relieve se reserva al botón principal, y tres botones con canto seguidos se
+ * leerían como tres acciones principales.
+ */
+function BotonRapido({
+  label,
+  onPress,
+  disabled,
+  peligro = false,
+}: {
+  label: string;
+  onPress: () => void;
+  disabled: boolean;
+  peligro?: boolean;
+}) {
+  const { palette } = useTheme();
   const styles = useStyles();
   return (
-    <View style={styles.metric}>
-      <Txt variant="title">{value}</Txt>
-      <Txt variant="caption" color={palette.textMuted}>
-        {label}
-      </Txt>
-    </View>
+    <Pressable
+      onPress={onPress}
+      disabled={disabled}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      accessibilityState={{ disabled }}
+      style={({ pressed }) => [
+        styles.rapido,
+        peligro ? { backgroundColor: palette.dangerSoft } : styles.rapidoNeutro,
+        pressed && styles.pulsado,
+        disabled && styles.inerte,
+      ]}
+    >
+      <Text style={[styles.rapidoTexto, { color: peligro ? palette.danger : palette.text }]}>{label}</Text>
+    </Pressable>
   );
 }
 
@@ -483,35 +562,147 @@ function NavRow({
   onPress: () => void;
   warning?: boolean;
 }) {
-  const palette = usePalette();
+  const { palette } = useTheme();
   const styles = useStyles();
   return (
-    <Card style={styles.navRow}>
-      <Row justify="space-between">
-        <View style={styles.navText}>
-          <Txt variant="bodyStrong">{label}</Txt>
-          <Gap size="xs" />
-          <Txt variant="caption" color={warning ? palette.warning : palette.textMuted} numberOfLines={2}>
-            {detail}
-          </Txt>
-        </View>
-        <Button label="Abrir" variant="secondary" fullWidth={false} onPress={onPress} />
-      </Row>
-    </Card>
+    // La fila entera es el objetivo táctil, no un botón «Abrir» al extremo: en
+    // una lista de configuración se toca donde está el nombre.
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={`${label}. ${detail}`}
+      style={({ pressed }) => [styles.navRow, pressed && styles.pulsado]}
+    >
+      <View style={styles.flex}>
+        <Txt variant="bodyStrong">{label}</Txt>
+        <Txt variant="caption" color={warning ? palette.warning : palette.textMuted} numberOfLines={2}>
+          {detail}
+        </Txt>
+      </View>
+      <Text style={styles.chevron}>›</Text>
+    </Pressable>
   );
 }
 
 const useStyles = makeStyles((palette) => ({
-  parentMode: { borderColor: palette.warning, borderWidth: 1 },
-  parentModeIcon: { fontSize: 30 },
-  parentModeText: { flex: 1 },
-  pauseOptions: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
-  avatar: { fontSize: 36 },
+  flex: { flex: 1 },
+  pulsado: { opacity: 0.7 },
+  inerte: { opacity: 0.45 },
+
+  cabecera: { flexDirection: 'row', alignItems: 'center', gap: space.md },
+  micro: {
+    fontFamily: 'Nunito_700Bold',
+    fontSize: 12,
+    lineHeight: 16,
+    letterSpacing: 0.84,
+    color: palette.textMuted,
+  },
+  nombre: { fontFamily: 'Baloo2_700Bold', fontSize: 23, lineHeight: 28, color: palette.text },
+  estado: { paddingHorizontal: space.md + 3, paddingVertical: space.sm + 1, borderRadius: radius.pill },
+  estadoTexto: { fontFamily: 'Nunito_700Bold', fontSize: 13, lineHeight: 18 },
+
+  alerta: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: space.md + 1,
+    paddingVertical: space.md + 2,
+    paddingHorizontal: space.lg,
+    borderRadius: radius.lg,
+    backgroundColor: palette.dangerSoft,
+  },
+  alertaIcono: {
+    width: 36,
+    height: 36,
+    borderRadius: 13,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: withAlpha(marca.rosa, 0.25),
+  },
+  alertaEmoji: { fontSize: 18, lineHeight: 24 },
+  alertaTitulo: { fontFamily: 'Nunito_800ExtraBold', fontSize: 15, lineHeight: 20, color: palette.danger },
+  alertaTexto: { fontFamily: 'Nunito_600SemiBold', fontSize: 12.5, lineHeight: 17, color: palette.textMuted },
   requirement: { marginBottom: space.md },
-  metric: { alignItems: 'center', flex: 1 },
-  quickButton: { flex: 1 },
-  navRow: { marginBottom: space.md },
-  navText: { flex: 1, marginRight: space.md },
-  statRow: { marginBottom: space.lg },
+
+  tarjeta: {
+    padding: space.lg + 2,
+    borderRadius: radius.xl,
+    backgroundColor: palette.surface,
+    ...shadow('sm'),
+  },
+  tarjetaCabecera: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between' },
+  tituloSeccion: { fontFamily: 'Baloo2_800ExtraBold', fontSize: 17, lineHeight: 22, color: palette.text },
+  metricas: { flexDirection: 'row', gap: 9 },
+  metrica: {
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: space.md,
+    paddingHorizontal: space.xs,
+    borderRadius: radius.md,
+  },
+  metricaValor: { fontFamily: 'Baloo2_800ExtraBold', fontSize: 23, lineHeight: 30 },
+  metricaEtiqueta: { fontFamily: 'Nunito_700Bold', fontSize: 10.5, lineHeight: 14, color: palette.textMuted },
+  parentModeIcon: { fontSize: 30, lineHeight: 36 },
+
+  acciones: { flexDirection: 'row', flexWrap: 'wrap', gap: 9 },
+  rapido: {
+    flexGrow: 1,
+    flexBasis: 90,
+    minHeight: 50,
+    borderRadius: radius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: space.md,
+  },
+  rapidoNeutro: { backgroundColor: palette.surface, ...shadow('sm') },
+  rapidoTexto: { fontFamily: 'Nunito_700Bold', fontSize: 14.5, lineHeight: 20 },
+
+  navRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.md,
+    minHeight: 64,
+    marginBottom: space.sm + 2,
+    paddingVertical: space.md,
+    paddingHorizontal: space.lg,
+    borderRadius: radius.lg,
+    backgroundColor: palette.surface,
+    ...shadow('sm'),
+  },
+  chevron: { fontFamily: 'Baloo2_700Bold', fontSize: 26, lineHeight: 30, color: palette.textMuted },
+
+  listaPilares: { gap: space.md },
+  filaPilar: { flexDirection: 'row', alignItems: 'center', gap: space.sm + 2 },
+  punto: { width: 9, height: 9, borderRadius: 5 },
+  filaNombre: { flex: 1, fontFamily: 'Nunito_700Bold', fontSize: 13.5, lineHeight: 18, color: palette.text },
+  barraPilar: {
+    width: 116,
+    height: 9,
+    borderRadius: radius.pill,
+    backgroundColor: palette.surfaceRaised,
+    overflow: 'hidden',
+  },
+  barraPilarRelleno: { height: '100%', borderRadius: radius.pill },
+  filaPorcentaje: {
+    width: 36,
+    textAlign: 'right',
+    fontFamily: 'Nunito_700Bold',
+    fontSize: 11.5,
+    lineHeight: 16,
+    color: palette.textMuted,
+  },
+
+  nota: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: space.sm + 2,
+    paddingVertical: space.md + 1,
+    paddingHorizontal: space.md + 3,
+    borderRadius: radius.lg,
+    backgroundColor: palette.accentSoft,
+  },
+  notaEmoji: { fontSize: 17, lineHeight: 22 },
+  notaTexto: { flex: 1, fontFamily: 'Nunito_600SemiBold', fontSize: 12.5, lineHeight: 18, color: palette.text },
+  notaFuerte: { fontFamily: 'Nunito_800ExtraBold' },
+
   sessionRow: { paddingVertical: space.sm },
 }));

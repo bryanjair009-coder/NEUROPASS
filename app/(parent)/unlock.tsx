@@ -1,16 +1,17 @@
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { TextInput, View } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { audit } from '@/data/repositories/policy';
 import { formatRemaining } from '@/security/lockout';
-import { PIN_MAX_LENGTH } from '@/security/pin';
+import { PIN_MAX_LENGTH, PIN_MIN_LENGTH } from '@/security/pin';
 import { lockStatus, resetWithRecoveryCode, unlock } from '@/security/pinStore';
 import { useAppStore } from '@/state/appStore';
 import { makeStyles } from '@/ui/makeStyles';
 import { usePalette } from '@/ui/ThemeProvider';
 import { Button, Card, Gap, Notice, Screen, Txt } from '@/ui/components/primitives';
-import { radius, space, typography } from '@/ui/theme';
+import { MIN_TOUCH_TARGET, radius, shadow, space, typography } from '@/ui/theme';
 
 import { useParentSession } from './_layout';
 
@@ -21,7 +22,18 @@ import { useParentSession } from './_layout';
  * cuántos intentos quedan hasta que la penalización ya empezó: anunciarlo
  * desde el primer fallo le enseña al menor exactamente cuándo parar para no
  * activar el bloqueo, y le regala información gratis sobre el mecanismo.
+ *
+ * El teclado es propio y no el del sistema. En un teléfono pequeño el del
+ * sistema tapa media pantalla, incluido el aviso de bloqueo; y un teclado de
+ * terceros instalado en el teléfono del menor puede aprender o sugerir lo que
+ * se escribe, cosa que un PIN no debería pasar nunca.
  */
+
+type Tecla = '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | 'borrar';
+
+/** `null` es el hueco de la última fila, a la izquierda del cero. */
+const TECLAS: readonly (Tecla | null)[] = ['1', '2', '3', '4', '5', '6', '7', '8', '9', null, '0', 'borrar'];
+
 export default function UnlockScreen() {
   const palette = usePalette();
   const styles = useStyles();
@@ -80,59 +92,127 @@ export default function UnlockScreen() {
   }
 
   const blocked = lockedFor > 0;
+  const inerte = blocked || busy;
+  const puedeEntrar = pin.length >= PIN_MIN_LENGTH && !inerte;
+  // Seis puntos, que es la longitud mínima; si el PIN es más largo aparecen
+  // los que falten. Con puntos fijos, quien eligió ocho dígitos creería que se
+  // le acabó el espacio a mitad de escribirlo.
+  const huecos = Math.max(PIN_MIN_LENGTH, pin.length);
+
+  const pulsar = (tecla: Tecla) => {
+    setError(null);
+    setPin((actual) =>
+      tecla === 'borrar' ? actual.slice(0, -1) : actual.length < PIN_MAX_LENGTH ? actual + tecla : actual,
+    );
+  };
 
   return (
-    <Screen>
-      <Gap size="xxl" />
-      <Txt style={styles.emoji} align="center">
-        🔒
-      </Txt>
-      <Gap size="lg" />
-      <Txt variant="title" align="center">
-        Panel de tutores
-      </Txt>
-      <Gap size="sm" />
-      <Txt variant="body" color={palette.textMuted} align="center">
-        Escribe tu PIN para cambiar límites, horarios y apps.
-      </Txt>
-
-      <Gap size="xxl" />
-
-      <TextInput
-        value={pin}
-        onChangeText={(text) => setPin(text.replace(/\D/g, '').slice(0, PIN_MAX_LENGTH))}
-        keyboardType="number-pad"
-        secureTextEntry
-        editable={!blocked && !busy}
-        style={styles.pinInput}
-        accessibilityLabel="PIN"
-        autoFocus={!blocked}
-      />
-
-      <Gap size="lg" />
-
-      {blocked ? (
-        <Notice tone="warning" title={`Demasiados intentos · espera ${formatRemaining(lockedFor)}`}>
-          El tiempo de espera crece con cada fallo. Si olvidaste el PIN, usa tu código de
-          recuperación.
-        </Notice>
-      ) : null}
-
-      {error ? (
-        <Txt variant="caption" color={palette.danger} align="center">
-          {error}
+    <SafeAreaView style={styles.pantalla} edges={['top', 'left', 'right', 'bottom']}>
+      <ScrollView contentContainerStyle={styles.contenido} showsVerticalScrollIndicator={false}>
+        <View style={styles.candado}>
+          <Text style={styles.candadoEmoji}>🔒</Text>
+        </View>
+        <Gap size="md" />
+        <Text style={styles.titulo} accessibilityRole="header">
+          Zona de tutores
+        </Text>
+        <Gap size="xs" />
+        <Txt variant="body" align="center" color={palette.textMuted}>
+          Escribe tu PIN para cambiar límites, horarios y apps
         </Txt>
-      ) : null}
 
-      <Gap size="lg" />
-      <Button label="Entrar" onPress={submit} disabled={pin.length < 6 || blocked || busy} loading={busy} />
+        <Gap size="xl" />
+        <View
+          style={styles.puntos}
+          accessible
+          accessibilityLabel={`${pin.length} ${pin.length === 1 ? 'dígito escrito' : 'dígitos escritos'}`}
+        >
+          {Array.from({ length: huecos }, (_, indice) => (
+            <View
+              key={indice}
+              style={[styles.punto, { backgroundColor: indice < pin.length ? palette.accent : palette.arcadePista }]}
+            />
+          ))}
+        </View>
 
-      <Gap size="md" />
-      <Button label="Olvidé mi PIN" variant="ghost" onPress={() => setShowRecovery(true)} />
+        {blocked ? (
+          <>
+            <Gap size="lg" />
+            <Notice tone="warning" title={`Demasiados intentos · espera ${formatRemaining(lockedFor)}`}>
+              El tiempo de espera crece con cada fallo. Si olvidaste el PIN, usa tu código de
+              recuperación.
+            </Notice>
+          </>
+        ) : null}
 
-      <Gap size="md" />
-      <Button label="Volver" variant="ghost" onPress={() => router.replace('/(child)/home')} />
-    </Screen>
+        {error ? (
+          <>
+            <Gap size="md" />
+            <Txt variant="caption" color={palette.danger} align="center">
+              {error}
+            </Txt>
+          </>
+        ) : null}
+
+        <Gap size="xl" />
+        <View style={styles.teclado}>
+          {TECLAS.map((tecla, indice) =>
+            tecla === null ? (
+              <View key={`hueco-${indice}`} style={styles.tecla} />
+            ) : (
+              <Pressable
+                key={tecla}
+                onPress={() => pulsar(tecla)}
+                disabled={inerte}
+                accessibilityRole="button"
+                accessibilityLabel={tecla === 'borrar' ? 'Borrar el último dígito' : tecla}
+                style={({ pressed }) => [
+                  styles.tecla,
+                  styles.teclaVisible,
+                  pressed && styles.teclaPulsada,
+                  inerte && styles.inerte,
+                ]}
+              >
+                <Text style={styles.teclaTexto}>{tecla === 'borrar' ? '⌫' : tecla}</Text>
+              </Pressable>
+            ),
+          )}
+        </View>
+
+        <Gap size="lg" />
+        <Pressable
+          onPress={submit}
+          disabled={!puedeEntrar}
+          accessibilityRole="button"
+          accessibilityLabel="Entrar"
+          accessibilityState={{ disabled: !puedeEntrar, busy }}
+          style={({ pressed }) => [styles.entrar, !puedeEntrar && styles.inerte, pressed && styles.entrarPulsado]}
+        >
+          {busy ? (
+            <ActivityIndicator color={palette.base} />
+          ) : (
+            <Text style={styles.entrarTexto}>Entrar</Text>
+          )}
+        </Pressable>
+
+        <View style={styles.enlaces}>
+          <Pressable
+            onPress={() => setShowRecovery(true)}
+            accessibilityRole="button"
+            style={styles.enlace}
+          >
+            <Text style={styles.enlaceTexto}>Olvidé mi PIN</Text>
+          </Pressable>
+          <Pressable
+            onPress={() => router.replace('/(child)/home')}
+            accessibilityRole="button"
+            style={styles.enlace}
+          >
+            <Text style={[styles.enlaceTexto, styles.enlaceSuave]}>Volver</Text>
+          </Pressable>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
@@ -224,7 +304,7 @@ function RecoveryFlow({ onCancel }: { onCancel: () => void }) {
       <Button
         label="Restablecer PIN"
         onPress={submit}
-        disabled={code.trim().length < 16 || newPin.length < 6 || busy}
+        disabled={code.trim().length < 16 || newPin.length < PIN_MIN_LENGTH || busy}
         loading={busy}
       />
       <Gap size="md" />
@@ -236,7 +316,64 @@ function RecoveryFlow({ onCancel }: { onCancel: () => void }) {
 }
 
 const useStyles = makeStyles((palette) => ({
-  emoji: { fontSize: 56 },
+  pantalla: { flex: 1, backgroundColor: palette.surfaceRaised },
+  contenido: {
+    flexGrow: 1,
+    paddingHorizontal: space.xl,
+    paddingTop: space.xxxl,
+    paddingBottom: space.xl,
+  },
+  candado: {
+    width: 70,
+    height: 70,
+    alignSelf: 'center',
+    borderRadius: 26,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: palette.accentSoft,
+  },
+  candadoEmoji: { fontSize: 31, lineHeight: 38 },
+  titulo: {
+    fontFamily: 'Baloo2_700Bold',
+    fontSize: 25,
+    lineHeight: 30,
+    color: palette.text,
+    textAlign: 'center',
+  },
+  puntos: { flexDirection: 'row', justifyContent: 'center', gap: space.md },
+  punto: { width: 18, height: 18, borderRadius: 9 },
+
+  teclado: { flexDirection: 'row', flexWrap: 'wrap', gap: 11 },
+  // `flexBasis` en vez de un ancho calculado: tres por fila con el hueco de en
+  // medio, en cualquier ancho de pantalla, sin medir nada.
+  tecla: { flexBasis: '30%', flexGrow: 1, height: 64, borderRadius: 24 },
+  teclaVisible: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: palette.surface,
+    ...shadow('sm'),
+  },
+  teclaPulsada: { backgroundColor: palette.accentSoft },
+  teclaTexto: { fontFamily: 'Baloo2_700Bold', fontSize: 23, lineHeight: 30, color: palette.text },
+  inerte: { opacity: 0.45 },
+
+  // El botón de entrar va en la tinta de la paleta y no en morado: en esta
+  // pantalla el morado ya significa «dígito escrito», y un segundo uso lo
+  // confundiría con un punto más.
+  entrar: {
+    minHeight: 56,
+    borderRadius: radius.pill,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: palette.text,
+  },
+  entrarPulsado: { opacity: 0.85 },
+  entrarTexto: { fontFamily: 'Baloo2_700Bold', fontSize: 17, lineHeight: 22, color: palette.base },
+  enlaces: { marginTop: 'auto', paddingTop: space.lg, alignItems: 'center' },
+  enlace: { minHeight: MIN_TOUCH_TARGET, paddingHorizontal: space.lg, justifyContent: 'center' },
+  enlaceTexto: { fontFamily: 'Nunito_700Bold', fontSize: 14, lineHeight: 20, color: palette.textMuted },
+  enlaceSuave: { opacity: 0.7 },
+
   pinInput: {
     ...(typography.title as object),
     color: palette.text,

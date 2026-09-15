@@ -37,7 +37,9 @@ export default function ParentLayout() {
       }}
     >
       <Stack.Screen name="unlock" options={{ headerShown: false }} />
-      <Stack.Screen name="dashboard" options={{ title: 'Panel', headerBackVisible: false }} />
+      {/* El panel dibuja su propia cabecera con el nombre del menor y su estado.
+          El título se conserva porque es la etiqueta de «volver» en iOS. */}
+      <Stack.Screen name="dashboard" options={{ title: 'Panel', headerShown: false }} />
       <Stack.Screen name="apps" options={{ title: 'Apps limitadas' }} />
       <Stack.Screen name="schedules" options={{ title: 'Horarios protegidos' }} />
       <Stack.Screen name="settings" options={{ title: 'Ajustes' }} />
