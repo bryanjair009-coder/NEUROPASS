@@ -14,6 +14,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { lighten, withAlpha } from '@/lib/color';
+import { FondoFlotante } from '@/ui/components/FondoFlotante';
 import { makeStyles } from '@/ui/makeStyles';
 import { usePalette } from '@/ui/ThemeProvider';
 import {
@@ -85,14 +86,20 @@ interface ScreenProps {
   /** Contenido fijo al pie, fuera del área desplazable. */
   footer?: ReactNode;
   padded?: boolean;
+  /**
+   * Formas pastel flotando detrás. Solo en la zona del menor: el panel del
+   * tutor es para leer datos en diez segundos y va sin animación.
+   */
+  formas?: boolean;
 }
 
-export function Screen({ children, scroll = true, footer, padded = true }: ScreenProps) {
+export function Screen({ children, scroll = true, footer, padded = true, formas = false }: ScreenProps) {
   const styles = useStyles();
   const body = padded ? { padding: space.xl } : undefined;
 
   return (
     <SafeAreaView style={styles.screen} edges={['top', 'left', 'right']}>
+      {formas ? <FondoFlotante /> : null}
       {scroll ? (
         <ScrollView
           contentContainerStyle={[body, styles.scrollContent]}

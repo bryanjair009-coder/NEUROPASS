@@ -24,7 +24,8 @@ import { useMovimientoReducido } from '@/ui/useMovimientoReducido';
  * celebra nada.
  */
 
-export type ExpresionAxo = 'neutro' | 'reto' | 'acierto' | 'fallo' | 'sorpresa';
+/** Cinco caras y el cuerpo entero, que solo aparece en la bienvenida. */
+export type ExpresionAxo = 'neutro' | 'reto' | 'acierto' | 'fallo' | 'sorpresa' | 'cuerpo';
 
 interface Recorte {
   readonly fuente: ImageSourcePropType;
@@ -42,6 +43,7 @@ const RECORTES: Record<ExpresionAxo, Recorte> = {
   acierto: { fuente: require('../../../assets/axo/axo-feliz.png'), proporcion: 435 / 510 },
   fallo: { fuente: require('../../../assets/axo/axo-confundido.png'), proporcion: 453 / 510 },
   sorpresa: { fuente: require('../../../assets/axo/axo-sorpresa.png'), proporcion: 447 / 510 },
+  cuerpo: { fuente: require('../../../assets/axo/axo-cuerpo.png'), proporcion: 722 / 528 },
 };
 
 type Reaccion = 'salto' | 'temblor';

@@ -17,10 +17,12 @@ import { useMovimientoReducido } from '@/ui/useMovimientoReducido';
 interface ApareceProps {
   readonly children: ReactNode;
   readonly desde: 'derecha' | 'abajo';
+  /** Milisegundos de espera, para que varios bloques entren escalonados. */
+  readonly retardo?: number;
   readonly style?: StyleProp<ViewStyle>;
 }
 
-export function Aparece({ children, desde, style }: ApareceProps) {
+export function Aparece({ children, desde, retardo = 0, style }: ApareceProps) {
   const movimientoReducido = useMovimientoReducido();
   const [avance] = useState(() => new Animated.Value(0));
 
@@ -32,12 +34,13 @@ export function Aparece({ children, desde, style }: ApareceProps) {
     const entrada = Animated.timing(avance, {
       toValue: 1,
       duration: desde === 'derecha' ? 450 : 300,
+      delay: retardo,
       easing: Easing.bezier(0.22, 1, 0.36, 1),
       useNativeDriver: true,
     });
     entrada.start();
     return () => entrada.stop();
-  }, [avance, desde, movimientoReducido]);
+  }, [avance, desde, retardo, movimientoReducido]);
 
   const transform =
     desde === 'derecha'

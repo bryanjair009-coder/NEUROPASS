@@ -156,6 +156,22 @@ export const pillarColorInk: Record<Pillar, string> = {
   lenguaje: marca.mangoOsc,
 };
 
+/**
+ * Fondo pastel del pilar en el tema vigente: el cuadro del icono en los poderes
+ * del inicio. Depende de la paleta y no solo del pilar porque de noche el
+ * pastel es un tinte translúcido y no un color opaco.
+ */
+export function pastelDePilar(palette: Palette, pillar: Pillar): string {
+  const fondos: Record<Pillar, string> = {
+    matematicas: palette.pastelAqua,
+    creatividad: palette.pastelRosa,
+    memoria: palette.accentSoft,
+    logica: palette.pastelLima,
+    lenguaje: palette.pastelMango,
+  };
+  return fondos[pillar];
+}
+
 export type TonoMarca = 'morado' | 'aqua' | 'lima' | 'rosa' | 'mango';
 
 /** Cada tono de marca con su canto, para las superficies con relieve. */

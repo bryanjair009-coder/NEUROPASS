@@ -1,7 +1,7 @@
 import * as Clipboard from 'expo-clipboard';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { TextInput, View } from 'react-native';
+import { Text, TextInput, View } from 'react-native';
 
 import { AGE_BANDS, AGE_BAND_LABEL, type AgeBand } from '@/domain/age';
 import { createChild } from '@/data/repositories/children';
@@ -9,19 +9,19 @@ import { audit } from '@/data/repositories/policy';
 import { useAppStore } from '@/state/appStore';
 import { PIN_MAX_LENGTH, PIN_MIN_LENGTH, validatePinStrength } from '@/security/pin';
 import { formatRecoveryCode, setPin } from '@/security/pinStore';
+import { Axo } from '@/ui/components/Axo';
 import {
   Button,
   Card,
   Gap,
   Notice,
-  ProgressBar,
   Row,
   Screen,
   Txt,
 } from '@/ui/components/primitives';
 import { makeStyles } from '@/ui/makeStyles';
 import { usePalette } from '@/ui/ThemeProvider';
-import { radius, space, typography } from '@/ui/theme';
+import { marca, radius, shadow, space, typography } from '@/ui/theme';
 
 /**
  * Configuración inicial, en cuatro pasos.
@@ -36,6 +36,8 @@ import { radius, space, typography } from '@/ui/theme';
 
 type Step = 'bienvenida' | 'pin' | 'recuperacion' | 'menor';
 
+const PASOS: readonly Step[] = ['bienvenida', 'pin', 'recuperacion', 'menor'];
+
 const AVATARS = ['🦊', '🐼', '🦉', '🐙', '🦕', '🐧', '🦁', '🐢', '🦋', '🐳'] as const;
 
 export default function Onboarding() {
@@ -46,11 +48,12 @@ export default function Onboarding() {
   const [step, setStep] = useState<Step>(pinConfigured ? 'menor' : 'bienvenida');
   const [recoveryCode, setRecoveryCode] = useState<string | null>(null);
 
-  const stepIndex = { bienvenida: 0, pin: 1, recuperacion: 2, menor: 3 }[step];
-
   return (
-    <Screen>
-      <ProgressBar value={(stepIndex + 1) / 4} />
+    // Las formas de fondo solo acompañan a la bienvenida: en el PIN y el
+    // código de recuperación quien lee es un adulto concentrado en no
+    // equivocarse, y cualquier movimiento ahí estorba.
+    <Screen formas={step === 'bienvenida'}>
+      <IndicadorPasos actual={PASOS.indexOf(step)} />
       <Gap size="xl" />
 
       {step === 'bienvenida' ? <Welcome onNext={() => setStep('pin')} /> : null}
@@ -85,50 +88,81 @@ export default function Onboarding() {
 
 // ---------------------------------------------------------------------------
 
-function Welcome({ onNext }: { onNext: () => void }) {
+/**
+ * Píldoras de progreso. La activa se estira en vez de cambiar solo de color:
+ * se distingue igual con cualquier tipo de daltonismo.
+ */
+function IndicadorPasos({ actual }: { actual: number }) {
   const palette = usePalette();
+  const styles = useStyles();
   return (
-    <View>
-      <Txt variant="display">NEUROpass</Txt>
-      <Gap size="sm" />
-      <Txt variant="body" color={palette.textMuted}>
-        El tiempo de pantalla se gana resolviendo retos de matemáticas, lógica, memoria, lenguaje y
-        creatividad, ajustados a la edad.
-      </Txt>
-
-      <Gap size="xl" />
-
-      <Card>
-        <Txt variant="heading">Cómo funciona</Txt>
-        <Gap size="md" />
-        <Bullet emoji="🎯" text="Tú eliges qué apps se limitan y en qué horarios." />
-        <Bullet emoji="🧠" text="El menor resuelve una sesión corta de retos para desbloquear minutos." />
-        <Bullet emoji="📈" text="La dificultad se ajusta sola al nivel real de cada pilar." />
-        <Bullet emoji="🔒" text="Todo se guarda solo en este dispositivo. Nada viaja a internet." />
-      </Card>
-
-      <Gap size="xl" />
-      <Notice tone="info" title="Antes de empezar">
-        Instala NEUROpass en el teléfono del menor, no en el tuyo. Es el dispositivo donde se aplican
-        los límites.
-      </Notice>
-
-      <Gap size="xl" />
-      <Button label="Comenzar" onPress={onNext} />
+    <View
+      style={styles.pasos}
+      accessibilityRole="progressbar"
+      accessibilityLabel={`Paso ${actual + 1} de ${PASOS.length}`}
+    >
+      {PASOS.map((paso, indice) => (
+        <View
+          key={paso}
+          style={[
+            styles.paso,
+            indice === actual
+              ? { width: 42, backgroundColor: palette.accent }
+              : { width: 14, backgroundColor: palette.accentSoft },
+          ]}
+        />
+      ))}
     </View>
   );
 }
 
-function Bullet({ emoji, text }: { emoji: string; text: string }) {
+function Welcome({ onNext }: { onNext: () => void }) {
   const palette = usePalette();
   const styles = useStyles();
   return (
-    <Row gap="md" align="flex-start" style={styles.bullet}>
-      <Txt variant="body">{emoji}</Txt>
-      <Txt variant="body" color={palette.textMuted} style={styles.bulletText}>
-        {text}
+    <View>
+      <View style={styles.axoBienvenida}>
+        <Axo ancho={176} expresion="cuerpo" tinte={marca.aqua} />
+      </View>
+      <Gap size="lg" />
+      <Txt variant="display" align="center">
+        ¡Hola! Soy AXO
       </Txt>
-    </Row>
+      <Gap size="sm" />
+      <Txt variant="body" align="center" color={palette.textMuted} style={styles.subtitulo}>
+        Tu erizo cibernético. Entreno contigo, y cada reto que resuelves carga minutos de juego de
+        verdad.
+      </Txt>
+
+      <Gap size="xl" />
+      <Beneficio emoji="🎯" fondo={palette.pastelAqua} texto="Tu familia elige qué apps se abren y cuándo" />
+      <Beneficio emoji="🧠" fondo={palette.accentSoft} texto="Resuelves retos cortos y ganas minutos" />
+      <Beneficio emoji="📈" fondo={palette.pastelLima} texto="Los retos se ajustan solos a tu nivel" />
+
+      <Gap size="sm" />
+      {/* Lo que un adulto necesita saber antes de seguir, sin ocupar una tarjeta
+          entera: dónde se instala y que nada sale del teléfono. */}
+      <Txt variant="caption" align="center" color={palette.textMuted}>
+        Instala NEUROpass en el teléfono del menor. Todo se guarda solo en ese dispositivo.
+      </Txt>
+
+      <Gap size="xl" />
+      <Button label="¡Vamos allá!" onPress={onNext} />
+    </View>
+  );
+}
+
+function Beneficio({ emoji, fondo, texto }: { emoji: string; fondo: string; texto: string }) {
+  const styles = useStyles();
+  return (
+    <View style={styles.beneficio}>
+      <View style={[styles.beneficioIcono, { backgroundColor: fondo }]}>
+        <Text style={styles.beneficioEmoji}>{emoji}</Text>
+      </View>
+      <Txt variant="bodyStrong" style={styles.beneficioTexto}>
+        {texto}
+      </Txt>
+    </View>
   );
 }
 
@@ -374,8 +408,32 @@ function ChildStep({ onDone }: { onDone: () => Promise<void> }) {
 }
 
 const useStyles = makeStyles((palette) => ({
-  bullet: { marginBottom: space.md },
-  bulletText: { flexShrink: 1 },
+  pasos: { flexDirection: 'row', justifyContent: 'center', gap: 7 },
+  paso: { height: 7, borderRadius: radius.pill },
+
+  axoBienvenida: { alignItems: 'center' },
+  subtitulo: { maxWidth: 302, alignSelf: 'center' },
+  beneficio: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.md + 2,
+    marginBottom: space.sm + 3,
+    paddingVertical: space.md + 2,
+    paddingHorizontal: space.lg,
+    borderRadius: radius.lg,
+    backgroundColor: palette.surface,
+    ...shadow('sm'),
+  },
+  beneficioIcono: {
+    width: 44,
+    height: 44,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  beneficioEmoji: { fontSize: 22, lineHeight: 28 },
+  beneficioTexto: { flex: 1 },
+
   pinInput: {
     ...(typography.title as object),
     color: palette.text,
@@ -397,7 +455,7 @@ const useStyles = makeStyles((palette) => ({
     paddingHorizontal: space.lg,
     paddingVertical: space.md,
   },
-  recoveryCode: { fontSize: 20, letterSpacing: 2, color: palette.accentSoft },
+  recoveryCode: { fontSize: 20, letterSpacing: 2, color: palette.accent },
   avatarButton: { paddingHorizontal: space.lg },
   bandOption: { marginBottom: space.sm },
 }));
