@@ -459,8 +459,10 @@ const useStyles = makeStyles((palette) => ({
   },
   cardRaised: { borderRadius: radius.xl, padding: space.xl - 6, ...shadow('md') },
   button: { borderRadius: radius.pill },
+  // Sin `flexGrow`: la cara mide lo que fija `minHeight`. Con él, dentro de una
+  // fila que se parte en varias líneas, Android estiraba la cara hacia abajo y
+  // la siguiente fila se montaba encima de la tarjeta.
   buttonFace: {
-    flexGrow: 1,
     borderRadius: radius.pill,
     alignItems: 'center',
     justifyContent: 'center',

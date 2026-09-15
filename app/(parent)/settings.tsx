@@ -1,7 +1,7 @@
 import * as Clipboard from 'expo-clipboard';
 import { Redirect, router } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
-import { Alert, Pressable, Switch, View } from 'react-native';
+import { Alert, Pressable, Switch, TextInput, View } from 'react-native';
 
 import { PILLARS, PILLAR_EMOJI, PILLAR_LABEL, type Pillar } from '@/domain/pillar';
 import { AGE_BANDS, AGE_BAND_LABEL, type AgeBand } from '@/domain/age';
@@ -24,7 +24,7 @@ import {
 } from '@/ui/components/primitives';
 import { makeStyles } from '@/ui/makeStyles';
 import { useTheme, type ThemeMode } from '@/ui/ThemeProvider';
-import { radius, space } from '@/ui/theme';
+import { MIN_TOUCH_TARGET, radius, space, typography } from '@/ui/theme';
 
 import { useParentSession } from './_layout';
 
@@ -458,6 +458,21 @@ function Stepper({
 }) {
   const { palette } = useTheme();
   const styles = useStyles();
+  // Lo que se está escribiendo, o `null` si no se está editando. Se guarda
+  // aparte del valor real para no aplicar cada pulsación: al teclear «120» se
+  // pasaría por 1 y 12, que quedan fuera de rango y se registrarían en la
+  // auditoría como cambios que nadie quiso hacer.
+  const [borrador, setBorrador] = useState<string | null>(null);
+
+  const confirmar = () => {
+    if (borrador === null) return;
+    const numero = Number.parseInt(borrador, 10);
+    setBorrador(null);
+    if (!Number.isFinite(numero)) return;
+    const acotado = Math.min(max, Math.max(min, numero));
+    if (acotado !== value) onChange(acotado);
+  };
+
   return (
     <View>
       <Txt variant="caption" color={palette.textMuted}>
@@ -477,10 +492,20 @@ function Stepper({
           </Txt>
         </Pressable>
 
-        <Txt variant="bodyStrong">
-          {value}
-          {suffix}
-        </Txt>
+        <Row gap="xs">
+          <TextInput
+            value={borrador ?? String(value)}
+            onChangeText={(texto) => setBorrador(texto.replace(/\D/g, '').slice(0, String(max).length))}
+            onBlur={confirmar}
+            onSubmitEditing={confirmar}
+            keyboardType="number-pad"
+            returnKeyType="done"
+            selectTextOnFocus
+            style={styles.stepperInput}
+            accessibilityLabel={`${label}, entre ${min} y ${max}`}
+          />
+          {suffix ? <Txt variant="bodyStrong">{suffix.trim()}</Txt> : null}
+        </Row>
 
         <Pressable
           onPress={() => onChange(Math.min(max, value + step))}
@@ -566,6 +591,20 @@ const useStyles = makeStyles((palette) => ({
     paddingHorizontal: space.xl,
     paddingVertical: space.md,
     backgroundColor: palette.surfaceRaised,
+  },
+  stepperInput: {
+    ...(typography.bodyStrong as object),
+    // Ancho fijo: tres cifras caben de sobra, y sin él el campo se estira
+    // hasta empujar el − y el + contra los bordes.
+    width: 72,
+    minHeight: MIN_TOUCH_TARGET,
+    paddingHorizontal: space.sm,
+    textAlign: 'center',
+    color: palette.text,
+    backgroundColor: palette.surface,
+    borderWidth: 1,
+    borderColor: palette.border,
+    borderRadius: radius.md,
   },
   responseCard: { marginBottom: space.md },
   grow: { flex: 1, marginRight: space.md },
