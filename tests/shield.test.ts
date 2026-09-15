@@ -30,7 +30,7 @@ describe('colores de la pantalla de bloqueo', () => {
     const theme = leer('src/ui/theme.ts');
     const overlay = leer(OVERLAY);
 
-    const deTs = (nombre: string, bloque: 'lightPalette' | 'darkPalette'): string => {
+    const deTs = (nombre: string, bloque: 'paletaDia' | 'paletaNoche'): string => {
       const desde = theme.indexOf(`export const ${bloque}`);
       const trozo = theme.slice(desde, desde + 900);
       const encontrado = trozo.match(new RegExp(`${nombre}: '(#[0-9A-Fa-f]{6})'`));
@@ -46,10 +46,10 @@ describe('colores de la pantalla de bloqueo', () => {
       return encontrado[1].toUpperCase();
     };
 
-    expect(deKotlin('FONDO_CLARO')).toBe(deTs('base', 'lightPalette'));
-    expect(deKotlin('FONDO_OSCURO')).toBe(deTs('base', 'darkPalette'));
-    expect(deKotlin('TEXTO_CLARO')).toBe(deTs('text', 'lightPalette'));
-    expect(deKotlin('TEXTO_OSCURO')).toBe(deTs('text', 'darkPalette'));
+    expect(deKotlin('FONDO_CLARO')).toBe(deTs('base', 'paletaDia'));
+    expect(deKotlin('FONDO_OSCURO')).toBe(deTs('base', 'paletaNoche'));
+    expect(deKotlin('TEXTO_CLARO')).toBe(deTs('text', 'paletaDia'));
+    expect(deKotlin('TEXTO_OSCURO')).toBe(deTs('text', 'paletaNoche'));
   });
 
   it('el acento de respaldo son colores de marca reales', () => {

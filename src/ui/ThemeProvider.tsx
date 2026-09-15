@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useMemo, useState, type ReactNode
 import { useColorScheme } from 'react-native';
 
 import { getPreference, setPreference } from '@/data/repositories/preferences';
-import { darkPalette, lightPalette, type Palette } from '@/ui/theme';
+import { paletaDia, paletaNoche, type Palette } from '@/ui/theme';
 
 /**
  * Tema visible de la app.
@@ -58,7 +58,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     const isDark = mode === 'sistema' ? sistema === 'dark' : mode === 'oscuro';
 
     return {
-      palette: isDark ? darkPalette : lightPalette,
+      palette: isDark ? paletaNoche : paletaDia,
       isDark,
       mode,
       setMode: (siguiente) => {

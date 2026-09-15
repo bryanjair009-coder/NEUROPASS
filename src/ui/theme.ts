@@ -3,105 +3,157 @@ import { Platform } from 'react-native';
 import type { Pillar } from '@/domain/pillar';
 
 /**
- * Sistema de diseño.
+ * Sistema de diseño — rediseño AXO.
  *
  * NEUROpass tiene dos públicos con necesidades opuestas en el mismo binario:
  * un menor de entre 6 y 16 años, y una madre o padre que quiere entender de un
  * vistazo qué está pasando. En vez de dos temas distintos —que se
  * desincronizan a la primera— hay un solo conjunto de tokens y dos *modos* de
  * composición: el del menor usa las escalas grandes y los acentos de pilar; el
- * del tutor usa las escalas densas y el gris neutro.
+ * del tutor usa las escalas densas y los tonos neutros.
  *
  * Hay dos paletas con las mismas claves. Los componentes nunca importan una en
  * concreto: piden la vigente con `useTheme()`, y así el mismo árbol sirve para
  * los dos temas sin duplicar pantallas.
  *
- * El modo claro usa un blanco roto y no #FFFFFF puro: buena parte del uso
- * ocurre de noche y una pantalla a máxima luminosidad en la habitación de un
- * niño es un problema de sueño. El modo oscuro existe por lo mismo, y por eso
- * sigue al sistema de forma predeterminada.
+ * La paleta se deriva de AXO —morado y aqua— y se organiza en fondos pastel con
+ * contenidos saturados encima: eso da contraste suficiente sin la dureza del
+ * blanco puro, que en la habitación de un niño de noche es un problema de sueño.
+ * Por la misma razón el tema noche no es decorativo: buena parte del uso ocurre
+ * a oscuras, y el tema sigue al sistema de forma predeterminada.
  */
 
 /**
- * Colores de marca. Son los cinco de la guía y se usan como acentos rotatorios
- * en las pantallas del menor (ver `sessionAccent.ts`), no como decoración
- * suelta: cada uno identifica una sesión completa.
+ * Colores de marca, idénticos en los dos temas.
+ *
+ * Cada color tiene su variante oscura. No es un adorno: es el canto inferior de
+ * las píldoras y el color de texto del pilar sobre fondo claro, donde el tono
+ * saturado original no alcanza contraste legible.
  */
-export const brand = {
-  morado: '#C64FE3',
-  cian: '#21BFE3',
-  lima: '#8FE016',
-  rosa: '#F2137C',
-  marino: '#101B3F',
+export const marca = {
+  morado: '#7C5FFF',
+  moradoOsc: '#5B3FE0',
+  aqua: '#22D3EE',
+  aquaOsc: '#0E9FBC',
+  lima: '#22D79E',
+  limaOsc: '#109C71',
+  rosa: '#FF5DA0',
+  rosaOsc: '#C93B78',
+  mango: '#FFAA3C',
+  mangoOsc: '#C87A0C',
 } as const;
 
-export const lightPalette = {
-  // Fondos, del lienzo de la app a las superficies elevadas.
-  base: '#FAFBFF',
+export const paletaDia = {
+  base: '#F4F1FF',
   surface: '#FFFFFF',
-  surfaceRaised: '#FFFFFF',
-  border: '#E3E7F5',
+  surfaceRaised: '#F7F4FF',
+  border: 'rgba(124,95,255,0.14)',
 
-  text: '#101B3F',
-  textMuted: '#5D6789',
-  textFaint: '#98A1BE',
+  text: '#1A1240',
+  textMuted: '#6A5F94',
+  textFaint: '#9C94BA',
 
-  accent: '#C64FE3',
-  accentSoft: '#F3E0FA',
+  accent: marca.morado,
+  accentSoft: '#EDE7FF',
 
-  success: '#16A34A',
-  successSoft: '#E6F7EC',
-  warning: '#D97706',
-  danger: '#DC2626',
-  dangerSoft: '#FDECEC',
+  pastelAqua: '#DFF7FD',
+  pastelRosa: '#FFE7F3',
+  pastelLima: '#E4FBEF',
+  pastelMango: '#FFF1DC',
+
+  // El fondo de la sesión arcade es un degradado vertical; se declara como dos
+  // paradas porque una paleta de React Native no puede guardar un degradado.
+  arcadeFondoArriba: '#F1ECFF',
+  arcadeFondoAbajo: '#E7F6FF',
+  arcadePanel: '#FFFFFF',
+  arcadePista: '#E2DAF7',
+
+  // Texto de las píldoras de respuesta sobre su relleno saturado. De día va en
+  // blanco; de noche cambia a un tono muy oscuro del mismo color (ver la paleta
+  // nocturna), porque blanco sobre neón en una habitación a oscuras deslumbra.
+  tintaPildoraAqua: '#FFFFFF',
+  tintaPildoraRosa: '#FFFFFF',
+  tintaPildoraLima: '#FFFFFF',
+  tintaPildoraMango: '#FFFFFF',
+
+  success: marca.limaOsc,
+  successSoft: '#E4FBEF',
+  warning: marca.mangoOsc,
+  danger: marca.rosaOsc,
+  dangerSoft: '#FFE7F3',
 
   white: '#FFFFFF',
 } as const;
 
 /** Las dos paletas comparten claves; los valores son colores libres, no literales. */
-export type Palette = Record<keyof typeof lightPalette, string>;
+export type Palette = Record<keyof typeof paletaDia, string>;
 
 /**
- * Paleta oscura.
+ * Paleta nocturna.
  *
- * No es la clara invertida: los colores de marca se aclaran un poco para no
- * perder saturación sobre fondo oscuro, y los fondos usan un azul muy
- * desaturado en lugar de negro puro, que sobre OLED produce bordes duros donde
- * termina cada tarjeta.
+ * No es la diurna invertida: los pasteles se convierten en tintes translúcidos
+ * del mismo color sobre el lienzo navy, y los neones de AXO ganan protagonismo
+ * porque son lo único que emite luz en la pantalla. Los fondos son un azul muy
+ * desaturado y no negro puro, que sobre OLED produce bordes duros donde termina
+ * cada tarjeta.
  */
-export const darkPalette: Palette = {
-  base: '#0B1020',
-  surface: '#141A2E',
-  surfaceRaised: '#1D2540',
-  border: '#2A3454',
+export const paletaNoche: Palette = {
+  base: '#070E24',
+  surface: '#111B3E',
+  surfaceRaised: '#0D1533',
+  border: 'rgba(34,211,238,0.20)',
 
-  text: '#F2F5FF',
-  textMuted: '#9AA4C4',
-  textFaint: '#5F6A8C',
+  text: '#EAF2FF',
+  textMuted: '#93A2CC',
+  textFaint: '#5E6C96',
 
-  accent: '#D874F0',
-  accentSoft: '#2E1B3B',
+  accent: marca.morado,
+  accentSoft: 'rgba(124,95,255,0.20)',
 
-  success: '#3DD68C',
-  successSoft: '#12341F',
-  warning: '#FBBF24',
-  danger: '#F87171',
-  dangerSoft: '#3A1A1A',
+  pastelAqua: 'rgba(34,211,238,0.16)',
+  pastelRosa: 'rgba(255,93,160,0.18)',
+  pastelLima: 'rgba(34,215,158,0.17)',
+  pastelMango: 'rgba(255,170,60,0.18)',
+
+  arcadeFondoArriba: '#0A1330',
+  arcadeFondoAbajo: '#12204A',
+  arcadePanel: 'rgba(255,255,255,0.07)',
+  arcadePista: 'rgba(255,255,255,0.14)',
+
+  tintaPildoraAqua: '#06253A',
+  tintaPildoraRosa: '#3A0A22',
+  tintaPildoraLima: '#06301F',
+  tintaPildoraMango: '#3A2405',
+
+  success: '#45E0B4',
+  successSoft: 'rgba(34,215,158,0.17)',
+  warning: '#FFC878',
+  danger: '#FF87B6',
+  dangerSoft: 'rgba(255,93,160,0.18)',
 
   white: '#FFFFFF',
 };
 
 /**
- * Un color por pilar. Se usan en el radar de progreso, en la cabecera de cada
- * reto y en el resumen de la sesión, siempre para lo mismo, de modo que el
- * color acabe significando algo para el menor sin necesidad de leerlo.
+ * Un color por pilar. Aparece siempre en los mismos sitios —chip del reto, aura
+ * de AXO, barra del poder y punto del panel del tutor—, de modo que el color
+ * acabe significando algo para el menor sin necesidad de leerlo.
  */
 export const pillarColor: Record<Pillar, string> = {
-  matematicas: brand.cian,
-  creatividad: brand.rosa,
-  memoria: brand.morado,
-  logica: brand.lima,
-  lenguaje: brand.marino,
+  matematicas: marca.aqua,
+  creatividad: marca.rosa,
+  memoria: marca.morado,
+  logica: marca.lima,
+  lenguaje: marca.mango,
+};
+
+/** Variante oscurecida del color del pilar, para texto sobre fondo claro. */
+export const pillarColorInk: Record<Pillar, string> = {
+  matematicas: marca.aquaOsc,
+  creatividad: marca.rosaOsc,
+  memoria: marca.moradoOsc,
+  logica: marca.limaOsc,
+  lenguaje: marca.mangoOsc,
 };
 
 /** Escala de espaciado en múltiplos de 4. */
@@ -115,57 +167,72 @@ export const space = {
   xxxl: 48,
 } as const;
 
+/** Radios generosos: nada con esquinas duras a la vista de un niño. */
 export const radius = {
-  sm: 8,
-  md: 12,
-  lg: 18,
-  xl: 24,
+  sm: 14,
+  md: 18,
+  lg: 22,
+  xl: 28,
+  xxl: 32,
   pill: 999,
 } as const;
 
+/**
+ * Escala tipográfica.
+ *
+ * Baloo 2 para títulos, enunciados y cifras: sus formas redondas y cerradas son
+ * fáciles de decodificar en lectura temprana. Nunito para el cuerpo.
+ *
+ * El peso va en el nombre de la familia y **nunca** en `fontWeight`. En React
+ * Native cada peso de una fuente empaquetada es una familia distinta, y Android
+ * ante un `fontWeight` que no reconoce en esa familia la sustituye por la del
+ * sistema o sintetiza una negrita falsa.
+ */
 export const typography = {
-  display: { fontSize: 34, lineHeight: 40, fontWeight: '800' },
-  title: { fontSize: 24, lineHeight: 30, fontWeight: '700' },
-  heading: { fontSize: 19, lineHeight: 25, fontWeight: '700' },
-  body: { fontSize: 16, lineHeight: 23, fontWeight: '400' },
-  bodyStrong: { fontSize: 16, lineHeight: 23, fontWeight: '600' },
-  caption: { fontSize: 13, lineHeight: 18, fontWeight: '500' },
+  display: { fontSize: 40, lineHeight: 44, fontFamily: 'Baloo2_800ExtraBold' },
+  title: { fontSize: 34, lineHeight: 38, fontFamily: 'Baloo2_800ExtraBold' },
+  heading: { fontSize: 21, lineHeight: 26, fontFamily: 'Baloo2_800ExtraBold' },
+  action: { fontSize: 19, lineHeight: 24, fontFamily: 'Baloo2_700Bold' },
+  body: { fontSize: 15, lineHeight: 22, fontFamily: 'Nunito_600SemiBold' },
+  bodyStrong: { fontSize: 15, lineHeight: 22, fontFamily: 'Nunito_700Bold' },
+  caption: { fontSize: 13, lineHeight: 18, fontFamily: 'Nunito_700Bold' },
+  micro: { fontSize: 10.5, lineHeight: 14, letterSpacing: 1.2, fontFamily: 'Nunito_700Bold' },
   mono: {
     fontSize: 15,
     lineHeight: 22,
-    fontWeight: '600',
     fontFamily: Platform.select({ ios: 'Menlo', android: 'monospace', default: 'monospace' }),
   },
 } as const;
 
 /**
- * Escala del enunciado según la edad. Un niño de seis años que apenas lee
- * necesita cuerpo grande; un adolescente con un texto de comprensión lectora
- * necesita que quepa la pregunta completa sin desplazarse.
+ * Escala del enunciado según la edad, con interlineado 1.30 en los tres rangos.
+ * Un niño de seis años que apenas lee necesita cuerpo grande; un adolescente con
+ * un texto de comprensión lectora necesita que quepa la pregunta sin desplazarse.
  */
 export const promptTypeScale = {
-  '6-8': { fontSize: 26, lineHeight: 34 },
-  '9-12': { fontSize: 21, lineHeight: 29 },
-  '13-16': { fontSize: 18, lineHeight: 26 },
+  '6-8': { fontSize: 25, lineHeight: 33 },
+  '9-12': { fontSize: 21, lineHeight: 27 },
+  '13-16': { fontSize: 18, lineHeight: 23 },
 } as const;
 
 /**
- * Sombra multiplataforma. En Android `elevation` es lo único que se respeta;
- * en iOS hay que dar los cuatro parámetros o la sombra no aparece.
+ * Sombra multiplataforma. En Android `elevation` es lo único que se respeta; en
+ * iOS hay que dar los cuatro parámetros o la sombra no aparece.
+ *
+ * Bajo una tarjeta de color la sombra se tiñe con ese color: una sombra neutra
+ * bajo un degradado saturado lo hace parecer recortado y pegado encima.
  */
-export function shadow(level: 'sm' | 'md' | 'lg') {
-  // Sobre fondo claro una sombra negra opaca se ve sucia: se baja la opacidad y
-  // se tiñe de azul marino, que es el color del texto y mantiene la escena fría.
+export function shadow(level: 'sm' | 'md' | 'lg', tinte = '#1A1240') {
   const config = {
-    sm: { elevation: 2, radius: 8, opacity: 0.06, offset: 2 },
-    md: { elevation: 5, radius: 16, opacity: 0.1, offset: 6 },
-    lg: { elevation: 10, radius: 28, opacity: 0.14, offset: 12 },
+    sm: { elevation: 2, radius: 10, opacity: 0.08, offset: 3 },
+    md: { elevation: 6, radius: 16, opacity: 0.1, offset: 4 },
+    lg: { elevation: 12, radius: 34, opacity: 0.3, offset: 16 },
   }[level];
 
   return Platform.select({
     android: { elevation: config.elevation },
     default: {
-      shadowColor: brand.marino,
+      shadowColor: tinte,
       shadowOpacity: config.opacity,
       shadowRadius: config.radius,
       shadowOffset: { width: 0, height: config.offset },
@@ -183,3 +250,6 @@ export function shadow(level: 'sm' | 'md' | 'lg') {
  * conocimiento.
  */
 export const MIN_TOUCH_TARGET = 48;
+
+/** Alto de los botones principales del menor: por encima del mínimo, a propósito. */
+export const ALTO_BOTON_PRINCIPAL = 62;

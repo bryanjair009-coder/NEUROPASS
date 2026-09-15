@@ -1,5 +1,5 @@
 import { hashString } from '@/lib/rng';
-import { brand } from '@/ui/theme';
+import { marca } from '@/ui/theme';
 
 /**
  * Acento visual de una sesión.
@@ -26,17 +26,17 @@ export interface SessionAccent {
  * Parejas admitidas.
  *
  * Se listan a mano en vez de combinarse al azar porque no todas las
- * combinaciones funcionan: lima sobre cian no separa lo suficiente, y el marino
- * sirve de contraste pero apaga la pantalla si le toca a la burbuja. Cada
+ * combinaciones funcionan: lima sobre aqua no separa lo suficiente, y el mango
+ * pierde contraste con el texto blanco si le toca a la burbuja. Cada
  * pareja de aquí tiene contraste suficiente entre sí y con el texto blanco.
  */
 const PAREJAS: readonly SessionAccent[] = [
-  { bubble: brand.morado, action: brand.cian },
-  { bubble: brand.lima, action: brand.morado },
-  { bubble: brand.cian, action: brand.rosa },
-  { bubble: brand.rosa, action: brand.cian },
-  { bubble: brand.morado, action: brand.lima },
-  { bubble: brand.cian, action: brand.morado },
+  { bubble: marca.morado, action: marca.aqua },
+  { bubble: marca.lima, action: marca.morado },
+  { bubble: marca.aqua, action: marca.rosa },
+  { bubble: marca.rosa, action: marca.aqua },
+  { bubble: marca.morado, action: marca.lima },
+  { bubble: marca.aqua, action: marca.morado },
 ];
 
 /**

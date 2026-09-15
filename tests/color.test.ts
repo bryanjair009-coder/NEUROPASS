@@ -15,7 +15,7 @@ describe('color', () => {
   });
 
   it('oscurecer siempre reduce cada componente', () => {
-    for (const hex of ['#C64FE3', '#21BFE3', '#8FE016', '#F2137C', '#101B3F']) {
+    for (const hex of ['#7C5FFF', '#22D3EE', '#22D79E', '#FF5DA0', '#FFAA3C']) {
       const original = parseInt(hex.slice(1), 16);
       const oscuro = parseInt(darken(hex, 0.25).slice(1), 16);
       expect(oscuro, hex).toBeLessThan(original);

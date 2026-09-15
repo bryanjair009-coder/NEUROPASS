@@ -192,17 +192,17 @@ class BlockOverlay(private val context: Context) {
         (value * context.resources.displayMetrics.density).toInt()
 
     private companion object {
-        // Los mismos valores que lightPalette y darkPalette en TypeScript.
+        // Los mismos valores que paletaDia y paletaNoche en TypeScript.
         // tests/shield.test.ts comprueba que no se separen.
-        val FONDO_CLARO = Color.parseColor("#FAFBFF")
-        val FONDO_OSCURO = Color.parseColor("#0B1020")
-        val TEXTO_CLARO = Color.parseColor("#101B3F")
-        val TEXTO_OSCURO = Color.parseColor("#F2F5FF")
+        val FONDO_CLARO = Color.parseColor("#F4F1FF")
+        val FONDO_OSCURO = Color.parseColor("#070E24")
+        val TEXTO_CLARO = Color.parseColor("#1A1240")
+        val TEXTO_OSCURO = Color.parseColor("#EAF2FF")
 
         /** Respaldo si la política llegara sin acentos. */
         val ACENTO_POR_OMISION = ShieldAccent(
-            bubble = Color.parseColor("#C64FE3"),
-            action = Color.parseColor("#21BFE3"),
+            bubble = Color.parseColor("#7C5FFF"),
+            action = Color.parseColor("#22D3EE"),
         )
     }
 }
