@@ -1,3 +1,11 @@
+import { Baloo2_600SemiBold } from '@expo-google-fonts/baloo-2/600SemiBold';
+import { Baloo2_700Bold } from '@expo-google-fonts/baloo-2/700Bold';
+import { Baloo2_800ExtraBold } from '@expo-google-fonts/baloo-2/800ExtraBold';
+import { Nunito_400Regular } from '@expo-google-fonts/nunito/400Regular';
+import { Nunito_600SemiBold } from '@expo-google-fonts/nunito/600SemiBold';
+import { Nunito_700Bold } from '@expo-google-fonts/nunito/700Bold';
+import { Nunito_800ExtraBold } from '@expo-google-fonts/nunito/800ExtraBold';
+import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
@@ -14,9 +22,30 @@ import { makeStyles } from '@/ui/makeStyles';
 import { ThemeProvider, useTheme } from '@/ui/ThemeProvider';
 import { space, typography } from '@/ui/theme';
 
-// La splash se retira a mano cuando la base ya migró y el estado está cargado:
-// dejar que se oculte sola mostraría una pantalla vacía mientras tanto.
+// La splash se retira a mano cuando la base ya migró, el estado está cargado y
+// las fuentes están listas: dejar que se oculte sola mostraría una pantalla
+// vacía, o un fotograma con la tipografía del sistema que luego salta.
 void SplashScreen.preventAutoHideAsync();
+
+/**
+ * Tipografías del rediseño, empaquetadas en el binario: no se descargan, así que
+ * la app sigue sin hacer ninguna petición de red.
+ *
+ * Cada peso se importa por su ruta y no desde el índice del paquete. El índice
+ * requiere todos los pesos de la familia, y Metro los metería en el APK aunque
+ * no se usaran: trece archivos en lugar de los siete que pide el diseño.
+ *
+ * La clave del mapa es el nombre de familia con el que se usan en `fontFamily`.
+ */
+const FUENTES = {
+  Baloo2_600SemiBold,
+  Baloo2_700Bold,
+  Baloo2_800ExtraBold,
+  Nunito_400Regular,
+  Nunito_600SemiBold,
+  Nunito_700Bold,
+  Nunito_800ExtraBold,
+};
 
 // La derivación del PIN usa la implementación del sistema cuando existe. Se
 // registra aquí, una sola vez y antes de que ninguna pantalla pueda pedir un
@@ -37,6 +66,13 @@ function RootContent() {
   const bootstrap = useAppStore((state) => state.bootstrap);
   const ready = useAppStore((state) => state.ready);
   const [failure, setFailure] = useState<string | null>(null);
+  const [fuentesCargadas, errorFuentes] = useFonts(FUENTES);
+
+  // Si las fuentes fallan se sigue con las del sistema en lugar de esperar: una
+  // tipografía distinta es un defecto visual, una splash que nunca se va deja la
+  // app inservible.
+  const fuentesResueltas = fuentesCargadas || errorFuentes !== null;
+  const arranqueResuelto = ready || failure !== null;
 
   useEffect(() => {
     setDarkTheme(isDark);
@@ -58,8 +94,6 @@ function RootContent() {
           // siempre, que es lo que ocurre si el error se traga.
           setFailure(error instanceof Error ? error.message : String(error));
         }
-      } finally {
-        if (!cancelled) void SplashScreen.hideAsync();
       }
     })();
 
@@ -67,6 +101,16 @@ function RootContent() {
       cancelled = true;
     };
   }, [bootstrap]);
+
+  // La base y las fuentes cargan en paralelo y terminan en cualquier orden; la
+  // splash se retira solo cuando ambas han acabado, bien o mal.
+  useEffect(() => {
+    if (arranqueResuelto && fuentesResueltas) void SplashScreen.hideAsync();
+  }, [arranqueResuelto, fuentesResueltas]);
+
+  // Mientras tanto la splash tapa la pantalla: pintar algo debajo solo serviría
+  // para renderizar texto con la tipografía equivocada.
+  if (!fuentesResueltas) return null;
 
   if (failure) {
     return (

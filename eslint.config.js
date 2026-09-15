@@ -7,6 +7,8 @@ module.exports = defineConfig([
   {
     // Todo esto es salida de herramientas, no código fuente: analizarlo produce
     // miles de avisos sobre bundles minificados que nadie va a corregir.
-    ignores: ['dist/*', '.expo/*', 'node_modules/*', 'android/*', 'ios/*'],
+    // `.claude/` guarda material de trabajo —como los prototipos del handoff de
+    // diseño— que es referencia y no se compila con la app.
+    ignores: ['dist/*', '.expo/*', 'node_modules/*', 'android/*', 'ios/*', '.claude/**'],
   },
 ]);
