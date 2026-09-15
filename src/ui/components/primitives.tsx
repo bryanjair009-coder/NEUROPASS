@@ -1,3 +1,4 @@
+import { LinearGradient } from 'expo-linear-gradient';
 import { type ReactNode } from 'react';
 import {
   ActivityIndicator,
@@ -12,9 +13,19 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { lighten, withAlpha } from '@/lib/color';
 import { makeStyles } from '@/ui/makeStyles';
 import { usePalette } from '@/ui/ThemeProvider';
-import { MIN_TOUCH_TARGET, radius, shadow, space, typography, type Palette } from '@/ui/theme';
+import {
+  ALTO_BOTON_PRINCIPAL,
+  MIN_TOUCH_TARGET,
+  marca,
+  radius,
+  shadow,
+  space,
+  typography,
+  type Palette,
+} from '@/ui/theme';
 
 /**
  * Primitivas de interfaz.
@@ -106,15 +117,13 @@ interface CardProps {
 }
 
 export function Card({ children, style, raised = false, accent }: CardProps) {
-  const palette = usePalette();
   const styles = useStyles();
 
   return (
     <View
       style={[
         styles.card,
-        raised && shadow('md'),
-        raised && { backgroundColor: palette.surfaceRaised },
+        raised ? styles.cardRaised : shadow('sm'),
         // La barra de acento identifica el pilar sin ocupar una línea de texto.
         accent ? { borderLeftWidth: 4, borderLeftColor: accent } : null,
         style,
@@ -180,6 +189,17 @@ interface ButtonProps {
   style?: StyleProp<ViewStyle>;
 }
 
+/** Alto del canto inferior; al pulsar, la cara baja todo menos un píxel. */
+const CANTO = 5;
+
+/**
+ * Botón con canto.
+ *
+ * El canto no es un borde que se encoge al pulsar sino una capa de fondo que
+ * la cara deja al descubierto: si fuera un `borderBottomWidth` variable, cada
+ * pulsación cambiaría el alto del botón y empujaría el resto de la pantalla un
+ * par de píxeles, justo cuando el dedo espera que nada se mueva.
+ */
 export function Button({
   label,
   onPress,
@@ -194,6 +214,10 @@ export function Button({
   const styles = useStyles();
   const inert = disabled || loading;
   const colors = buttonColors(palette)[variant];
+  const conCanto = colors.canto !== null;
+  // A ancho completo es la acción principal de la pantalla y gana alto y
+  // tipografía; los compactos conviven en filas y se quedan en el mínimo táctil.
+  const alto = fullWidth ? ALTO_BOTON_PRINCIPAL : MIN_TOUCH_TARGET + (conCanto ? CANTO : 0);
 
   return (
     <Pressable
@@ -202,38 +226,92 @@ export function Button({
       accessibilityRole="button"
       accessibilityState={{ disabled: inert, busy: loading }}
       accessibilityLabel={label}
-      style={({ pressed }) => [
+      style={[
         styles.button,
-        { backgroundColor: colors.background, borderColor: colors.border },
+        {
+          paddingBottom: conCanto ? CANTO : 0,
+          backgroundColor: colors.canto ?? 'transparent',
+        },
         fullWidth && styles.fullWidth,
-        // La respuesta táctil es por opacidad y no por cambio de color: en el
-        // modo del menor los botones ya son de colores saturados y un segundo
-        // color de presión los vuelve ruidosos.
-        pressed && !inert && styles.pressed,
+        variant === 'primary' && !inert && shadow('md', palette.accent),
         inert && styles.disabled,
         style,
       ]}
     >
-      {loading ? (
-        <ActivityIndicator color={colors.text} />
-      ) : (
-        <Text style={[typography.bodyStrong as TextStyle, { color: colors.text }]}>
-          {icon ? `${icon}  ` : ''}
-          {label}
-        </Text>
-      )}
+      {({ pressed }) => {
+        const hundido = pressed && !inert;
+        return (
+          // La cara va en el flujo normal y no en posición absoluta: así el
+          // botón compacto mide lo que su texto, en vez de colapsar a ancho cero.
+          <View
+            style={[
+              styles.buttonFace,
+              {
+                minHeight: alto - (conCanto ? CANTO : 0),
+                backgroundColor: colors.background,
+                transform: [{ translateY: hundido && conCanto ? CANTO - 1 : 0 }],
+              },
+              // Sin canto no hay nada que hundir: la respuesta es por opacidad.
+              hundido && !conCanto && styles.pressed,
+            ]}
+          >
+            {colors.gradient ? (
+              <LinearGradient
+                colors={colors.gradient}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 0, y: 1 }}
+                style={StyleSheet.absoluteFill}
+              />
+            ) : null}
+            {loading ? (
+              <ActivityIndicator color={colors.text} />
+            ) : (
+              <Text
+                numberOfLines={2}
+                style={[
+                  (fullWidth ? typography.action : typography.bodyStrong) as TextStyle,
+                  styles.buttonText,
+                  { color: colors.text },
+                ]}
+              >
+                {icon ? `${icon}  ` : ''}
+                {label}
+              </Text>
+            )}
+          </View>
+        );
+      }}
     </Pressable>
   );
 }
 
-function buttonColors(
-  palette: Palette,
-): Record<ButtonVariant, { background: string; border: string; text: string }> {
+interface ButtonColors {
+  background: string;
+  /** Degradado vertical de la cara, si lo tiene. */
+  gradient: readonly [string, string] | null;
+  /** Color del canto, o `null` para un botón plano. */
+  canto: string | null;
+  text: string;
+}
+
+function buttonColors(palette: Palette): Record<ButtonVariant, ButtonColors> {
   return {
-    primary: { background: palette.accent, border: palette.accent, text: palette.white },
-    secondary: { background: palette.surface, border: palette.border, text: palette.text },
-    ghost: { background: 'transparent', border: 'transparent', text: palette.textMuted },
-    danger: { background: palette.dangerSoft, border: palette.danger, text: palette.danger },
+    primary: {
+      background: palette.accent,
+      gradient: [lighten(palette.accent, 0.2), palette.accent],
+      canto: marca.moradoOsc,
+      text: palette.white,
+    },
+    secondary: {
+      background: palette.surface,
+      gradient: null,
+      // El canto de las secundarias es el borde de la paleta sobre el lienzo:
+      // da el mismo relieve sin competir en color con la principal.
+      canto: palette.arcadePista,
+      text: palette.text,
+    },
+    ghost: { background: 'transparent', gradient: null, canto: null, text: palette.textMuted },
+    danger: { background: palette.dangerSoft, gradient: null, canto: null, text: palette.danger },
   };
 }
 
@@ -241,19 +319,20 @@ function buttonColors(
 // Indicadores
 // ---------------------------------------------------------------------------
 
-/** Barra de progreso simple. `value` se recorta a 0..1. */
+/** Barra de progreso. `value` se recorta a 0..1. */
 export function ProgressBar({ value, color }: { value: number; color?: string }) {
   const palette = usePalette();
   const styles = useStyles();
   const clamped = Math.min(1, Math.max(0, value));
+  const resolved = color ?? palette.accent;
 
   return (
     <View style={styles.progressTrack}>
-      <View
-        style={[
-          styles.progressFill,
-          { width: `${clamped * 100}%`, backgroundColor: color ?? palette.accent },
-        ]}
+      <LinearGradient
+        colors={[lighten(resolved, 0.3), resolved]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 0 }}
+        style={[styles.progressFill, { width: `${clamped * 100}%` }]}
       />
     </View>
   );
@@ -265,7 +344,9 @@ export function Badge({ label, color }: { label: string; color?: string }) {
   const resolved = color ?? palette.accent;
 
   return (
-    <View style={[styles.badge, { borderColor: resolved }]}>
+    // Pastel del mismo color en vez de contorno: el contorno fino de antes se
+    // perdía sobre las tarjetas y no se distinguía de un campo de texto.
+    <View style={[styles.badge, { backgroundColor: withAlpha(resolved, 0.16) }]}>
       <Text style={[typography.caption as TextStyle, { color: resolved }]}>{label}</Text>
     </View>
   );
@@ -319,16 +400,19 @@ export function Notice({
   const palette = usePalette();
   const styles = useStyles();
 
-  const color = {
-    info: palette.accent,
-    warning: palette.warning,
-    danger: palette.danger,
-    success: palette.success,
+  // El fondo pastel lleva el tono y el título lo repite en saturado. Con solo
+  // un borde de color, un aviso de peligro y una tarjeta cualquiera se
+  // distinguían por dos píxeles.
+  const { fondo, tinta } = {
+    info: { fondo: palette.accentSoft, tinta: palette.accent },
+    warning: { fondo: palette.pastelMango, tinta: palette.warning },
+    danger: { fondo: palette.dangerSoft, tinta: palette.danger },
+    success: { fondo: palette.successSoft, tinta: palette.success },
   }[tone];
 
   return (
-    <View style={[styles.notice, { borderColor: color }]}>
-      <Txt variant="bodyStrong" color={color}>
+    <View style={[styles.notice, { backgroundColor: fondo }]}>
+      <Txt variant="bodyStrong" color={tinta}>
         {title}
       </Txt>
       {children ? (
@@ -366,30 +450,31 @@ const useStyles = makeStyles((palette) => ({
     borderColor: palette.border,
     padding: space.lg,
   },
-  button: {
-    minHeight: MIN_TOUCH_TARGET,
-    borderRadius: radius.md,
-    borderWidth: 1,
+  cardRaised: { borderRadius: radius.xl, padding: space.xl - 6, ...shadow('md') },
+  button: { borderRadius: radius.pill },
+  buttonFace: {
+    flexGrow: 1,
+    borderRadius: radius.pill,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: space.xl,
-    paddingVertical: space.md,
+    overflow: 'hidden',
   },
+  buttonText: { textAlign: 'center' },
   fullWidth: { alignSelf: 'stretch' },
-  pressed: { opacity: 0.75 },
-  disabled: { opacity: 0.4 },
+  pressed: { opacity: 0.7 },
+  disabled: { opacity: 0.45 },
   progressTrack: {
-    height: 8,
+    height: 10,
     borderRadius: radius.pill,
-    backgroundColor: palette.surfaceRaised,
+    backgroundColor: palette.arcadePista,
     overflow: 'hidden',
   },
   progressFill: { height: '100%', borderRadius: radius.pill },
   badge: {
     paddingHorizontal: space.md,
-    paddingVertical: space.xs,
+    paddingVertical: space.xs + 1,
     borderRadius: radius.pill,
-    borderWidth: 1,
     alignSelf: 'flex-start',
   },
   emptyState: {
@@ -400,9 +485,7 @@ const useStyles = makeStyles((palette) => ({
   },
   emptyEmoji: { fontSize: 48, marginBottom: space.md },
   notice: {
-    borderWidth: 1,
-    borderRadius: radius.md,
+    borderRadius: radius.lg,
     padding: space.lg,
-    backgroundColor: palette.surface,
   },
 }));
