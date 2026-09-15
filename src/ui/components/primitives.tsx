@@ -1,5 +1,5 @@
 import { LinearGradient } from 'expo-linear-gradient';
-import { type ReactNode } from 'react';
+import { isValidElement, type ReactNode } from 'react';
 import {
   ActivityIndicator,
   Pressable,
@@ -425,7 +425,10 @@ export function Notice({
       {children ? (
         <>
           <Gap size="xs" />
-          {typeof children === 'string' ? (
+          {/* Todo lo que no es un elemento se trata como texto. Comprobar solo
+              `string` dejaba fuera los textos con interpolaciones —JSX los
+              convierte en arreglos— y se pintaban sin fuente ni color. */}
+          {!isValidElement(children) ? (
             <Txt variant="caption" color={palette.textMuted}>
               {children}
             </Txt>
