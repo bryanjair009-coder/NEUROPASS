@@ -472,7 +472,7 @@ function Stepper({
           accessibilityRole="button"
           accessibilityLabel={`Reducir ${label}`}
         >
-          <Txt variant="title" color={value <= min ? palette.textFaint : palette.accentSoft}>
+          <Txt variant="title" color={value <= min ? palette.textFaint : palette.accent}>
             −
           </Txt>
         </Pressable>
@@ -489,7 +489,7 @@ function Stepper({
           accessibilityRole="button"
           accessibilityLabel={`Aumentar ${label}`}
         >
-          <Txt variant="title" color={value >= max ? palette.textFaint : palette.accentSoft}>
+          <Txt variant="title" color={value >= max ? palette.textFaint : palette.accent}>
             +
           </Txt>
         </Pressable>

@@ -169,7 +169,7 @@ function PackageListMode({ childId, onSynced }: { childId: string; onSynced: () 
           {visible.length} apps
         </Txt>
         <Pressable onPress={() => setShowSystem((value) => !value)} hitSlop={8}>
-          <Txt variant="caption" color={palette.accentSoft}>
+          <Txt variant="caption" color={palette.accent}>
             {showSystem ? 'Ocultar apps del sistema' : 'Mostrar apps del sistema'}
           </Txt>
         </Pressable>

@@ -321,13 +321,13 @@ function TimeStepper({
       <Gap size="xs" />
       <Row justify="space-between" style={styles.stepper}>
         <Pressable onPress={() => onChange(Math.max(0, minute - step))} hitSlop={8}>
-          <Txt variant="title" color={palette.accentSoft}>
+          <Txt variant="title" color={palette.accent}>
             −
           </Txt>
         </Pressable>
         <Txt variant="bodyStrong">{formatMinute(minute)}</Txt>
         <Pressable onPress={() => onChange(Math.min(1440, minute + step))} hitSlop={8}>
-          <Txt variant="title" color={palette.accentSoft}>
+          <Txt variant="title" color={palette.accent}>
             +
           </Txt>
         </Pressable>

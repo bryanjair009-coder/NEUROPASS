@@ -211,6 +211,12 @@ export const veredicto = {
   descartada: { arriba: '#B7B2CC', abajo: '#9E99B8', canto: '#7E7A96' },
 } as const;
 
+/**
+ * Amarillo del confeti. No es de marca: es el único tono cálido claro que se
+ * separa del mango cuando caen juntos, y no se usa en ningún otro sitio.
+ */
+export const amarilloConfeti = '#FFE066';
+
 /** Escala de espaciado en múltiplos de 4. */
 export const space = {
   xs: 4,

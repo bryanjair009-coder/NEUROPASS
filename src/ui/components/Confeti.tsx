@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Animated, Easing, StyleSheet, View } from 'react-native';
 
 import { Rng } from '@/lib/rng';
-import { marca } from '@/ui/theme';
+import { amarilloConfeti, marca } from '@/ui/theme';
 import { useMovimientoReducido } from '@/ui/useMovimientoReducido';
 
 /**
@@ -17,8 +17,7 @@ import { useMovimientoReducido } from '@/ui/useMovimientoReducido';
  * siempre la misma lluvia en lugar de recolocarla en cada repintado.
  */
 
-/** El amarillo no es de marca: es el único tono cálido claro que separa del mango. */
-const COLORES = [marca.rosa, marca.mango, marca.lima, marca.aqua, marca.morado, '#FFE066'];
+const COLORES = [marca.rosa, marca.mango, marca.lima, marca.aqua, marca.morado, amarilloConfeti];
 const PIEZAS = 46;
 const CAIDA = 620;
 
