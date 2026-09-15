@@ -156,6 +156,45 @@ export const pillarColorInk: Record<Pillar, string> = {
   lenguaje: marca.mangoOsc,
 };
 
+export type TonoMarca = 'morado' | 'aqua' | 'lima' | 'rosa' | 'mango';
+
+/** Cada tono de marca con su canto, para las superficies con relieve. */
+export const tonoMarca: Record<TonoMarca, { readonly base: string; readonly canto: string }> = {
+  morado: { base: marca.morado, canto: marca.moradoOsc },
+  aqua: { base: marca.aqua, canto: marca.aquaOsc },
+  lima: { base: marca.lima, canto: marca.limaOsc },
+  rosa: { base: marca.rosa, canto: marca.rosaOsc },
+  mango: { base: marca.mango, canto: marca.mangoOsc },
+};
+
+/**
+ * Color de cada opción de respuesta, en orden, según el pilar del reto.
+ *
+ * Cuatro colores distintos para que el menor que lee despacio recuerde «la
+ * verde» mientras termina de leer. El primero es el del pilar, y la rotación
+ * cambia con él para que ninguna posición quede asociada a un color concreto:
+ * si la correcta cayera a menudo en la aqua, el color acabaría siendo una pista.
+ */
+export const opcionesPorPilar: Record<Pillar, readonly TonoMarca[]> = {
+  matematicas: ['aqua', 'morado', 'mango', 'lima'],
+  logica: ['aqua', 'rosa', 'mango', 'lima'],
+  memoria: ['morado', 'aqua', 'rosa', 'mango'],
+  lenguaje: ['mango', 'morado', 'aqua', 'lima'],
+  creatividad: ['rosa', 'morado', 'lima', 'aqua'],
+};
+
+/**
+ * Relleno de las opciones una vez revelada la respuesta.
+ *
+ * El fallo es un rosa suave y no un rojo: el error nunca se dibuja como una
+ * alarma. Lo que se ilumina es la correcta; lo demás se apaga.
+ */
+export const veredicto = {
+  acierto: { arriba: '#45E0B4', abajo: '#14B584', canto: '#0B7D5B' },
+  fallo: { arriba: '#FFB0D0', abajo: '#FF87B6', canto: marca.rosaOsc },
+  descartada: { arriba: '#B7B2CC', abajo: '#9E99B8', canto: '#7E7A96' },
+} as const;
+
 /** Escala de espaciado en múltiplos de 4. */
 export const space = {
   xs: 4,
