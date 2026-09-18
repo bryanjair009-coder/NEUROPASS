@@ -122,13 +122,13 @@ la desinstalación.
 tras el PIN. La interfaz advierte que hay que desactivarlo antes de desinstalar
 la app.
 
-### `REQUEST_IGNORE_BATTERY_OPTIMIZATIONS`
+### Exención de optimización de batería (sin permiso declarado)
 
-Se declara pero **no se solicita mediante diálogo directo**: la app abre la lista
-de ajustes de batería (`ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS`) y explica
-por qué conviene la exención. Invocar
-`ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS` sin cumplir los supuestos de la
-política de Google Play es motivo de rechazo.
+`REQUEST_IGNORE_BATTERY_OPTIMIZATIONS` **no se declara**. La app abre la lista de
+ajustes de batería (`ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS`), que no
+necesita ningún permiso, y explica por qué conviene la exención; es el tutor
+quien la concede a mano. Google Play restringe ese permiso a supuestos concretos
+y declararlo sin usarlo solo añadiría un motivo de rechazo en la revisión.
 
 Sin la exención, la mayoría de capas de fabricante terminan matando el servicio
 guardián y el control deja de aplicarse **en silencio**. Es la causa número uno
@@ -142,7 +142,11 @@ para poder avisar al tutor en lugar de fallar sin ruido.
   declarar el público objetivo.
 - **Sección de seguridad de los datos:** declarar **ninguna recopilación** y
   **ninguna transmisión**. La app no realiza peticiones de red, lo cual es
-  verificable.
+  verificable, y la copia de seguridad automática de Android está desactivada
+  (`allowBackup: false`): sin eso, la base local con el progreso del menor se
+  subiría a Google Drive y la declaración sería falsa.
+- **Permisos de almacenamiento:** Expo añade por omisión lectura y escritura del
+  almacenamiento externo; la app no los usa y se bloquean en `app.json`.
 
 ---
 
