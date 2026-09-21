@@ -1,5 +1,7 @@
 import { AGE_BANDS } from '@/domain/age';
+import type { Figura } from '@/domain/ilustracion';
 import { buildChoices } from '@/engine/choices';
+import { FIGURAS_LOGICA, figurasDeOpciones } from '@/engine/figuras';
 import { ANALOGIES, CATEGORIES, forBand } from '@/engine/lexicon';
 import { byDifficulty, timeLimitFor } from '@/engine/scale';
 import type { ExerciseGenerator, GenerationContext } from '@/engine/types';
@@ -7,21 +9,14 @@ import type { ExerciseGenerator, GenerationContext } from '@/engine/types';
 /**
  * Pilar 4 — Lógica.
  *
- * Todos los retos son textuales a propósito: se renderizan igual en cualquier
- * densidad de pantalla, son accesibles a lectores de pantalla y no dependen de
- * un pipeline de imágenes que habría que versionar y traducir. Las "figuras"
- * son caracteres Unicode con pares lleno/hueco, lo que permite construir
- * matrices de razonamiento abstracto sin un solo asset.
+ * Las figuras de las series y las matrices se describen como datos y la
+ * interfaz las dibuja. Siguen sin depender de imágenes que haya que versionar,
+ * y cada opción conserva su nombre —«rombo hueco»—, que es lo que anuncia un
+ * lector de pantalla.
  */
 
-/** Pares de figura llena / hueca. La transformación de relleno es un eje del razonamiento. */
-const FIGURES = [
-  { solid: '▲', hollow: '△' },
-  { solid: '●', hollow: '○' },
-  { solid: '■', hollow: '□' },
-  { solid: '◆', hollow: '◇' },
-  { solid: '★', hollow: '☆' },
-] as const;
+/** Todas las figuras de lógica, llenas y huecas: el relleno es un eje del razonamiento. */
+const CATALOGO_LOGICA = FIGURAS_LOGICA.flatMap((f) => [f.llena, f.hueca]);
 
 const PEOPLE = ['Ana', 'Beto', 'Caro', 'Dani', 'Elsa', 'Fito', 'Gina', 'Hugo'] as const;
 
@@ -106,32 +101,35 @@ export const figureSeries: ExerciseGenerator = {
     const period = byDifficulty(difficulty, [2, 3, 3, 4, 4]);
     const alternateFill = difficulty >= 3;
 
-    const base = rng.sample(FIGURES, period);
-    const cycle = base.map((f) => f.solid);
+    const base = rng.sample(FIGURAS_LOGICA, period);
+    const cycle = base.map((f) => f.llena.nombre);
     const repeats = 3;
 
-    const rendered: string[] = [];
+    const rendered: Figura[] = [];
     for (let i = 0; i < period * repeats; i += 1) {
       const figure = base[i % period];
       if (!figure) throw new Error('Ciclo de figuras vacío');
       // Con relleno alternante, cada vuelta invierte el estado sólido/hueco.
       const solid = !alternateFill || Math.floor(i / period) % 2 === 0;
-      rendered.push(solid ? figure.solid : figure.hollow);
+      rendered.push(solid ? figure.llena.figura : figure.hueca.figura);
     }
 
     const nextIndex = period * repeats;
     const nextFigure = base[nextIndex % period];
     if (!nextFigure) throw new Error('Ciclo de figuras vacío');
     const nextSolid = !alternateFill || Math.floor(nextIndex / period) % 2 === 0;
-    const answer = nextSolid ? nextFigure.solid : nextFigure.hollow;
+    const answer = nextSolid ? nextFigure.llena.nombre : nextFigure.hueca.nombre;
 
-    const distractors = FIGURES.flatMap((f) => [f.solid, f.hollow]).filter((s) => s !== answer);
+    const distractors = CATALOGO_LOGICA.map((f) => f.nombre).filter((s) => s !== answer);
+    const choices = buildChoices(rng, answer, rng.shuffle(distractors));
 
     return {
       prompt: {
         kind: 'multiple_choice',
-        stem: `¿Qué figura continúa la serie?\n\n${rendered.join('  ')}  ?`,
-        ...buildChoices(rng, answer, rng.shuffle(distractors)),
+        stem: '¿Qué figura continúa la serie?',
+        ilustracion: { tipo: 'figuras', filas: [[...rendered, null]] },
+        ...choices,
+        figurasOpciones: figurasDeOpciones(choices.options, CATALOGO_LOGICA),
         ...(alternateFill ? { hint: 'Fíjate en el orden de las figuras y también en si están llenas o huecas.' } : {}),
       },
       fingerprintParts: ['serie_figuras', period, alternateFill ? 'alt' : 'plano', ...cycle],
@@ -152,31 +150,37 @@ export const abstractMatrix: ExerciseGenerator = {
   difficulty: [2, 5],
   generate(ctx) {
     const { rng } = ctx;
-    const [figA, figB] = rng.sample(FIGURES, 2);
+    const [figA, figB] = rng.sample(FIGURAS_LOGICA, 2);
     if (!figA || !figB) throw new Error('Corpus de figuras insuficiente');
 
     // Regla: avanzar en la fila vacía la figura; avanzar en la columna la cambia.
-    const grid = [
-      [figA.solid, figA.hollow],
-      [figB.solid, '?'],
-    ];
-    const answer = figB.hollow;
+    const answer = figB.hueca.nombre;
 
     // Distractores que corresponden a aplicar mal *una* de las dos reglas.
-    const distractors = [figB.solid, figA.hollow, figA.solid, ...FIGURES.map((f) => f.hollow)].filter(
-      (s) => s !== answer,
-    );
-
-    const rendered = grid.map((row) => row.join('    ')).join('\n');
+    const distractors = [
+      figB.llena.nombre,
+      figA.hueca.nombre,
+      figA.llena.nombre,
+      ...FIGURAS_LOGICA.map((f) => f.hueca.nombre),
+    ].filter((s) => s !== answer);
+    const choices = buildChoices(rng, answer, distractors);
 
     return {
       prompt: {
         kind: 'multiple_choice',
-        stem: `Completa la matriz:\n\n${rendered}`,
-        ...buildChoices(rng, answer, distractors),
+        stem: 'Completa la matriz:',
+        ilustracion: {
+          tipo: 'figuras',
+          filas: [
+            [figA.llena.figura, figA.hueca.figura],
+            [figB.llena.figura, null],
+          ],
+        },
+        ...choices,
+        figurasOpciones: figurasDeOpciones(choices.options, CATALOGO_LOGICA),
         hint: 'Compara qué cambia de izquierda a derecha en la primera fila y aplícalo a la segunda.',
       },
-      fingerprintParts: ['matriz', figA.solid, figB.solid],
+      fingerprintParts: ['matriz', figA.llena.nombre, figB.llena.nombre],
       timeLimitSec: timeLimitFor(ctx.band, ctx.difficulty),
     };
   },

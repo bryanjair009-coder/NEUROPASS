@@ -263,18 +263,94 @@ export const READING_PASSAGES: readonly ReadingPassage[] = [
   },
 ];
 
-/** Objetos cotidianos para retos divergentes de creatividad. */
-export const EVERYDAY_OBJECTS: readonly string[] = [
-  'una caja de cartón',
-  'un clip',
-  'una cuchara',
-  'una botella vacía',
-  'un calcetín sin par',
-  'una liga',
-  'un periódico viejo',
-  'una llanta usada',
-  'un vaso de plástico',
-  'una cuerda',
+/**
+ * Retos de reutilización con un propósito.
+ *
+ * Sustituyen a «dale un uso distinto a un calcetín», que ejercitaba la
+ * fluidez de ideas pero no llevaba a ningún aprendizaje: la respuesta podía
+ * ser cualquier cosa y no había un problema que resolver. Aquí el material y
+ * la necesidad están emparejados para que la solución sea posible y útil, y
+ * el menor tiene que planear los pasos. Entrenan tres cosas a la vez:
+ * creatividad aplicada, planificación y la idea de que lo viejo tiene valor.
+ */
+export interface RetoReutilizar {
+  readonly material: string;
+  readonly necesidad: string;
+  readonly minBand: AgeBand;
+}
+
+export const RETOS_REUTILIZAR: readonly RetoReutilizar[] = [
+  { material: 'una caja de cartón', necesidad: 'hacerle una casita a tu juguete favorito', minBand: '6-8' },
+  { material: 'una botella de plástico vacía', necesidad: 'regar una planta pequeña', minBand: '6-8' },
+  { material: 'hojas de periódico', necesidad: 'hacer un sombrero para un desfile', minBand: '6-8' },
+  { material: 'un frasco con tapa', necesidad: 'guardar tus colores en orden', minBand: '6-8' },
+  { material: 'dos tubos de papel de baño', necesidad: 'hacer unos binoculares de juguete', minBand: '6-8' },
+  { material: 'un calcetín viejo', necesidad: 'hacer un títere para contar un cuento', minBand: '6-8' },
+  { material: 'tapas de botella', necesidad: 'armar un juego de memoria', minBand: '6-8' },
+  { material: 'una caja de huevo', necesidad: 'hacer un semillero para sembrar', minBand: '6-8' },
+  { material: 'vasos de yogur limpios', necesidad: 'hacer un juego de boliche', minBand: '6-8' },
+  { material: 'una bolsa de papel', necesidad: 'hacer una máscara para una obra de teatro', minBand: '6-8' },
+
+  { material: 'una llanta vieja', necesidad: 'hacer una maceta grande para el patio', minBand: '9-12' },
+  { material: 'dos latas limpias y un hilo', necesidad: 'hacer un teléfono para hablar con un amigo', minBand: '9-12' },
+  { material: 'cartón y ligas', necesidad: 'construir una catapulta que lance bolitas de papel', minBand: '9-12' },
+  { material: 'una botella de plástico', necesidad: 'hacer un comedero para pájaros', minBand: '9-12' },
+  { material: 'retazos de tela', necesidad: 'hacer una bolsa para las compras', minBand: '9-12' },
+  { material: 'un garrafón vacío', necesidad: 'regar las plantas gota a gota mientras no estás', minBand: '9-12' },
+
+  { material: 'cajas de cartón', necesidad: 'hacer un organizador para el escritorio del salón', minBand: '13-16' },
+  { material: 'un frasco, arena, piedras y algodón', necesidad: 'hacer un filtro que aclare agua turbia, explicando qué hace cada capa', minBand: '13-16' },
+  { material: 'palitos de madera y cuerda', necesidad: 'construir un puente que aguante el peso de un libro', minBand: '13-16' },
+  { material: 'un celular viejo que ya no se usa', necesidad: 'darle una nueva utilidad en casa sin tirarlo', minBand: '13-16' },
+  { material: 'botellas de plástico y tierra', necesidad: 'hacer un jardín vertical en una pared', minBand: '13-16' },
+];
+
+/**
+ * Problemas cotidianos con una sola solución que de verdad funciona.
+ *
+ * Sustituyen a «inventa algo que combine una llanta y un calcetín», que
+ * pedía unir dos objetos al azar sin ningún fin. Aquí se ejercita el
+ * pensamiento flexible aplicado: usar lo que se tiene de una forma que no es
+ * la habitual para resolver algo real. Las ideas incorrectas no son absurdas:
+ * cada una falla por una razón que el menor puede descubrir si se para a
+ * pensar si de verdad resolvería el problema.
+ */
+export interface ProblemaCreativo {
+  readonly situacion: string;
+  readonly correcta: string;
+  readonly incorrectas: readonly string[];
+  readonly minBand: AgeBand;
+}
+
+export const PROBLEMAS_CREATIVOS: readonly ProblemaCreativo[] = [
+  { situacion: 'Se te cayó una canica debajo del sillón y tu mano no cabe.', correcta: 'Sacarla empujando con una regla larga', incorrectas: ['Soplarle desde lejos', 'Esperar a que salga sola', 'Aventar otra canica encima'], minBand: '6-8' },
+  { situacion: 'Está lloviendo, no tienes paraguas y debes llevar tu dibujo al otro salón.', correcta: 'Guardar el dibujo en una bolsa de plástico', incorrectas: ['Doblar el dibujo muchas veces', 'Correr con el dibujo en la mano', 'Soplarle al dibujo mientras caminas'], minBand: '6-8' },
+  { situacion: 'Tu planta está seca y la regadera se rompió.', correcta: 'Regarla con un vaso de agua, poco a poco', incorrectas: ['Ponerla junto a la estufa', 'Taparla con una cobija', 'Pintar las hojas de verde'], minBand: '6-8' },
+  { situacion: 'Quieres alcanzar un libro que está en una repisa muy alta.', correcta: 'Pedir ayuda a un adulto', incorrectas: ['Saltar hasta tocarlo', 'Jalar la repisa hacia abajo', 'Trepar por los cajones abiertos'], minBand: '6-8' },
+  { situacion: 'Tu lápiz se quedó sin punta y no tienes sacapuntas.', correcta: 'Pedir prestado un sacapuntas o un lápiz', incorrectas: ['Morder la punta', 'Seguir escribiendo con la madera', 'Dejar la tarea sin hacer'], minBand: '6-8' },
+  { situacion: 'Se derramó agua en la mesa donde vas a dibujar.', correcta: 'Secarla con un trapo o una servilleta', incorrectas: ['Soplarle para que se vaya', 'Poner tu cuaderno encima', 'Dibujar encima del agua'], minBand: '6-8' },
+  { situacion: 'Quieres saber si una naranja flota o se hunde.', correcta: 'Ponerla con cuidado en una tina con agua', incorrectas: ['Pesarla con la mano', 'Mirarla con una lupa', 'Pelarla y adivinar'], minBand: '6-8' },
+  { situacion: 'Tienes las manos muy frías en el recreo.', correcta: 'Ponerte guantes o frotarte las manos', incorrectas: ['Mojarlas con agua fría', 'Quitarte el suéter', 'Ponerlas en el piso'], minBand: '6-8' },
+  { situacion: 'Se perdió tu gato y quieres que los vecinos te ayuden a buscarlo.', correcta: 'Hacer un cartel con su dibujo y pegarlo en la calle', incorrectas: ['Esconderte en tu cuarto', 'Llamarlo una sola vez', 'Esperar sin decirle a nadie'], minBand: '6-8' },
+  { situacion: 'Tu torre de bloques se cae porque la base es muy chiquita.', correcta: 'Hacer la base más ancha', incorrectas: ['Poner los bloques grandes arriba', 'Construirla más rápido', 'Soplarle para acomodarla'], minBand: '6-8' },
+
+  { situacion: 'Tienes que medir el largo de tu cuarto y no hay cinta métrica.', correcta: 'Contar cuántos pasos iguales caben y medir un paso con una regla', incorrectas: ['Adivinar el número', 'Medir solo la puerta', 'Contar los focos del techo'], minBand: '9-12' },
+  { situacion: 'La puerta del salón se cierra sola y no entra aire.', correcta: 'Poner un tope en el piso para detenerla', incorrectas: ['Pintar la puerta', 'Cerrar las ventanas', 'Quitarle la manija'], minBand: '9-12' },
+  { situacion: 'Quieres que tu carrito baje más lejos por una rampa.', correcta: 'Hacer la rampa más inclinada y lisa', incorrectas: ['Pintarle rayas al carrito', 'Acostar la rampa en el piso', 'Hacer el carrito de cartón mojado'], minBand: '9-12' },
+  { situacion: 'El salón está muy ruidoso y nadie escucha a la maestra.', correcta: 'Acordar una señal con la mano para pedir silencio', incorrectas: ['Que todos hablen más fuerte', 'Poner música', 'Salir del salón'], minBand: '9-12' },
+  { situacion: 'Tu bici rechina al pedalear y la cadena está seca.', correcta: 'Ponerle aceite a la cadena con ayuda de un adulto', incorrectas: ['Mojarla con refresco', 'Pedalear más rápido', 'Quitarle los frenos'], minBand: '9-12' },
+  { situacion: 'Siempre olvidas llevar tu cuaderno a la escuela.', correcta: 'Dejarlo en la mochila desde la noche anterior', incorrectas: ['Pensarlo muy fuerte una vez', 'Escribirlo en tu mano ya en la escuela', 'Esconderlo debajo de la cama'], minBand: '9-12' },
+  { situacion: 'Quieres ver cómo crecen las raíces de un frijol.', correcta: 'Ponerlo en un frasco con algodón húmedo junto a la ventana', incorrectas: ['Guardarlo en el congelador', 'Enterrarlo en arena seca', 'Dejarlo en un cajón sin agua'], minBand: '9-12' },
+  { situacion: 'Tu mochila pesa mucho y te duele la espalda.', correcta: 'Llevar solo lo del día y usar las dos correas', incorrectas: ['Cargarla con una sola mano', 'Meter más libros para equilibrar', 'Arrastrarla por el piso'], minBand: '9-12' },
+
+  { situacion: 'Tu escuela quiere usar menos plástico en la cafetería.', correcta: 'Dar un descuento a quien traiga su propio vaso', incorrectas: ['Comprar popotes de colores', 'Prohibir comer en la escuela', 'Tirar la basura en otro lado'], minBand: '13-16' },
+  { situacion: 'Tu equipo no se pone de acuerdo sobre el tema del proyecto.', correcta: 'Hacer una lista de opciones y votar con criterios claros', incorrectas: ['Que decida quien grite más', 'Que cada quien haga un proyecto distinto', 'No entregar nada'], minBand: '13-16' },
+  { situacion: 'El celular se descarga muy rápido en un viaje largo.', correcta: 'Bajar el brillo y cerrar las apps que no usas', incorrectas: ['Subir el volumen', 'Ponerlo al sol', 'Abrir más apps a la vez'], minBand: '13-16' },
+  { situacion: 'Tienes tres exámenes la próxima semana.', correcta: 'Repartir el estudio en bloques diarios para cada materia', incorrectas: ['Estudiar todo la noche anterior', 'Estudiar solo tu materia favorita', 'Leer cada tema una sola vez'], minBand: '13-16' },
+  { situacion: 'El huerto de la escuela se seca cada fin de semana.', correcta: 'Enterrar botellas con agujeros junto a las plantas para que rieguen poco a poco', incorrectas: ['Inundarlo el viernes', 'Cubrirlo con plástico negro', 'Cambiar las plantas cada lunes'], minBand: '13-16' },
+  { situacion: 'Quieres saber qué botana prefieren tus compañeros.', correcta: 'Hacer una encuesta corta y contar los resultados', incorrectas: ['Suponer que les gusta lo mismo que a ti', 'Preguntarle solo a tu mejor amigo', 'Elegir la más cara'], minBand: '13-16' },
+  { situacion: 'Una rampa para silla de ruedas es demasiado empinada.', correcta: 'Hacerla más larga para que la subida sea más suave', incorrectas: ['Pintarla de amarillo', 'Hacerla más corta', 'Ponerle escalones'], minBand: '13-16' },
+  { situacion: 'Tu video para la clase aburre a todos a los 30 segundos.', correcta: 'Empezar con una pregunta o un ejemplo interesante', incorrectas: ['Hacerlo más largo', 'Quitarle el audio', 'Leer todo el texto en pantalla'], minBand: '13-16' },
 ];
 
 export interface StorySeed {

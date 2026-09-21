@@ -125,16 +125,17 @@ export const NUMEROS: readonly { readonly valor: number; readonly en: string }[]
   'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen', 'twenty',
 ].map((en, indice) => ({ valor: indice + 1, en }));
 
-export const COLORES: readonly { readonly emoji: string; readonly en: string }[] = [
-  { emoji: '🔴', en: 'red' },
-  { emoji: '🟠', en: 'orange' },
-  { emoji: '🟡', en: 'yellow' },
-  { emoji: '🟢', en: 'green' },
-  { emoji: '🔵', en: 'blue' },
-  { emoji: '🟣', en: 'purple' },
-  { emoji: '⚫', en: 'black' },
-  { emoji: '⚪', en: 'white' },
-  { emoji: '🟤', en: 'brown' },
+/** Colores con su valor para dibujarlos; el reto muestra un círculo de ese color. */
+export const COLORES: readonly { readonly color: string; readonly en: string }[] = [
+  { color: '#FF5A4E', en: 'red' },
+  { color: '#FF9F1C', en: 'orange' },
+  { color: '#FFC23A', en: 'yellow' },
+  { color: '#22C55E', en: 'green' },
+  { color: '#2F7BFF', en: 'blue' },
+  { color: '#7C5FFF', en: 'purple' },
+  { color: '#2B2540', en: 'black' },
+  { color: '#FFFFFF', en: 'white' },
+  { color: '#A0522D', en: 'brown' },
 ];
 
 /**

@@ -1,6 +1,7 @@
 import { AGE_BANDS } from '@/domain/age';
 import type { SequenceToken } from '@/domain/exercise';
 import { buildChoices } from '@/engine/choices';
+import { FIGURAS_MEMORIA, figurasDeOpciones, type FiguraNombrada } from '@/engine/figuras';
 import { CATEGORIES, forBand } from '@/engine/lexicon';
 import { byDifficulty, spanFor, studyMsFor, timeLimitFor } from '@/engine/scale';
 import type { ExerciseGenerator } from '@/engine/types';
@@ -26,7 +27,11 @@ const COLORS = [
   { label: 'Café', color: '#92400E' },
 ] as const;
 
-const SYMBOLS = ['★', '◆', '▲', '●', '■', '✚', '♦', '☂', '⚑', '☾'] as const;
+/** Los colores se muestran como gotas de pintura: una forma concreta se recuerda mejor que un recuadro. */
+const GOTAS: readonly FiguraNombrada[] = COLORS.map((c) => ({
+  nombre: c.label,
+  figura: { forma: 'gota', color: c.color },
+}));
 
 const ORDINALS = [
   'primero',
@@ -51,25 +56,27 @@ export const colorSequence: ExerciseGenerator = {
   difficulty: [1, 5],
   generate(ctx) {
     const { rng, band, difficulty } = ctx;
-    const span = Math.min(spanFor(band, difficulty), COLORS.length);
-    const sequence = rng.sample(COLORS, span);
+    const span = Math.min(spanFor(band, difficulty), GOTAS.length);
+    const sequence = rng.sample(GOTAS, span);
 
     const position = rng.int(0, span - 1);
     const answer = sequence[position];
     if (!answer) throw new Error('Secuencia de colores vacía');
 
-    const distractors = COLORS.map((c) => c.label).filter((label) => label !== answer.label);
+    const distractors = GOTAS.map((c) => c.nombre).filter((nombre) => nombre !== answer.nombre);
+    const choices = buildChoices(rng, answer.nombre, distractors);
 
     return {
       prompt: {
         kind: 'sequence_recall',
         instruction: 'Memoriza el orden de estos colores.',
-        sequence: sequence.map<SequenceToken>((c) => ({ label: c.label, color: c.color })),
+        sequence: sequence.map<SequenceToken>((c) => ({ label: c.nombre, figura: c.figura })),
         studyMs: studyMsFor(band, span, difficulty),
         stem: `¿Qué color estaba en ${ORDINALS[position]} lugar?`,
-        ...buildChoices(rng, answer.label, distractors),
+        ...choices,
+        figurasOpciones: figurasDeOpciones(choices.options, GOTAS),
       },
-      fingerprintParts: ['memoria.colores', position, ...sequence.map((c) => c.label)],
+      fingerprintParts: ['memoria.colores', position, ...sequence.map((c) => c.nombre)],
       timeLimitSec: timeLimitFor(band, difficulty),
     };
   },
@@ -87,28 +94,31 @@ export const missingItem: ExerciseGenerator = {
   difficulty: [1, 5],
   generate(ctx) {
     const { rng, band, difficulty } = ctx;
-    const span = Math.min(spanFor(band, difficulty) + 1, SYMBOLS.length);
-    const sequence = rng.sample(SYMBOLS, span);
+    const span = Math.min(spanFor(band, difficulty) + 1, FIGURAS_MEMORIA.length);
+    const sequence = rng.sample(FIGURAS_MEMORIA, span);
 
     const removedIndex = rng.int(0, span - 1);
     const removed = sequence[removedIndex];
-    if (!removed) throw new Error('Conjunto de símbolos vacío');
+    if (!removed) throw new Error('Conjunto de figuras vacío');
 
     // El resto se muestra barajado: si conservara el orden, bastaría con
     // comparar posiciones en lugar de recordar el conjunto.
     const remaining = rng.shuffle(sequence.filter((_, i) => i !== removedIndex));
-    const distractors = sequence.filter((s) => s !== removed);
+    const distractors = sequence.filter((s) => s !== removed).map((s) => s.nombre);
+    const choices = buildChoices(rng, removed.nombre, distractors, Math.min(4, span));
 
     return {
       prompt: {
         kind: 'sequence_recall',
         instruction: 'Observa bien todas estas figuras.',
-        sequence: sequence.map<SequenceToken>((label) => ({ label })),
+        sequence: sequence.map<SequenceToken>((f) => ({ label: f.nombre, figura: f.figura })),
         studyMs: studyMsFor(band, span, difficulty),
-        stem: `Ahora quedan estas:\n\n${remaining.join('   ')}\n\n¿Cuál desapareció?`,
-        ...buildChoices(rng, removed, distractors, Math.min(4, span)),
+        stem: 'Ahora quedan estas figuras. ¿Cuál desapareció?',
+        ilustracion: { tipo: 'figuras', filas: [remaining.map((f) => f.figura)] },
+        ...choices,
+        figurasOpciones: figurasDeOpciones(choices.options, FIGURAS_MEMORIA),
       },
-      fingerprintParts: ['memoria.desaparecido', removed, ...sequence.slice().sort()],
+      fingerprintParts: ['memoria.desaparecido', removed.nombre, ...sequence.map((f) => f.nombre).sort()],
       timeLimitSec: timeLimitFor(band, difficulty),
     };
   },
@@ -130,24 +140,26 @@ export const pairedAssociates: ExerciseGenerator = {
 
     const pool = forBand(CATEGORIES, band, AGE_BANDS);
     const words = rng.sample(pool.flatMap((c) => c.members), pairCount);
-    const symbols = rng.sample(SYMBOLS, pairCount);
+    const figuras = rng.sample(FIGURAS_MEMORIA, pairCount);
 
-    const pairs = words.map((word, i) => ({ word, symbol: symbols[i] as string }));
+    const pairs = words.map((word, i) => ({ word, figura: figuras[i] as FiguraNombrada }));
     const asked = rng.pick(pairs);
-    const distractors = pairs.filter((p) => p !== asked).map((p) => p.symbol);
-    // Se completa con símbolos que nunca aparecieron: castiga adivinar por descarte.
-    const unseen = SYMBOLS.filter((s) => !symbols.includes(s));
+    const distractors = pairs.filter((p) => p !== asked).map((p) => p.figura.nombre);
+    // Se completa con figuras que nunca aparecieron: castiga adivinar por descarte.
+    const unseen = FIGURAS_MEMORIA.filter((f) => !figuras.includes(f)).map((f) => f.nombre);
+    const choices = buildChoices(rng, asked.figura.nombre, [...distractors, ...unseen]);
 
     return {
       prompt: {
         kind: 'sequence_recall',
-        instruction: 'Memoriza qué símbolo va con cada palabra.',
-        sequence: pairs.map<SequenceToken>((p) => ({ label: `${p.word} → ${p.symbol}` })),
+        instruction: 'Memoriza qué figura va con cada palabra.',
+        sequence: pairs.map<SequenceToken>((p) => ({ label: p.word, figura: p.figura.figura })),
         studyMs: studyMsFor(band, pairCount, difficulty) + 600 * pairCount,
-        stem: `¿Qué símbolo iba con "${asked.word}"?`,
-        ...buildChoices(rng, asked.symbol, [...distractors, ...unseen]),
+        stem: `¿Qué figura iba con "${asked.word}"?`,
+        ...choices,
+        figurasOpciones: figurasDeOpciones(choices.options, FIGURAS_MEMORIA),
       },
-      fingerprintParts: ['memoria.pares', asked.word, ...pairs.map((p) => `${p.word}:${p.symbol}`).sort()],
+      fingerprintParts: ['memoria.pares', asked.word, ...pairs.map((p) => `${p.word}:${p.figura.nombre}`).sort()],
       timeLimitSec: timeLimitFor(band, difficulty),
     };
   },

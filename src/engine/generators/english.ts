@@ -109,7 +109,8 @@ export const numerosColores: ExerciseGenerator = {
       return {
         prompt: {
           kind: 'multiple_choice',
-          stem: `¿De qué color es en inglés?\n\n${color.emoji}`,
+          stem: '¿De qué color es esta figura en inglés?',
+          ilustracion: { tipo: 'figuras', filas: [[{ forma: 'circulo', color: color.color }]] },
           ...buildChoices(rng, color.en, rng.shuffle(COLORES.filter((c) => c !== color).map((c) => c.en))),
         },
         fingerprintParts: ['color', color.en],

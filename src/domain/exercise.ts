@@ -1,4 +1,5 @@
 import type { AgeBand } from './age';
+import type { Figura, Ilustracion } from './ilustracion';
 import type { Pillar } from './pillar';
 
 /**
@@ -23,6 +24,8 @@ export interface SequenceToken {
   readonly label: string;
   /** Color de acento opcional en formato hex, para retos cromáticos. */
   readonly color?: string;
+  /** Figura dibujada que acompaña a la etiqueta. */
+  readonly figura?: Figura;
 }
 
 interface PromptBase {
@@ -30,10 +33,21 @@ interface PromptBase {
   readonly stem: string;
   /** Pista opcional; el motor la revela solo si el menor la solicita. */
   readonly hint?: string;
+  /** Dibujo que acompaña al enunciado: figuras o una escena. */
+  readonly ilustracion?: Ilustracion;
+}
+
+/**
+ * Figura de cada opción, en el mismo orden que `options`. La opción sigue
+ * teniendo su texto —es lo que lee un lector de pantalla y lo que identifica
+ * la respuesta—, y la figura es cómo se muestra.
+ */
+interface OpcionesConFigura {
+  readonly figurasOpciones?: readonly Figura[];
 }
 
 /** Reto de opción múltiple: la forma canónica del banco curado y de la mayoría de generadores. */
-export interface MultipleChoicePrompt extends PromptBase {
+export interface MultipleChoicePrompt extends PromptBase, OpcionesConFigura {
   readonly kind: 'multiple_choice';
   readonly options: readonly string[];
   readonly correctIndex: number;
@@ -43,7 +57,7 @@ export interface MultipleChoicePrompt extends PromptBase {
  * Reto de memoria en dos fases: primero se muestra `sequence` durante
  * `studyMs`, después se oculta y se plantea `stem`.
  */
-export interface SequenceRecallPrompt extends PromptBase {
+export interface SequenceRecallPrompt extends PromptBase, OpcionesConFigura {
   readonly kind: 'sequence_recall';
   readonly instruction: string;
   readonly sequence: readonly SequenceToken[];

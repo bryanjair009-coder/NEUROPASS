@@ -1,6 +1,8 @@
 import { AGE_BANDS, ageBandIndex } from '@/domain/age';
+import type { Escena } from '@/domain/ilustracion';
 import { buildChoices } from '@/engine/choices';
-import { EVERYDAY_OBJECTS, OPEN_CHALLENGES, STORY_SEEDS, forBand } from '@/engine/lexicon';
+import { COLOR_FIGURA, figurasDeOpciones, type FiguraNombrada } from '@/engine/figuras';
+import { OPEN_CHALLENGES, PROBLEMAS_CREATIVOS, RETOS_REUTILIZAR, STORY_SEEDS, forBand } from '@/engine/lexicon';
 import { byDifficulty, timeLimitFor } from '@/engine/scale';
 import type { ExerciseGenerator, GenerationContext } from '@/engine/types';
 
@@ -16,27 +18,17 @@ import type { ExerciseGenerator, GenerationContext } from '@/engine/types';
  *     (extensión y riqueza léxica mínimas) y la respuesta queda disponible en
  *     el panel del tutor. Nunca se marca como incorrecta: la calificación es
  *     `accepted` o `skipped`. Sale del dispositivo solo si el tutor la exporta.
- *  2. Retos convergentes de asociación: no se pregunta cuál idea es "más
- *     creativa" —eso sería arbitrario— sino cuál combina efectivamente los dos
- *     conceptos dados. Eso sí es verificable, y sigue ejercitando la
- *     asociación remota.
+ *  2. Retos convergentes de solución de problemas: no se pregunta cuál idea
+ *     es "más creativa" —eso sería arbitrario— sino cuál resuelve de verdad
+ *     el problema planteado. Eso sí es verificable.
+ *
+ * En ambos casos la creatividad tiene un propósito. Un reto que pide ideas sin
+ * ningún fin entrena la fluidez, pero no deja nada aplicable; uno que pide
+ * resolver algo con lo que se tiene a mano entrena la misma flexibilidad y
+ * además enseña a planear.
  *
  * El planificador limita los retos abiertos a uno por sesión (ver session.ts).
  */
-
-/** Función característica de cada objeto, para construir combinaciones verificables. */
-const OBJECT_FUNCTIONS: Readonly<Record<string, string>> = {
-  'una caja de cartón': 'guardar cosas',
-  'un clip': 'sujetar papeles',
-  'una cuchara': 'servir comida',
-  'una botella vacía': 'contener líquido',
-  'un calcetín sin par': 'abrigar el pie',
-  'una liga': 'estirarse y volver',
-  'un periódico viejo': 'informar con texto',
-  'una llanta usada': 'rodar sobre el piso',
-  'un vaso de plástico': 'beber algo',
-  'una cuerda': 'amarrar dos cosas',
-};
 
 const openResponseThresholds = (ctx: GenerationContext): { minChars: number; minDistinctWords: number } => {
   const band = ageBandIndex(ctx.band);
@@ -47,52 +39,32 @@ const openResponseThresholds = (ctx: GenerationContext): { minChars: number; min
 };
 
 // ---------------------------------------------------------------------------
-// Usos alternativos (divergente abierto)
+// Reutilizar con un propósito (divergente abierto)
 // ---------------------------------------------------------------------------
 
-/**
- * Restricciones que acompañan al objeto. Una restricción explícita mejora la
- * producción divergente —obliga a abandonar la primera idea obvia— y de paso
- * multiplica el espacio de retos, que con solo diez objetos sería demasiado
- * pequeño para no repetirse en pocos días.
- */
-const USE_CONSTRAINTS = [
-  'que sirvan dentro de la escuela',
-  'que ayuden a otra persona',
-  'que no necesiten las manos',
-  'que funcionen de noche',
-  'que sirvan afuera, en la calle',
-  'que un animal también pueda usar',
-  'que no cuesten nada de dinero',
-] as const;
-
-export const alternativeUses: ExerciseGenerator = {
-  id: 'creatividad.usos',
-  label: 'Usos alternativos',
+export const reuseWithPurpose: ExerciseGenerator = {
+  id: 'creatividad.reutilizar',
+  label: 'Reutilizar con un propósito',
   pillar: 'creatividad',
   bands: ['6-8', '9-12', '13-16'],
   difficulty: [1, 5],
   generate(ctx) {
-    const object = ctx.rng.pick(EVERYDAY_OBJECTS);
-    const count = byDifficulty(ctx.difficulty, [2, 2, 3, 3, 4]);
+    const reto = ctx.rng.pick(forBand(RETOS_REUTILIZAR, ctx.band, AGE_BANDS));
     const thresholds = openResponseThresholds(ctx);
 
-    // A partir de dificultad 2 se añade una restricción; en el nivel 1 el reto
-    // se deja libre para no abrumar a quien apenas empieza.
-    const constraint = ctx.difficulty >= 2 ? ctx.rng.pick(USE_CONSTRAINTS) : null;
-    const stem = constraint
-      ? `Escribe ${count} usos distintos que le darías a ${object}, ${constraint}. Ninguno puede ser el uso normal.`
-      : `Escribe ${count} usos distintos que le darías a ${object}, sin que ninguno sea el uso normal.`;
+    // En los niveles altos se pide además qué haría falta y qué podría fallar:
+    // anticipar problemas es la parte del diseño que más cuesta.
+    const extra = ctx.difficulty >= 4 ? ' Di también qué podría salir mal y cómo lo evitarías.' : '';
 
     return {
       prompt: {
         kind: 'open_response',
-        stem,
-        placeholder: 'Escribe tus ideas, una por línea...',
+        stem: `Tienes ${reto.material}. Úsalo para ${reto.necesidad}.\n\nExplica cómo lo harías, paso a paso.${extra}`,
+        placeholder: 'Primero...\nDespués...\nAl final...',
         ...thresholds,
-        hint: 'No hay respuesta incorrecta. Piensa en usos que a nadie más se le ocurrirían.',
+        hint: 'Piensa qué forma tiene el material y qué necesitas que haga. Después ordena los pasos.',
       },
-      fingerprintParts: ['creatividad.usos', object, count, constraint ?? 'libre'],
+      fingerprintParts: ['creatividad.reutilizar', reto.material, reto.necesidad, extra ? 'riesgos' : 'pasos'],
       timeLimitSec: null,
     };
   },
@@ -154,43 +126,28 @@ export const openChallenge: ExerciseGenerator = {
 };
 
 // ---------------------------------------------------------------------------
-// Asociación remota (convergente y verificable)
+// Soluciones creativas (convergente y verificable)
 // ---------------------------------------------------------------------------
 
-export const remoteAssociation: ExerciseGenerator = {
-  id: 'creatividad.asociacion',
-  label: 'Asociación de ideas',
+export const creativeSolutions: ExerciseGenerator = {
+  id: 'creatividad.soluciones',
+  label: 'Soluciones creativas',
   pillar: 'creatividad',
   bands: ['6-8', '9-12', '13-16'],
   difficulty: [1, 5],
   generate(ctx) {
     const { rng } = ctx;
-    const [objectA, objectB] = rng.sample(EVERYDAY_OBJECTS, 2);
-    if (!objectA || !objectB) throw new Error('Corpus de objetos insuficiente');
-
-    const functionB = OBJECT_FUNCTIONS[objectB] ?? 'usarse de otra forma';
-    const functionA = OBJECT_FUNCTIONS[objectA] ?? 'usarse de otra forma';
-
-    // La respuesta correcta es la única que integra ambos objetos; las demás
-    // se quedan en uno solo. Es un criterio objetivo, no una opinión sobre
-    // cuál idea es "más creativa".
-    const answer = `${capitalize(objectA)} que también sirve para ${functionB}`;
-    const distractors = [
-      `${capitalize(objectA)} pero más grande`,
-      `${capitalize(objectB)} de color azul`,
-      `${capitalize(objectA)} que sirve para ${functionA}`,
-      `${capitalize(objectB)} guardado en una caja`,
-    ];
+    const problema = rng.pick(forBand(PROBLEMAS_CREATIVOS, ctx.band, AGE_BANDS));
 
     return {
       prompt: {
         kind: 'multiple_choice',
-        stem: `Tienes que inventar algo que combine ${objectA} y ${objectB}.\n\n¿Cuál de estas ideas usa de verdad las dos cosas?`,
-        ...buildChoices(rng, answer, distractors),
-        hint: 'Una idea que solo cambia el tamaño o el color no está combinando nada.',
+        stem: `${problema.situacion}\n\n¿Cuál idea sí resuelve el problema?`,
+        ...buildChoices(rng, problema.correcta, problema.incorrectas),
+        hint: 'Imagina que haces cada idea de verdad. ¿Cuál termina resolviendo el problema?',
       },
-      fingerprintParts: ['creatividad.asociacion', objectA, objectB],
-      timeLimitSec: timeLimitFor(ctx.band, ctx.difficulty),
+      fingerprintParts: ['creatividad.soluciones', problema.situacion],
+      timeLimitSec: timeLimitFor(ctx.band, ctx.difficulty) + 10,
     };
   },
 };
@@ -199,7 +156,15 @@ export const remoteAssociation: ExerciseGenerator = {
 // Patrones de color
 // ---------------------------------------------------------------------------
 
-const PATTERN_COLORS = ['🟥', '🟦', '🟩', '🟨', '🟪', '🟧'] as const;
+/** Círculos de colores: el patrón está en el color, así que la forma no cambia. */
+const PATTERN_COLORS: readonly FiguraNombrada[] = [
+  { nombre: 'rojo', figura: { forma: 'circulo', color: COLOR_FIGURA.rojo } },
+  { nombre: 'azul', figura: { forma: 'circulo', color: COLOR_FIGURA.azul } },
+  { nombre: 'verde', figura: { forma: 'circulo', color: COLOR_FIGURA.verde } },
+  { nombre: 'amarillo', figura: { forma: 'circulo', color: COLOR_FIGURA.amarillo } },
+  { nombre: 'morado', figura: { forma: 'circulo', color: COLOR_FIGURA.morado } },
+  { nombre: 'naranja', figura: { forma: 'circulo', color: COLOR_FIGURA.naranja } },
+];
 
 export const colorPattern: ExerciseGenerator = {
   id: 'creatividad.patron',
@@ -213,17 +178,20 @@ export const colorPattern: ExerciseGenerator = {
     const cycle = rng.sample(PATTERN_COLORS, period);
 
     const length = period * 3;
-    const rendered = Array.from({ length }, (_, i) => cycle[i % period] as string);
-    const answer = cycle[length % period] as string;
-    const distractors = PATTERN_COLORS.filter((c) => c !== answer);
+    const rendered = Array.from({ length }, (_, i) => cycle[i % period] as FiguraNombrada);
+    const answer = cycle[length % period] as FiguraNombrada;
+    const distractors = PATTERN_COLORS.filter((c) => c !== answer).map((c) => c.nombre);
+    const choices = buildChoices(rng, answer.nombre, rng.shuffle(distractors));
 
     return {
       prompt: {
         kind: 'multiple_choice',
-        stem: `¿Qué color sigue el patrón?\n\n${rendered.join(' ')} ❓`,
-        ...buildChoices(rng, answer, rng.shuffle(distractors)),
+        stem: '¿Qué color sigue el patrón?',
+        ilustracion: { tipo: 'figuras', filas: [[...rendered.map((c) => c.figura), null]] },
+        ...choices,
+        figurasOpciones: figurasDeOpciones(choices.options, PATTERN_COLORS),
       },
-      fingerprintParts: ['creatividad.patron', ...cycle],
+      fingerprintParts: ['creatividad.patron', ...cycle.map((c) => c.nombre)],
       timeLimitSec: timeLimitFor(ctx.band, difficulty),
     };
   },
@@ -233,18 +201,53 @@ export const colorPattern: ExerciseGenerator = {
 // Título para una escena
 // ---------------------------------------------------------------------------
 
-const SCENES = [
-  { emoji: '🌧️🐕🏠', description: 'un perro mirando la lluvia desde la puerta' },
-  { emoji: '🚀🌕👨‍🚀', description: 'un astronauta llegando a la Luna' },
-  { emoji: '📚🕯️🦉', description: 'un búho leyendo a la luz de una vela' },
-  { emoji: '🏖️⛱️🦀', description: 'un cangrejo tomando el sol en la playa' },
-  { emoji: '🎪🐘🎈', description: 'un elefante escapando del circo con globos' },
-  { emoji: '🚲🌆🌅', description: 'alguien cruzando la ciudad en bici al amanecer' },
-  { emoji: '🐋🎻🌊', description: 'una ballena escuchando un violín bajo el agua' },
-  { emoji: '🕰️🏚️🌿', description: 'un reloj todavía andando en una casa abandonada' },
-  { emoji: '🦊❄️🏔️', description: 'un zorro cruzando solo una montaña nevada' },
-  { emoji: '📮✉️🌵', description: 'un buzón lleno de cartas en medio del desierto' },
-] as const;
+/**
+ * Escenas ilustradas. Cada descripción dice solo lo que el dibujo muestra: si
+ * el texto contara más que la imagen, el menor inventaría el título a partir
+ * del texto y la ilustración sobraría.
+ */
+const SCENES: readonly { readonly escena: Escena; readonly descripcion: string }[] = [
+  {
+    escena: { cielo: 'noche', suelo: 'nieve', astros: ['luna', 'estrellas'], elementos: ['montana', 'casa'] },
+    descripcion: 'una casita al pie de una montaña nevada, en una noche estrellada',
+  },
+  {
+    escena: { cielo: 'dia', clima: 'lluvia', suelo: 'pasto', astros: ['nube'], elementos: ['casa', 'arbol'] },
+    descripcion: 'una casa y un árbol en un día de lluvia',
+  },
+  {
+    escena: { cielo: 'atardecer', suelo: 'mar', astros: ['sol'], elementos: ['barco'] },
+    descripcion: 'un barco de vela navegando al atardecer',
+  },
+  {
+    escena: { cielo: 'noche', suelo: 'pasto', astros: ['luna', 'estrellas'], elementos: ['cohete'] },
+    descripcion: 'un cohete listo para despegar en medio de la noche',
+  },
+  {
+    escena: { cielo: 'dia', suelo: 'arena', astros: ['sol'], elementos: ['cactus', 'cactus'] },
+    descripcion: 'dos cactus solos en el desierto, bajo un sol fuerte',
+  },
+  {
+    escena: { cielo: 'dia', suelo: 'pasto', astros: ['nube', 'sol'], elementos: ['arbol', 'globo'] },
+    descripcion: 'un globo rosa junto a un árbol en el parque',
+  },
+  {
+    escena: { cielo: 'atardecer', suelo: 'pasto', astros: ['sol'], elementos: ['flor', 'arbol', 'flor'] },
+    descripcion: 'un jardín con flores y un árbol al atardecer',
+  },
+  {
+    escena: { cielo: 'dia', suelo: 'playa', astros: ['sol', 'nube'], elementos: ['faro'] },
+    descripcion: 'un faro solitario en la orilla del mar',
+  },
+  {
+    escena: { cielo: 'noche', suelo: 'pasto', astros: ['estrellas', 'luna'], elementos: ['tienda', 'arbol'] },
+    descripcion: 'una tienda de campaña bajo las estrellas',
+  },
+  {
+    escena: { cielo: 'dia', clima: 'nieve', suelo: 'nieve', astros: ['nube'], elementos: ['arbol', 'casa', 'arbol'] },
+    descripcion: 'una casa entre árboles mientras cae la nieve',
+  },
+];
 
 export const sceneTitle: ExerciseGenerator = {
   id: 'creatividad.titulo',
@@ -259,24 +262,23 @@ export const sceneTitle: ExerciseGenerator = {
     return {
       prompt: {
         kind: 'open_response',
-        stem: `${scene.emoji}\n\nEsta escena muestra ${scene.description}. Inventa un título para ella y explica en una frase por qué lo elegiste.`,
+        stem: `Esta escena muestra ${scene.descripcion}. Inventa un título para ella y explica en una frase por qué lo elegiste.`,
+        ilustracion: { tipo: 'escena', escena: scene.escena },
         placeholder: 'Título: ...\nPorque: ...',
         minChars: Math.round(thresholds.minChars * 0.7),
         minDistinctWords: Math.max(5, thresholds.minDistinctWords - 4),
       },
-      fingerprintParts: ['creatividad.titulo', scene.description],
+      fingerprintParts: ['creatividad.titulo', scene.descripcion],
       timeLimitSec: null,
     };
   },
 };
 
-const capitalize = (value: string): string => value.charAt(0).toLocaleUpperCase('es') + value.slice(1);
-
 export const CREATIVITY_GENERATORS: readonly ExerciseGenerator[] = [
-  alternativeUses,
+  reuseWithPurpose,
   continueStory,
   openChallenge,
-  remoteAssociation,
+  creativeSolutions,
   colorPattern,
   sceneTitle,
 ];

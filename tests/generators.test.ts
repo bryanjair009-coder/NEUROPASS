@@ -46,6 +46,10 @@ function assertValid(exercise: Exercise, where: string): void {
   const { prompt } = exercise;
   expect(prompt.stem.trim().length, `${where}: enunciado vacío`).toBeGreaterThan(0);
 
+  if (prompt.ilustracion?.tipo === 'figuras') {
+    expect(prompt.ilustracion.filas.flat().length, `${where}: ilustración sin figuras`).toBeGreaterThan(0);
+  }
+
   switch (prompt.kind) {
     case 'multiple_choice':
     case 'sequence_recall': {
@@ -60,6 +64,14 @@ function assertValid(exercise: Exercise, where: string): void {
 
       for (const option of prompt.options) {
         expect(option.trim().length, `${where}: opción vacía`).toBeGreaterThan(0);
+      }
+
+      // Las figuras se dibujan en lugar del texto: si no casaran una a una con
+      // las opciones, el menor elegiría un dibujo y se calificaría otro.
+      if (prompt.figurasOpciones) {
+        expect(prompt.figurasOpciones.length, `${where}: figuras y opciones desalineadas`).toBe(
+          prompt.options.length,
+        );
       }
 
       if (prompt.kind === 'sequence_recall') {

@@ -6,6 +6,8 @@ import type { Exercise, ExerciseResponse, Grade, SequenceToken } from '@/domain/
 import { PILLAR_EMOJI, PILLAR_LABEL } from '@/domain/pillar';
 import { distinctWords } from '@/engine/grading';
 import { lighten, withAlpha } from '@/lib/color';
+import { Figura } from '@/ui/components/Figura';
+import { Ilustracion } from '@/ui/components/Ilustracion';
 import { Button, Gap, Row, Txt } from '@/ui/components/primitives';
 import { makeStyles } from '@/ui/makeStyles';
 import { usePalette, useTheme } from '@/ui/ThemeProvider';
@@ -127,6 +129,11 @@ export function PanelEnunciado({ exercise }: { exercise: Exercise }) {
       <Text style={[styles.enunciado, promptTypeScale[exercise.band]]} accessibilityRole="header">
         {exercise.prompt.stem}
       </Text>
+      {exercise.prompt.ilustracion ? (
+        <View style={styles.ilustracion}>
+          <Ilustracion ilustracion={exercise.prompt.ilustracion} />
+        </View>
+      ) : null}
     </View>
   );
 }
@@ -161,7 +168,10 @@ function ChoicePrompt({ exercise, disabled, grade, onRespond }: PromptProps) {
 
   const revealed = grade !== null;
   const tonos = opcionesPorPilar[exercise.pillar];
-  const unaColumna = prompt.options.some((option) => option.length > LARGO_MEDIA_COLUMNA);
+  // Con figuras las etiquetas son cortas («rombo hueco») y la rejilla 2×2 es
+  // lo que permite comparar los dibujos de un vistazo.
+  const unaColumna =
+    !prompt.figurasOpciones && prompt.options.some((option) => option.length > LARGO_MEDIA_COLUMNA);
 
   return (
     <View style={styles.rejilla}>
@@ -176,14 +186,20 @@ function ChoicePrompt({ exercise, disabled, grade, onRespond }: PromptProps) {
               ? 'fallo'
               : 'descartada';
         const tono = tonos[index % tonos.length] as TonoMarca;
+        const figura = prompt.figurasOpciones?.[index];
+        // Una opción con figura va sobre fondo neutro: una estrella roja sobre
+        // una píldora rosa se confunde, y el color de la figura es parte de lo
+        // que hay que reconocer.
         const relleno = estado
           ? veredicto[estado]
-          : {
-              arriba: lighten(tonoMarca[tono].base, 0.3),
-              abajo: tonoMarca[tono].base,
-              canto: tonoMarca[tono].canto,
-            };
-        const tinta = tintaPildora(palette, estado ?? tono);
+          : figura
+            ? { arriba: palette.surface, abajo: palette.surfaceRaised, canto: palette.arcadePista }
+            : {
+                arriba: lighten(tonoMarca[tono].base, 0.3),
+                abajo: tonoMarca[tono].base,
+                canto: tonoMarca[tono].canto,
+              };
+        const tinta = estado ? tintaPildora(palette, estado) : figura ? palette.text : tintaPildora(palette, tono);
 
         return (
           <Pressable
@@ -218,9 +234,18 @@ function ChoicePrompt({ exercise, disabled, grade, onRespond }: PromptProps) {
                   end={{ x: 0, y: 1 }}
                   style={StyleSheet.absoluteFill}
                 />
-                <Text style={[styles.opcionTexto, { color: tinta }]} numberOfLines={4}>
-                  {option}
-                </Text>
+                {figura ? (
+                  <>
+                    <Figura figura={figura} tamano={52} />
+                    <Text style={[styles.opcionEtiqueta, { color: tinta }]} numberOfLines={1}>
+                      {option}
+                    </Text>
+                  </>
+                ) : (
+                  <Text style={[styles.opcionTexto, { color: tinta }]} numberOfLines={4}>
+                    {option}
+                  </Text>
+                )}
                 {/* La marca va en posición absoluta para que el texto quede
                     centrado igual antes y después de revelarse. */}
                 {estado === 'acierto' ? <Text style={[styles.opcionMarca, { color: tinta }]}>✓</Text> : null}
@@ -285,16 +310,23 @@ export function StudyPhase({
       <Gap size="xl" />
 
       <Row gap="md" wrap justify="center">
-        {sequence.map((token, index) => (
-          <View
-            key={`${token.label}-${index}`}
-            style={[styles.token, token.color ? { backgroundColor: token.color } : null]}
-          >
-            <Text style={[styles.tokenText, token.color ? { color: palette.white } : null]}>
-              {token.label}
-            </Text>
-          </View>
-        ))}
+        {sequence.map((token, index) =>
+          token.figura ? (
+            <View key={`${token.label}-${index}`} style={styles.tokenFigura}>
+              <Figura figura={token.figura} tamano={60} />
+              <Text style={styles.tokenEtiqueta}>{token.label}</Text>
+            </View>
+          ) : (
+            <View
+              key={`${token.label}-${index}`}
+              style={[styles.token, token.color ? { backgroundColor: token.color } : null]}
+            >
+              <Text style={[styles.tokenText, token.color ? { color: palette.white } : null]}>
+                {token.label}
+              </Text>
+            </View>
+          ),
+        )}
       </Row>
 
       <Gap size="xxl" />
@@ -472,7 +504,27 @@ const useStyles = makeStyles((palette) => ({
     fontSize: 18,
   },
 
+  ilustracion: { alignSelf: 'stretch', marginTop: space.md },
+  opcionEtiqueta: {
+    fontFamily: 'Nunito_700Bold',
+    fontSize: 13,
+    lineHeight: 17,
+    marginTop: 2,
+    textAlign: 'center',
+  },
+
   studyContainer: { alignItems: 'center', paddingVertical: space.xl },
+  tokenFigura: {
+    alignItems: 'center',
+    gap: space.xs,
+    minWidth: 84,
+    paddingVertical: space.sm,
+    paddingHorizontal: space.sm,
+    borderRadius: radius.lg,
+    backgroundColor: palette.surface,
+    ...shadow('sm'),
+  },
+  tokenEtiqueta: { fontFamily: 'Nunito_700Bold', fontSize: 14, lineHeight: 18, color: palette.text },
   token: {
     minWidth: 76,
     minHeight: 76,
