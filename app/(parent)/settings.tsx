@@ -10,7 +10,7 @@ import { audit } from '@/data/repositories/policy';
 import { deleteOpenResponses, listOpenResponses, type OpenResponseRecord } from '@/data/repositories/progress';
 import { wipeAllData } from '@/data/db';
 import { DEFAULT_REWARD_POLICY } from '@/engine/economy';
-import { screenTime } from '@/screentime';
+import { AVISO_ADMIN_DISPOSITIVO, screenTime } from '@/screentime';
 import { clearPin } from '@/security/pinStore';
 import { useActiveChild, useAppStore } from '@/state/appStore';
 import {
@@ -352,10 +352,22 @@ export default function SettingsScreen() {
             <Button
               label={capabilities?.deviceAdmin ? 'Desactivar protección' : 'Activar protección'}
               variant={capabilities?.deviceAdmin ? 'secondary' : 'primary'}
-              onPress={async () => {
-                if (capabilities?.deviceAdmin) await screenTime.releaseDeviceAdmin();
-                else await screenTime.requestDeviceAdmin();
-                await refreshCapabilities();
+              onPress={() => {
+                if (capabilities?.deviceAdmin) {
+                  void (async () => {
+                    await screenTime.releaseDeviceAdmin();
+                    await refreshCapabilities();
+                  })();
+                  return;
+                }
+
+                // Activarla sí lleva aviso previo: es un permiso que Android
+                // presenta con una pantalla alarmante y conviene explicar antes
+                // qué puede y qué no puede hacer la app con él.
+                confirm('Protección antidesinstalación', AVISO_ADMIN_DISPOSITIVO, async () => {
+                  await screenTime.requestDeviceAdmin();
+                  await refreshCapabilities();
+                });
               }}
             />
             <Gap size="sm" />

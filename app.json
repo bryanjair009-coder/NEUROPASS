@@ -2,7 +2,7 @@
   "expo": {
     "name": "NEUROpass",
     "slug": "neuropass",
-    "version": "0.9.0",
+    "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "scheme": "neuropass",
@@ -36,12 +36,13 @@
         "android.permission.QUERY_ALL_PACKAGES",
         "android.permission.RECEIVE_BOOT_COMPLETED"
       ],
-      "versionCode": 12,
+      "versionCode": 13,
       "allowBackup": false,
       "blockedPermissions": [
         "android.permission.READ_EXTERNAL_STORAGE",
         "android.permission.WRITE_EXTERNAL_STORAGE"
-      ]
+      ],
+      "usesCleartextTraffic": false
     },
     "plugins": [
       "expo-router",

@@ -99,11 +99,34 @@ export function buildPolicy(input: {
   };
 }
 
+/**
+ * Aviso de la protección antidesinstalación.
+ *
+ * Vive aquí, y no escrito dos veces, porque aparece en el panel y en Ajustes.
+ * Enumera lo que la app **no** puede hacer como administrador del dispositivo:
+ * es la duda razonable de cualquier persona a la que Android le acaba de
+ * mostrar una pantalla pidiendo ese permiso, y es lo que Google Play revisa.
+ */
+export const AVISO_ADMIN_DISPOSITIVO =
+  'Android te va a pedir activar NEUROpass como administrador del dispositivo.\n\n' +
+  'Se usa para una sola cosa: impedir que se desinstale la app sin tu PIN.\n\n' +
+  'NEUROpass no puede borrar el teléfono, ni cambiar contraseñas, ni leer tus mensajes, ni bloquear la pantalla, ni usar la cámara. Solo pide la política mínima que Android exige para blindar la desinstalación.\n\n' +
+  'Puedes desactivarla cuando quieras desde Ajustes, y hay que hacerlo antes de desinstalar NEUROpass.';
+
 /** Requisito de configuración pendiente, para guiar al tutor paso a paso. */
 export interface SetupRequirement {
   readonly key: keyof ScreenTimeCapabilities;
   readonly title: string;
   readonly explanation: string;
+  /**
+   * Aviso que hay que aceptar antes de abrir los ajustes del sistema.
+   *
+   * Google Play lo exige para los permisos que dan acceso a datos del
+   * dispositivo: la app tiene que decir qué lee y para qué *antes* de pedirlo,
+   * y la persona tiene que poder decir que no. La explicación de la tarjeta no
+   * basta, porque nadie tiene que aceptarla para continuar.
+   */
+  readonly disclosure?: string;
   /** Qué hacer para resolverlo. */
   readonly action: (adapter: ScreenTimeAdapter) => Promise<unknown>;
   /** Si sin esto el bloqueo directamente no funciona. */
@@ -143,6 +166,10 @@ export function pendingRequirements(
       title: 'Permitir acceso al uso de apps',
       explanation:
         'Sin esto NEUROpass no puede saber qué aplicación está abierta y no hay forma de aplicar ningún límite. Solo se lee el nombre de la app en primer plano; nada de su contenido.',
+      disclosure:
+        'NEUROpass va a leer qué aplicación está abierta en este teléfono para aplicar los límites que tú configuras.\n\n' +
+        'Solo se lee el nombre de la aplicación en primer plano, nunca su contenido. El dato se usa en el momento y no se guarda como historial, no se envía por internet y no se comparte con nadie.\n\n' +
+        'Puedes retirar el permiso cuando quieras desde los ajustes de Android.',
       action: (adapter) => adapter.openUsageAccessSettings(),
       blocking: true,
     });
@@ -190,6 +217,7 @@ export function pendingRequirements(
       title: 'Proteger contra desinstalación',
       explanation:
         'Opcional. Impide que se desinstale NEUROpass sin tu PIN. Puedes desactivarlo cuando quieras desde este mismo panel.',
+      disclosure: AVISO_ADMIN_DISPOSITIVO,
       action: (adapter) => adapter.requestDeviceAdmin(),
       blocking: false,
     });

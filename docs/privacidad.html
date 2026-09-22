@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Política de privacidad · NEUROpass</title>
+    <meta
+      name="description"
+      content="Política de privacidad de NEUROpass: toda la información se guarda en el teléfono y la app no realiza peticiones de red."
+    />
+    <style>
+      :root {
+        color-scheme: light;
+        --lienzo: #f4f1ff;
+        --superficie: #ffffff;
+        --tinta: #1a1240;
+        --tinta-suave: #6a5f94;
+        --acento: #7c5fff;
+        --borde: rgba(124, 95, 255, 0.16);
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        padding: 32px 20px 72px;
+        background: var(--lienzo);
+        color: var(--tinta);
+        font: 400 16px/1.65 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      }
+      main { max-width: 760px; margin: 0 auto; }
+      header {
+        background: var(--superficie);
+        border: 1px solid var(--borde);
+        border-radius: 22px;
+        padding: 28px;
+        margin-bottom: 28px;
+      }
+      h1 { margin: 0 0 8px; font-size: 30px; line-height: 1.2; }
+      h2 { margin: 36px 0 10px; font-size: 21px; }
+      h3 { margin: 24px 0 6px; font-size: 17px; }
+      p, li { color: #2a2352; }
+      .resumen { font-size: 18px; color: var(--tinta-suave); margin: 0; }
+      .fecha { margin: 14px 0 0; font-size: 14px; color: var(--tinta-suave); }
+      section {
+        background: var(--superficie);
+        border: 1px solid var(--borde);
+        border-radius: 22px;
+        padding: 4px 28px 24px;
+        margin-bottom: 20px;
+      }
+      table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 15px; }
+      th, td { text-align: left; padding: 10px 8px; border-bottom: 1px solid var(--borde); vertical-align: top; }
+      th { color: var(--acento); font-size: 14px; text-transform: uppercase; letter-spacing: 0.04em; }
+      .destacado {
+        background: #ede7ff;
+        border-radius: 16px;
+        padding: 16px 18px;
+        margin: 18px 0;
+        font-weight: 600;
+      }
+      a { color: var(--acento); }
+      footer { margin-top: 28px; font-size: 14px; color: var(--tinta-suave); text-align: center; }
+      @media (max-width: 520px) {
+        body { padding: 20px 14px 56px; }
+        header, section { padding-left: 18px; padding-right: 18px; }
+        h1 { font-size: 25px; }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1>Política de privacidad de NEUROpass</h1>
+        <p class="resumen">
+          NEUROpass es una aplicación de control parental que funciona sin internet. Toda la
+          información se guarda únicamente en el teléfono donde está instalada.
+        </p>
+        <p class="fecha">Última actualización: septiembre de 2026 · Aplica a la app Android <code>com.neuropass.app</code></p>
+      </header>
+
+      <section>
+        <h2>Resumen</h2>
+        <div class="destacado">
+          No hay servidor, no hay cuentas de usuario y la aplicación no realiza ninguna petición de
+          red. Nada de lo que la app guarda sale del dispositivo.
+        </div>
+        <ul>
+          <li>No recopilamos datos personales.</li>
+          <li>No compartimos información con terceros.</li>
+          <li>No hay publicidad ni herramientas de analítica.</li>
+          <li>La copia de seguridad automática de Android está desactivada, así que los datos
+            tampoco se suben a Google Drive.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Qué guarda la aplicación en el teléfono</h2>
+        <h3>Del menor</h3>
+        <table>
+          <tr><th>Dato</th><th>Para qué</th></tr>
+          <tr><td>Apodo, escrito por la madre, el padre o el tutor</td><td>Distinguir perfiles cuando hay varios menores</td></tr>
+          <tr><td>Emoji de avatar</td><td>Que se reconozca su perfil aunque todavía no lea bien</td></tr>
+          <tr><td>Rango de edad (6-8, 9-12 o 13-16)</td><td>Elegir retos apropiados. No se pide la fecha de nacimiento</td></tr>
+          <tr><td>Resultado de cada reto: área, dificultad, si acertó y cuánto tardó</td><td>Ajustar la dificultad y no repetir retos recientes</td></tr>
+          <tr><td>Minutos ganados y sesiones del día</td><td>Aplicar el límite diario que configura el tutor</td></tr>
+          <tr><td>Respuestas de los retos de escritura creativa</td><td>Que el tutor pueda leerlas. Se pueden borrar por separado</td></tr>
+        </table>
+        <p>
+          <strong>No se guarda</strong> el enunciado del reto ni la opción que el menor eligió, ni
+          fecha de nacimiento, correo, teléfono, escuela, ubicación, contactos, fotos, micrófono ni
+          identificadores de publicidad. La base de datos de la aplicación no tiene ningún campo
+          para esa información.
+        </p>
+
+        <h3>Del tutor</h3>
+        <p>
+          El PIN y el código de recuperación no se guardan tal cual: se almacena una transformación
+          criptográfica suya en el almacén seguro del sistema Android (Keystore), que es el mismo
+          mecanismo que usan las aplicaciones bancarias.
+        </p>
+      </section>
+
+      <section>
+        <h2>Permisos y para qué se usan</h2>
+        <table>
+          <tr><th>Permiso</th><th>Uso</th></tr>
+          <tr><td>Acceso al uso de aplicaciones</td><td>Saber qué aplicación está abierta para aplicar los límites. Solo se lee el nombre de la app en primer plano, nunca su contenido, y no se guarda historial</td></tr>
+          <tr><td>Ver las apps instaladas</td><td>Mostrarle al tutor la lista para que elija cuáles limitar</td></tr>
+          <tr><td>Mostrarse sobre otras apps</td><td>Dibujar la pantalla que aparece cuando se acaba el tiempo</td></tr>
+          <tr><td>Notificaciones</td><td>La notificación permanente que Android exige mientras la supervisión está activa, y el aviso de que el tiempo está por acabarse</td></tr>
+          <tr><td>Iniciar al encender el teléfono</td><td>Que la supervisión siga activa después de reiniciar</td></tr>
+          <tr><td>Administrador de dispositivo (opcional)</td><td>Impedir que se desinstale la app sin el PIN. No permite borrar el teléfono, cambiar contraseñas, bloquear la pantalla ni usar la cámara. El tutor puede desactivarlo cuando quiera</td></tr>
+        </table>
+      </section>
+
+      <section>
+        <h2>Menores de edad</h2>
+        <p>
+          NEUROpass está pensada para que un adulto la instale y la configure en el teléfono de un
+          menor. Como no se recopila ninguna información y nada sale del dispositivo, no hay datos
+          de menores que se transmitan, se vendan o se compartan. La aplicación no incluye
+          publicidad, compras ni enlaces a redes sociales.
+        </p>
+      </section>
+
+      <section>
+        <h2>Cómo borrar los datos</h2>
+        <p>
+          En la propia aplicación: <strong>panel del tutor → Ajustes → Borrar todos los datos</strong>.
+          Elimina perfiles, progreso, respuestas escritas y el PIN. También puede borrarse todo
+          desinstalando la aplicación. No hay copias en ningún otro sitio, así que no hace falta
+          solicitar nada por correo.
+        </p>
+      </section>
+
+      <section>
+        <h2>Cambios en esta política</h2>
+        <p>
+          Si en el futuro la aplicación incorpora funciones que necesiten enviar información —por
+          ejemplo, un panel para consultar el progreso desde otro teléfono—, esta página se
+          actualizará antes de publicar esa versión y se explicará qué se envía y por qué.
+        </p>
+      </section>
+
+      <section>
+        <h2>Contacto</h2>
+        <p>
+          Dudas sobre privacidad o sobre esta política: <a href="mailto:⟨tu correo⟩">⟨tu correo⟩</a>.
+        </p>
+      </section>
+
+      <footer>NEUROpass · Aplicación de control parental para Android</footer>
+    </main>
+  </body>
+</html>

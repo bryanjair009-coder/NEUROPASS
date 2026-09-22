@@ -219,5 +219,8 @@ son anteriores al rediseño con AXO.
   texto para la revisión de las tiendas.
 - [`docs/PRIVACIDAD.md`](docs/PRIVACIDAD.md) — inventario exacto de datos y
   cumplimiento COPPA / GDPR-K.
+- [`docs/PLAY_STORE.md`](docs/PLAY_STORE.md) — pasos, textos y declaraciones para
+  publicar en Google Play, con [`docs/privacidad.html`](docs/privacidad.html)
+  lista para publicarse como la URL de política de privacidad.
 - [`docs/IOS_FAMILY_CONTROLS.md`](docs/IOS_FAMILY_CONTROLS.md) — trámite del
   entitlement y pasos de configuración en Xcode.

@@ -1,6 +1,6 @@
 import { Redirect, router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Alert, Pressable, Text, View } from 'react-native';
 
 import { PILLAR_EMOJI, PILLAR_LABEL } from '@/domain/pillar';
 import { AGE_BAND_LABEL } from '@/domain/age';
@@ -15,7 +15,7 @@ import { grantTime, revokeActiveGrants } from '@/data/repositories/rewards';
 import { masteryPercent, weakestPillar } from '@/engine/mastery';
 import type { GuardStatus } from 'neuropass-screentime';
 import { withAlpha } from '@/lib/color';
-import { isSimulated, pendingRequirements, screenTime } from '@/screentime';
+import { isSimulated, pendingRequirements, screenTime, type SetupRequirement } from '@/screentime';
 import { secureStorage } from '@/security/secureStorage';
 import { useActiveChild, useAppStore } from '@/state/appStore';
 import {
@@ -216,10 +216,14 @@ export default function Dashboard() {
               <Button
                 label="Configurar"
                 variant="secondary"
-                onPress={async () => {
-                  await requirement.action(screenTime);
-                  await refreshCapabilities();
-                }}
+                onPress={() =>
+                  // Los permisos con aviso previo no se piden hasta que el
+                  // tutor lo acepta; los demás abren los ajustes directamente.
+                  pedirRequisito(requirement, async () => {
+                    await requirement.action(screenTime);
+                    await refreshCapabilities();
+                  })
+                }
               />
             </Card>
           ))}
@@ -407,6 +411,22 @@ export default function Dashboard() {
 }
 
 // ---------------------------------------------------------------------------
+
+/**
+ * Muestra el aviso previo del permiso, si lo tiene, y solo continúa cuando el
+ * tutor lo acepta. Es el requisito de «divulgación destacada» de Google Play.
+ */
+function pedirRequisito(requirement: SetupRequirement, continuar: () => Promise<void>): void {
+  if (!requirement.disclosure) {
+    void continuar();
+    return;
+  }
+
+  Alert.alert(requirement.title, requirement.disclosure, [
+    { text: 'Ahora no', style: 'cancel' },
+    { text: 'Continuar', onPress: () => void continuar() },
+  ]);
+}
 
 /** Aviso urgente. Pastel rosa y no rojo: urgente no es lo mismo que alarmante. */
 function Alerta({ titulo, children }: { titulo: string; children: string }) {
