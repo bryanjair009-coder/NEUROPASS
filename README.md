@@ -46,7 +46,7 @@ npm test
 npm run typecheck
 ```
 
-481 pruebas cubren el motor de ejercicios, la economía de tiempo, la
+608 pruebas cubren el motor de ejercicios, la economía de tiempo, la
 criptografía del PIN y los horarios protegidos.
 
 ---
@@ -71,7 +71,7 @@ modules/neuropass-screentime/
   android/                  Kotlin: UsageStats, overlay, Device Admin
   ios/                      Swift: FamilyControls, ManagedSettings
 tests/                      Pruebas del núcleo
-docs/                       Permisos, privacidad y guía de iOS
+docs/                       Permisos, privacidad, publicación y guía de iOS
 ```
 
 La dirección de las dependencias es estricta: `domain` no importa nada, `engine`
@@ -86,7 +86,7 @@ probarlo bajo Node directamente.
 ### El motor de ejercicios es procedural, no un banco de preguntas
 
 Las 100 preguntas escritas a mano del banco original se conservan, pero como
-complemento. El grueso lo generan 38 generadores deterministas que producen un
+complemento. El grueso lo generan 50 generadores deterministas que producen un
 espacio de retos prácticamente ilimitado. La razón es simple: un banco fijo de
 100 preguntas se memoriza en unos días y el producto deja de funcionar.
 
