@@ -101,7 +101,7 @@ que eligió. No hay publicidad ni analítica de terceros.
 
 **Categoría:** Educación.
 **Etiquetas:** control parental, tiempo de pantalla, educación infantil.
-**Correo de contacto:** `⟨tu correo⟩`.
+**Correo de contacto:** `bryanjair009@gmail.com`.
 **Política de privacidad:** la URL del paso 4.
 
 ### Recursos gráficos
@@ -134,7 +134,7 @@ Con GitHub Pages, que es gratis y usa el repositorio que ya existe:
 4. La URL queda así:
    `https://bryanjair009-coder.github.io/NEUROPASS/privacidad.html`
 
-Antes de publicarla hay que sustituir `⟨tu correo⟩` dentro del archivo: Play
+El correo de contacto ya está puesto en el archivo (`bryanjair009@gmail.com`): Play
 pide un contacto real en la política.
 
 ---
