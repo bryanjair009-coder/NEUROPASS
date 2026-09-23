@@ -11,7 +11,7 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.neuropass.app",
+      "bundleIdentifier": "com.poslabs.neuropass",
       "entitlements": {
         "com.apple.developer.family-controls": true
       },
@@ -20,7 +20,7 @@
       }
     },
     "android": {
-      "package": "com.neuropass.app",
+      "package": "com.poslabs.neuropass",
       "adaptiveIcon": {
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
@@ -36,7 +36,7 @@
         "android.permission.QUERY_ALL_PACKAGES",
         "android.permission.RECEIVE_BOOT_COMPLETED"
       ],
-      "versionCode": 13,
+      "versionCode": 14,
       "allowBackup": false,
       "blockedPermissions": [
         "android.permission.READ_EXTERNAL_STORAGE",

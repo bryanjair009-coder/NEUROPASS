@@ -16,7 +16,7 @@ activa desde la lista de capacidades del portal, hay que pedirlo y que Apple lo
 apruebe.
 
 1. Entra a <https://developer.apple.com/contact/request/family-controls-distribution>.
-2. Rellena el formulario con el Bundle ID (`com.neuropass.app`).
+2. Rellena el formulario con el Bundle ID (`com.poslabs.neuropass`).
 3. En la justificación, sé concreto y explica el mecanismo, no la intención:
 
    > NEUROpass es una aplicación de control parental. La madre, el padre o el
